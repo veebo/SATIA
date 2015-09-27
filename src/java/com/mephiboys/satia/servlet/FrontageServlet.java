@@ -22,11 +22,7 @@ public class FrontageServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             GroovyFacade groovy = GroovyFacade.getInstance();
-            logger.debug("request.getPathInfo():"+request.getPathInfo());
-            logger.debug("request.getRequestURI():"+request.getRequestURI());
-            logger.debug("request.getContextPath():"+request.getContextPath());
-            logger.debug("request.getRequestURL():"+request.getRequestURL());
-            response.getWriter().print(groovy.execute(request.getPathInfo(), null));
+            response.getWriter().print(groovy.execute(request.getRequestURI(), null));
         } catch (Throwable e){
             logger.error("Internal Server Error", e);
         }
