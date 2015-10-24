@@ -1,0 +1,65 @@
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'war'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+configurations { providedCompile }
+
+dependencies {
+    //Servlet
+    providedCompile 'javax.servlet:javax.servlet-api:3.+'
+
+    //Test
+    providedCompile 'junit:junit:4.12'
+
+    //Groovy
+    compile 'org.codehaus.groovy:groovy-all:1.8.0-beta-3'
+
+    //Logging
+    compile 'log4j:log4j:1.2.17'
+
+    //Spring
+    providedCompile 'org.springframework:spring-core:4.2.1.RELEASE'
+    providedCompile 'org.springframework:spring-webmvc:4.2.1.RELEASE'
+}
+
+sourceSets.main.compileClasspath += configurations.providedCompile
+sourceSets.test.compileClasspath += configurations.providedCompile
+sourceSets.test.runtimeClasspath += configurations.providedCompile
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+        }
+
+        groovy {
+            srcDirs = ['src/groovy']
+        }
+
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+
+war {
+    archiveName 'satia.war' // name
+    webInf { from 'src/webapp/WEB-INF' } // adds a file-set to the WEB-INF dir.
+    metaInf { from 'src/webapp/META-INF' } // adds a file-set to the WEB-INF dir.
+}
+
+// Tasks
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.7'
+}

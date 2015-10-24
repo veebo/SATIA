@@ -5,10 +5,14 @@ import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyShell;
 import org.apache.log4j.Logger;
+import org.springframework.ui.ModelMap;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 
 public class GroovyFacade {
+
+    private static final String MAIN_METHOD = "main";
 
     private static Logger logger = org.apache.log4j.Logger.getLogger(GroovyFacade.class);
 
@@ -37,8 +41,8 @@ public class GroovyFacade {
         }
     }
 
-    public Object execute(String method, Object args){
-        return pageResolver.invokeMethod(method, args);
+    public String execute(String method, ModelMap model, HttpServletRequest request){
+        return pageResolver.invokeMethod(method == null ? MAIN_METHOD : method, new Object[]{model, request})+"";
     }
 
 

@@ -1,16 +1,15 @@
 package com.mephiboys.satia.groovy
 
+import org.springframework.ui.ModelMap
+
+import javax.servlet.http.HttpServletRequest
+
 
 class PageResolver {
 
-    def a(){
-        def resp = 'aaa'
-        return resp;
-    }
-
-    def b(){
-        def resp = 'bbb'
-        return resp;
+    def main(ModelMap map, HttpServletRequest request){
+        map["val"] = "Params are "+request.getParameterMap().toMapString();
+        return "auth"
     }
 
 }

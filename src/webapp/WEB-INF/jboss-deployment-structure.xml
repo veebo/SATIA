@@ -4,5 +4,12 @@
         <exclusions>
             <module name="org.apache.log4j" />
         </exclusions>
+        <dependencies>
+            <system export="true">
+                <paths>
+                    <path name="org/codehaus/groovy"/>
+                </paths>
+            </system>
+        </dependencies>
     </deployment>
 </jboss-deployment-structure>

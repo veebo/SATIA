@@ -1,0 +1,6 @@
+/.gradle/*
+/build/*
+/.idea/
+/satia.iml
+/satia.ipr
+/satia.iws
