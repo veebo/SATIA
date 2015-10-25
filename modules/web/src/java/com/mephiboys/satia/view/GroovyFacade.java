@@ -1,5 +1,6 @@
-package java.com.mephiboys.satia.view;
+package com.mephiboys.satia.view;
 
+import com.mephiboys.satia.kernel.api.KernelService;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import org.apache.log4j.Logger;
@@ -8,6 +9,8 @@ import org.springframework.ui.ModelMap;
 import javax.servlet.http.HttpServletRequest;
 
 public class GroovyFacade {
+
+    KernelService b;
 
     private static final String MAIN_METHOD = "main";
 

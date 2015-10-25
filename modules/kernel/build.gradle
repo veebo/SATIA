@@ -1,0 +1,46 @@
+configurations { providedCompile }
+
+
+dependencies {
+    //KernelServiceEJB
+    providedCompile 'javax.ejb:ejb-api:3.0'
+
+    //Logging
+    providedCompile 'log4j:log4j:1.2.17'
+
+}
+
+sourceSets.main.compileClasspath += configurations.providedCompile
+sourceSets.test.compileClasspath += configurations.providedCompile
+sourceSets.test.runtimeClasspath += configurations.providedCompile
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/java']
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+        }
+
+        groovy {
+            srcDirs = ['src/groovy']
+        }
+
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+//
+//task kernelApi(type: Jar) {
+//    baseName = 'satia-kernel'
+//    classifier = 'api'
+//    from sourceSets.main.output
+//    include '**/KernelService.class'
+//    with jar
+//    copy{
+//        from "${buildDir}/libs"
+//        into "../web/lib"
+//        include 'satia-kernel-api.jar'
+//    }
+//}

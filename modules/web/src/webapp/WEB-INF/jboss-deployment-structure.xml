@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss-deployment-structure>
     <deployment>
-        <exclusions>
-            <module name="org.apache.log4j" />
-        </exclusions>
         <dependencies>
             <system export="true">
                 <paths>
                     <path name="org/codehaus/groovy"/>
+                    <path name="org/springframework"/>
                 </paths>
             </system>
         </dependencies>

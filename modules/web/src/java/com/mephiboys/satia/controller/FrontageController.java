@@ -1,7 +1,7 @@
-package java.com.mephiboys.satia.controller;
+package com.mephiboys.satia.controller;
 
 
-import java.com.mephiboys.satia.view.GroovyFacade;
+import com.mephiboys.satia.view.GroovyFacade;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;

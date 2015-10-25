@@ -1,4 +1,4 @@
-package groovy.com.mephiboys.satia.groovy
+package com.mephiboys.satia.groovy
 
 import org.springframework.ui.ModelMap
 

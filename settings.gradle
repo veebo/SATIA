@@ -1,0 +1,3 @@
+include ':kernel', ':web'
+project(':kernel').projectDir = new File(settingsDir, 'modules/kernel')
+project(':web').projectDir = new File(settingsDir, 'modules/web')
