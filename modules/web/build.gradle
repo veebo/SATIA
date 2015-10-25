@@ -1,0 +1,23 @@
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/java']
+            sourceCompatibility = 1.8
+            targetCompatibility = 1.8
+        }
+
+        groovy {
+            srcDirs = ['src/groovy']
+        }
+
+        resources {
+            srcDir 'src/resources'
+        }
+    }
+}
+
+war {
+    archiveName 'satia_web.war' // name
+    webInf { from 'src/webapp/WEB-INF' } // adds a file-set to the WEB-INF dir.
+    metaInf { from 'src/webapp/META-INF' } // adds a file-set to the WEB-INF dir.
+}
