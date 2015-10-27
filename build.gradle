@@ -17,7 +17,7 @@ project(':web') {
 
 project(':kernel') {
     //build jar file
-    archivesBaseName = 'satia_kernel'
+    archivesBaseName = 'satia-kernel'
 }
 
 
