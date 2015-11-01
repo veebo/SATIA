@@ -8,7 +8,6 @@
 
     <http auto-config="true">
         <intercept-url pattern="/**" access="hasRole('USER')" />
-        <logout logout-success-url="/" logout-url="/logout" />
     </http>
 
     <authentication-manager>
