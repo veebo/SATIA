@@ -5,6 +5,9 @@ dependencies {
     //Servlet
     providedCompile 'javax.servlet:javax.servlet-api:3.+'
 
+    //JSTL
+    providedCompile 'jstl:jstl:1.2'
+
     //Test
     providedCompile 'junit:junit:4.12'
 
@@ -17,6 +20,14 @@ dependencies {
     //Spring
     providedCompile 'org.springframework:spring-core:4.2.1.RELEASE'
     providedCompile 'org.springframework:spring-webmvc:4.2.1.RELEASE'
+    providedCompile 'org.springframework:spring-web:4.2.2.RELEASE'
+    providedCompile 'org.springframework.security:spring-security-core:4.0.2.RELEASE'
+    providedCompile 'org.springframework.security:spring-security-config:4.0.2.RELEASE'
+    providedCompile 'org.springframework.security:spring-security-web:4.0.2.RELEASE'
+
+    //Apache
+    providedCompile 'commons-lang:commons-lang:2.6'
+
 }
 
 sourceSets {
