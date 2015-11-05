@@ -1,31 +1,26 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
-import java.util.*;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "users")
 public class User {
-    protected long id;
-    protected String name;
-    protected String password;
-    protected String email;
-    protected List<Result> results = new ArrayList<Result>();
-    protected List<Test> tests = new ArrayList<Test>();
+    private String username;
+    private String password;
+    private boolean enabled;
 
-    public long getId() {
-        return id;
+    @Id
+    @Column(name = "username")
+    public String getUsername() {
+        return username;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
+    @Basic
+    @Column(name = "password")
     public String getPassword() {
         return password;
     }
@@ -34,60 +29,35 @@ public class User {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
+    @Basic
+    @Column(name = "enabled")
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
-    public List<Result> getResults() {
-        return results;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (enabled != user.enabled) return false;
+        if (username != null ? !username.equals(user.username) : user.username != null) return false;
+        if (password != null ? !password.equals(user.password) : user.password != null) return false;
+
+        return true;
     }
 
-    public void setResults(List<Result> results) {
-        this.results = results;
+    @Override
+    public int hashCode() {
+        int result = username != null ? username.hashCode() : 0;
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (enabled ? 1 : 0);
+        return result;
     }
-
-    public List<Test> getTests() {
-        return tests;
-    }
-
-    public void setTests(List<Test> tests) {
-        this.tests = tests;
-    }
-
-    public void addResult(Result newResult) {
-		if ((newResult == null) || (results.contains(newResult))) {
-			return;
-		}
-		newResult.setUser(this);
-		results.add(newResult);
-	}
-
-	public void removeResult(Result resultToRm) {
-		if ((resultToRm == null) || (resultToRm.getUser() != this)) {
-			return;
-		}
-		results.remove(resultToRm);
-		resultToRm.setUser(null);
-	}
-
-	public void addTest(Test newTest) {
-		if ((newTest == null) || (tests.contains(newTest))) {
-			return;
-		}
-		newTest.setUser(this);
-		tests.add(newTest);
-	}
-
-	public void removeTest(Test testToRm) {
-		if ((testToRm == null) || (testToRm.getUser() != this)) {
-			return;
-		}
-		tests.remove(testToRm);
-		testToRm.setUser(null);
-	}
-
 }

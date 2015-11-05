@@ -61,7 +61,7 @@ CREATE TABLE translations (
   PRIMARY KEY (translation_id)
 );
 
-CREATE TABLE phrase (
+CREATE TABLE phrases (
   phrase_id bigserial NOT NULL,
   translation_id bigint NOT NULL,
   value varchar (400),

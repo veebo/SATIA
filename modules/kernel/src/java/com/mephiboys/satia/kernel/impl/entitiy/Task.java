@@ -1,51 +1,50 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
-import java.util.*;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "tasks")
 public class Task {
-    protected long id;
-    protected List<Test> tests = new ArrayList<Test>();
-    protected Translation translation;
-    protected short source_num;
-    protected Generator generator;
+    private long taskId;
+    private long translationId;
 
-    public long getId() {
-        return id;
+    @Id
+    @Column(name = "task_id")
+    public long getTaskId() {
+        return taskId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setTaskId(long taskId) {
+        this.taskId = taskId;
     }
 
-    public List<Test> getTests() {
-        return tests;
+    @Basic
+    @Column(name = "translation_id")
+    public long getTranslationId() {
+        return translationId;
     }
 
-    public void setTests(List<Test> tests) {
-        this.tests = tests;
+    public void setTranslationId(long translationId) {
+        this.translationId = translationId;
     }
 
-    public Translation getTranslation() {
-        return translation;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Task task = (Task) o;
+
+        if (taskId != task.taskId) return false;
+        if (translationId != task.translationId) return false;
+
+        return true;
     }
 
-    public void setTranslation(Translation translation) {
-        this.translation = translation;
-    }
-
-    public short getSource_num() {
-        return source_num;
-    }
-
-    public void setSource_num(short source_num) {
-        this.source_num = source_num;
-    }
-
-    public Generator getGenerator() {
-        return generator;
-    }
-
-    public void setGenerator(Generator generator) {
-        this.generator = generator;
+    @Override
+    public int hashCode() {
+        int result = (int) (taskId ^ (taskId >>> 32));
+        result = 31 * result + (int) (translationId ^ (translationId >>> 32));
+        return result;
     }
 }

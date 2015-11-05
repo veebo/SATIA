@@ -1,21 +1,25 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
-import java.util.*;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "phrases")
 public class Phrase {
-    protected long id;
-    protected String value;
-    protected Lang lang;
-    protected List<Phrase> translations = new ArrayList<Phrase>();
+    private long phraseId;
+    private String value;
 
-    public long getId() {
-        return id;
+    @Id
+    @Column(name = "phrase_id")
+    public long getPhraseId() {
+        return phraseId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setPhraseId(long phraseId) {
+        this.phraseId = phraseId;
     }
 
+    @Basic
+    @Column(name = "value")
     public String getValue() {
         return value;
     }
@@ -24,34 +28,23 @@ public class Phrase {
         this.value = value;
     }
 
-    public Lang getLang() {
-        return lang;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Phrase phrase = (Phrase) o;
+
+        if (phraseId != phrase.phraseId) return false;
+        if (value != null ? !value.equals(phrase.value) : phrase.value != null) return false;
+
+        return true;
     }
 
-    public void setLang(Lang lang) {
-        this.lang = lang;
+    @Override
+    public int hashCode() {
+        int result = (int) (phraseId ^ (phraseId >>> 32));
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        return result;
     }
-
-    public List<Phrase> getTranslations() {
-        return translations;
-    }
-
-    public void setTranslations(List<Phrase> translations) {
-        this.translations = translations;
-    }
-
-    public void addTranslation(Phrase newTranslation) {
-		if ((newTranslation == null) || (translations.contains(newTranslation))) {
-			return;
-		}
-		translations.add(newTranslation);
-	}
-
-	public void removeTranslation(Phrase translationToRm) {
-		if (translationToRm == null) {
-			return;
-		}
-		translations.remove(translationToRm);
-	}
-	
 }

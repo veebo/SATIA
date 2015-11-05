@@ -1,25 +1,39 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
-import java.util.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+@Entity
+@Table(name = "langs")
 public class Lang {
-    protected long id;
-    protected List<Phrase> phrases = new ArrayList<Phrase>();
+    private String lang;
 
-    public long getId() {
-        return id;
+    @Id
+    @Column(name = "lang")
+    public String getLang() {
+        return lang;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setLang(String lang) {
+        this.lang = lang;
     }
 
-    public List<Phrase> getPhrases() {
-        return phrases;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Lang lang1 = (Lang) o;
+
+        if (lang != null ? !lang.equals(lang1.lang) : lang1.lang != null) return false;
+
+        return true;
     }
 
-    public void setPhrases(List<Phrase> phrases) {
-        this.phrases = phrases;
+    @Override
+    public int hashCode() {
+        return lang != null ? lang.hashCode() : 0;
     }
-
 }

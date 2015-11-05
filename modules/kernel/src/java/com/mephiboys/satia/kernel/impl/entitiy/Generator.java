@@ -1,21 +1,25 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
-import java.util.*;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "generators")
 public class Generator {
-	protected long id;
-    protected String impl;
-    protected List<Task> tasks = new ArrayList<Task>();
-    protected List<Test> tests = new ArrayList<Test>();
+    private long genId;
+    private String impl;
 
-    public long getId() {
-        return id;
+    @Id
+    @Column(name = "gen_id")
+    public long getGenId() {
+        return genId;
     }
 
-    public void setId(long id) {
-        this.id = id;
+    public void setGenId(long genId) {
+        this.genId = genId;
     }
 
+    @Basic
+    @Column(name = "impl")
     public String getImpl() {
         return impl;
     }
@@ -24,56 +28,23 @@ public class Generator {
         this.impl = impl;
     }
 
-    public List<Task> getTasks() {
-        return tasks;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Generator generator = (Generator) o;
+
+        if (genId != generator.genId) return false;
+        if (impl != null ? !impl.equals(generator.impl) : generator.impl != null) return false;
+
+        return true;
     }
 
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
+    @Override
+    public int hashCode() {
+        int result = (int) (genId ^ (genId >>> 32));
+        result = 31 * result + (impl != null ? impl.hashCode() : 0);
+        return result;
     }
-
-    public List<Test> getTests() {
-        return tests;
-    }
-
-    public void setTests(List<Test> tests) {
-        this.tests = tests;
-    }
-
-    public void addTask(Task newTask) {
-		if ((newTask == null) || (tasks.contains(newTask))) {
-			return;
-		}
-		newTask.setGenerator(this);
-		tasks.add(newTask);
-	}
-
-	public void removeTask(Task taskToRm) {
-		if ((taskToRm == null) || (taskToRm.getGenerator() != this)) {
-			return;
-		}
-		tasks.remove(taskToRm);
-		taskToRm.setGenerator(null);
-	}
-
-	public List<Test> getTestsList() {
-		return tests;
-	}
-
-	public void addTest(Test newTest) {
-		if ((newTest == null) || (tests.contains(newTest))) {
-			return;
-		}
-		newTest.setGenerator(this);
-		tests.add(newTest);
-	}
-
-	public void removeTest(Test testToRm) {
-		if ((testToRm == null) || (testToRm.getGenerator() != this)) {
-			return;
-		}
-		tests.remove(testToRm);
-		testToRm.setGenerator(null);
-	}
-
 }
