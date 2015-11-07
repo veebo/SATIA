@@ -33,10 +33,10 @@ public class Generator {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Generator generator = (Generator) o;
+        Generator that = (Generator) o;
 
-        if (genId != generator.genId) return false;
-        if (impl != null ? !impl.equals(generator.impl) : generator.impl != null) return false;
+        if (genId != that.genId) return false;
+        if (impl != null ? !impl.equals(that.impl) : that.impl != null) return false;
 
         return true;
     }

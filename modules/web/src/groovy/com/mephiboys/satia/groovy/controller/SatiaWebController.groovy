@@ -1,5 +1,7 @@
 package com.mephiboys.satia.groovy.controller
 
+import com.mephiboys.satia.kernel.mock.MockedKernelService
+import com.mephiboys.satia.kernel.api.KernelService
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -17,6 +19,12 @@ import javax.servlet.http.HttpServletResponse
 
 @Controller
 public class SatiaWebController {
+
+    protected KernelService kernelService = getKernelService()
+
+    KernelService getKernelService() {
+        return new MockedKernelService();
+    };
 
     @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {

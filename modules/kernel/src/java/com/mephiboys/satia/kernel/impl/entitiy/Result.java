@@ -7,31 +7,11 @@ import java.sql.Date;
 @Table(name = "results")
 @IdClass(ResultPK.class)
 public class Result {
-    private String username;
-    private long testId;
     private Date startTime;
     private String sessionKey;
     private Double value;
-
-    @Id
-    @Column(name = "username")
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    @Id
-    @Column(name = "test_id")
-    public long getTestId() {
-        return testId;
-    }
-
-    public void setTestId(long testId) {
-        this.testId = testId;
-    }
+    private Test test;
+    private User user;
 
     @Id
     @Column(name = "start_time")
@@ -63,6 +43,27 @@ public class Result {
         this.value = value;
     }
 
+
+    @ManyToOne
+    @JoinColumn(name = "test_id", referencedColumnName = "test_id", nullable = false)
+    public Test getTest() {
+        return test;
+    }
+
+    public void setTest(Test testsByTestId) {
+        this.test = testsByTestId;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User usersByUsername) {
+        this.user = usersByUsername;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -70,8 +71,6 @@ public class Result {
 
         Result result = (Result) o;
 
-        if (testId != result.testId) return false;
-        if (username != null ? !username.equals(result.username) : result.username != null) return false;
         if (startTime != null ? !startTime.equals(result.startTime) : result.startTime != null) return false;
         if (sessionKey != null ? !sessionKey.equals(result.sessionKey) : result.sessionKey != null) return false;
         if (value != null ? !value.equals(result.value) : result.value != null) return false;
@@ -81,11 +80,11 @@ public class Result {
 
     @Override
     public int hashCode() {
-        int result = username != null ? username.hashCode() : 0;
-        result = 31 * result + (int) (testId ^ (testId >>> 32));
+        int result = 1;
         result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
         result = 31 * result + (sessionKey != null ? sessionKey.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
+
 }

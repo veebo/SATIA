@@ -2,6 +2,7 @@ package com.mephiboys.satia.kernel.impl.entitiy;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "tests")
@@ -10,6 +11,9 @@ public class Test {
     private String title;
     private String description;
     private Date createdWhen;
+    private User user;
+    private Generator generator;
+    private List<Task> tasks;
 
     @Id
     @Column(name = "test_id")
@@ -51,6 +55,41 @@ public class Test {
         this.createdWhen = createdWhen;
     }
 
+
+    @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id", nullable = false)
+    public Generator getGenerator() {
+        return generator;
+    }
+
+    public void setGenerator(Generator generator) {
+        this.generator = generator;
+    }
+
+    @ManyToMany
+    @JoinTable(
+        name="test_tasks",
+        joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},
+        inverseJoinColumns={@JoinColumn(name="task_id", referencedColumnName="task_id")}
+    )
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -74,4 +113,5 @@ public class Test {
         result = 31 * result + (createdWhen != null ? createdWhen.hashCode() : 0);
         return result;
     }
+
 }

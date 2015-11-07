@@ -12,11 +12,11 @@ public class ExceptionHandlingController {
 
     def private static DEFAULT_ERROR_VIEW = "error";
 
-    def private static Logger log = org.apache.log4j.Logger.getLogger(ExceptionHandlingController.class);
+    def private static Logger LOG = org.apache.log4j.Logger.getLogger(ExceptionHandlingController.class);
 
     @ExceptionHandler(value = [Throwable.class])
     def ModelAndView defaultErrorHandler(HttpServletRequest request, Exception e) {
-        log.error("Internal Server Error", e);
+        LOG.error("Internal Server Error", e);
 
         ModelAndView error = new ModelAndView(DEFAULT_ERROR_VIEW);
         error.addObject('datetime', new Date())
