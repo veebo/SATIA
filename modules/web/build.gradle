@@ -10,6 +10,7 @@ dependencies {
 
     //Test
     providedCompile 'junit:junit:4.12'
+    providedCompile 'org.mockito:mockito-all:1.10.19'
 
     //Groovy
     providedCompile 'org.codehaus.groovy:groovy-all:1.8.0-beta-3'

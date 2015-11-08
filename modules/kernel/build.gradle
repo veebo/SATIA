@@ -2,8 +2,19 @@ configurations { providedCompile }
 
 
 dependencies {
-    //KernelServiceEJB
+
+    //Groovy
+    providedCompile 'org.codehaus.groovy:groovy-all:1.8.0-beta-3'
+
+    //Test
+    providedCompile 'junit:junit:4.12'
+    providedCompile 'org.mockito:mockito-all:1.10.19'
+
+    //EJB
     providedCompile 'javax.ejb:ejb-api:3.0'
+
+    //JPA
+    providedCompile 'javax.persistence:persistence-api:1.0.2'
 
     //Logging
     providedCompile 'log4j:log4j:1.2.17'
