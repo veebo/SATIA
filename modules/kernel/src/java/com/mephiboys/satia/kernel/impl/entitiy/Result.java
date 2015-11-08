@@ -5,15 +5,25 @@ import java.sql.Date;
 
 @Entity
 @Table(name = "results")
-@IdClass(ResultPK.class)
 public class Result {
+
+    @EmbeddedId
+    private ResultPK id;
+
     private Date startTime;
     private String sessionKey;
     private Double value;
     private Test test;
     private User user;
 
-    @Id
+    public ResultPK getId() {
+        return id;
+    }
+
+    public void setId(ResultPK id) {
+        this.id = id;
+    }
+
     @Column(name = "start_time")
     public Date getStartTime() {
         return startTime;
@@ -23,7 +33,6 @@ public class Result {
         this.startTime = startTime;
     }
 
-    @Id
     @Column(name = "session_key")
     public String getSessionKey() {
         return sessionKey;

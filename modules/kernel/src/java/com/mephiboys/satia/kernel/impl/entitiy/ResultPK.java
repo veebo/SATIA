@@ -1,10 +1,12 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.sql.Date;
 
+@Embeddable
 public class ResultPK implements Serializable {
     private String username;
 
