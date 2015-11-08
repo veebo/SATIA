@@ -1,15 +1,19 @@
-package com.mephiboys.satia.kernel.impl.entitiy;
+package com.mephiboys.satia.kernel.impl.entitiy.test;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
+/**
+ * Created by vibo0315 on 05.11.2015.
+ */
 @Entity
-@Table(name = "generators")
+@javax.persistence.Table(name = "generators", schema = "public", catalog = "quartz")
 public class Generator {
     private long genId;
-    private String impl;
 
     @Id
-    @Column(name = "gen_id")
+    @javax.persistence.Column(name = "gen_id")
     public long getGenId() {
         return genId;
     }
@@ -18,8 +22,10 @@ public class Generator {
         this.genId = genId;
     }
 
+    private String impl;
+
     @Basic
-    @Column(name = "impl")
+    @javax.persistence.Column(name = "impl")
     public String getImpl() {
         return impl;
     }
@@ -33,10 +39,10 @@ public class Generator {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Generator that = (Generator) o;
+        Generator generator = (Generator) o;
 
-        if (genId != that.genId) return false;
-        if (impl != null ? !impl.equals(that.impl) : that.impl != null) return false;
+        if (genId != generator.genId) return false;
+        if (impl != null ? !impl.equals(generator.impl) : generator.impl != null) return false;
 
         return true;
     }

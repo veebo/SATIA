@@ -1,16 +1,15 @@
-package com.mephiboys.satia.kernel.impl.entitiy;
+package com.mephiboys.satia.kernel.impl.entitiy.test;
 
 import javax.persistence.*;
-import java.util.List;
 
+/**
+ * Created by vibo0315 on 05.11.2015.
+ */
 @Entity
-@Table(name = "tasks")
+@Table(name = "tasks", schema = "public", catalog = "quartz")
 public class Task {
     private long taskId;
     private long translationId;
-    private byte sourceNum;
-    private Generator generator;
-    private List<Test> tests;
 
     @Id
     @Column(name = "task_id")
@@ -30,35 +29,6 @@ public class Task {
 
     public void setTranslationId(long translationId) {
         this.translationId = translationId;
-    }
-
-    @Basic
-    @Column(name = "source_num")
-    public byte getSourceNum() {
-        return sourceNum;
-    }
-
-    public void setSourceNum(byte sourceNum) {
-        this.sourceNum = sourceNum;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id")
-    public Generator getGenerator() {
-        return generator;
-    }
-
-    public void setGenerator(Generator generator) {
-        this.generator = generator;
-    }
-
-    @ManyToMany(mappedBy = "tasks")
-    public List<Test> getTests() {
-        return tests;
-    }
-
-    public void setTests(List<Test> tests) {
-        this.tests = tests;
     }
 
     @Override

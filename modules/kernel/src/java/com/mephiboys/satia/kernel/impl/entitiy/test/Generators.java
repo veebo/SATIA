@@ -1,10 +1,15 @@
-package com.mephiboys.satia.kernel.impl.entitiy;
+package com.mephiboys.satia.kernel.impl.entitiy.test;
 
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
+/**
+ * Created by vibo0315 on 05.11.2015.
+ */
 @Entity
-@Table(name = "generators")
-public class Generator {
+public class Generators {
     private long genId;
     private String impl;
 
@@ -33,7 +38,7 @@ public class Generator {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Generator that = (Generator) o;
+        Generators that = (Generators) o;
 
         if (genId != that.genId) return false;
         if (impl != null ? !impl.equals(that.impl) : that.impl != null) return false;

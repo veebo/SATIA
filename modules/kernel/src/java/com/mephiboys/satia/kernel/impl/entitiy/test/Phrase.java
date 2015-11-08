@@ -1,13 +1,15 @@
-package com.mephiboys.satia.kernel.impl.entitiy;
+package com.mephiboys.satia.kernel.impl.entitiy.test;
 
 import javax.persistence.*;
 
+/**
+ * Created by vibo0315 on 05.11.2015.
+ */
 @Entity
-@Table(name = "phrase")
 public class Phrase {
     private long phraseId;
     private String value;
-    private Lang lang;
+    private Translation translationsByTranslationId;
 
     @Id
     @Column(name = "phrase_id")
@@ -29,17 +31,6 @@ public class Phrase {
         this.value = value;
     }
 
-    @OneToOne
-    @JoinColumn(name = "lang_id", referencedColumnName = "lang_id", nullable = false)
-    public Lang getLang() {
-        return lang;
-    }
-
-    public void setLang(Lang lang) {
-        this.lang = lang;
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -60,5 +51,13 @@ public class Phrase {
         return result;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "translation_id", referencedColumnName = "translation_id", nullable = false)
+    public Translation getTranslationsByTranslationId() {
+        return translationsByTranslationId;
+    }
 
+    public void setTranslationsByTranslationId(Translation translationsByTranslationId) {
+        this.translationsByTranslationId = translationsByTranslationId;
+    }
 }

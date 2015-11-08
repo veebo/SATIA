@@ -1,19 +1,19 @@
-package com.mephiboys.satia.kernel.impl.entitiy;
+package com.mephiboys.satia.kernel.impl.entitiy.test;
 
 import javax.persistence.*;
 import java.sql.Date;
-import java.util.List;
 
+/**
+ * Created by vibo0315 on 05.11.2015.
+ */
 @Entity
-@Table(name = "tests")
+@Table(name = "tests", schema = "public", catalog = "quartz")
 public class Test {
     private long testId;
     private String title;
     private String description;
     private Date createdWhen;
-    private User user;
-    private Generator generator;
-    private List<Task> tasks;
+    private User usersByUsername;
 
     @Id
     @Column(name = "test_id")
@@ -55,41 +55,6 @@ public class Test {
         this.createdWhen = createdWhen;
     }
 
-
-    @ManyToOne
-    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id", nullable = false)
-    public Generator getGenerator() {
-        return generator;
-    }
-
-    public void setGenerator(Generator generator) {
-        this.generator = generator;
-    }
-
-    @ManyToMany
-    @JoinTable(
-        name="test_tasks",
-        joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},
-        inverseJoinColumns={@JoinColumn(name="task_id", referencedColumnName="task_id")}
-    )
-    public List<Task> getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -114,4 +79,13 @@ public class Test {
         return result;
     }
 
+    @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
+    public User getUsersByUsername() {
+        return usersByUsername;
+    }
+
+    public void setUsersByUsername(User usersByUsername) {
+        this.usersByUsername = usersByUsername;
+    }
 }
