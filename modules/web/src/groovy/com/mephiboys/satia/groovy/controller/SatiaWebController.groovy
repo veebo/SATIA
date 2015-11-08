@@ -17,6 +17,9 @@ import org.springframework.web.servlet.ModelAndView
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import java.util.Collection;
+import java.com.mephiboys.satia.kernel.impl.entitiy.*;
+
 @Controller
 public class SatiaWebController {
 
@@ -26,14 +29,58 @@ public class SatiaWebController {
         return new MockedKernelService();
     };
 
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public final class ResourceNotFoundException extends RuntimeException {}
+
     @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {
-        ModelAndView model = new ModelAndView();
-        model.addObject("title", "Spring Security Password Encoder");
-        model.addObject("message", "This is default page!");
-        model.setViewName("hello");
-        return model;
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            return accesssDenied();
+        }
 
+        ModelAndView model = new ModelAndView();
+        model.setViewName("home");
+        MockedKernelService ks = (MockedKernelService)getKernelService();
+        String userName = auth.getName();
+        model.addObject("user_name", userName);
+        def myTests = [];
+        Collection<Test> allTests = ks.getAllTests();
+        for (Test t : allTests) {
+            if (t.getUser().getUsername().equals(userName)) {
+                Collection<Result> results = ks.getResultsByTest(t);
+                myTests << ["test" : t, "results" : results];
+                break;
+            }
+        }
+        model.addObject("my_tests", myTests);
+        model.addObject("all_tests", allTests);
+
+        return model;
+    }
+
+    @RequestMapping(value="/edit/{testId}", method=RequestMethod.GET)
+    def ModelAndView testEditingPage(@PathVariable String testIdStr) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            return accesssDenied();
+        }
+
+        ModelAndView model = new ModelAndView();
+        model.setViewName("test_edit");
+        MockedKernelService ks = (MockedKernelService)getKernelService();
+        try {
+            long testId = Long.parseLong(testIdStr,10);
+            Test test = getTestById(testId);
+            model.addObject("test", test);
+        }
+        catch (NumberFormatException nf) {
+            throw new ResourceNotFoundException();
+        }
+
+        return model;
     }
 
     @RequestMapping(value = "/admin**", method = RequestMethod.GET)

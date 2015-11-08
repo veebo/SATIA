@@ -14,6 +14,8 @@ public class Test {
     private User user;
     private Generator generator;
     private List<Task> tasks;
+    private Lang sourceLang;
+    private Lang targetLang;
 
     @Id
     @Column(name = "test_id")
@@ -53,6 +55,26 @@ public class Test {
 
     public void setCreatedWhen(Date createdWhen) {
         this.createdWhen = createdWhen;
+    }
+
+    @Basic
+    @Column(name = "source_lang")
+    public Lang getSourceLang() {
+        return sourceLang;
+    }
+
+    public void setSourceLang(Lang sourceLang) {
+        this.sourceLang = sourceLang;
+    }
+
+    @Basic
+    @Column(name = "target_lang")
+    public Lang getTargerLang() {
+        return targetLang;
+    }
+
+    public void setTargetLang(Lang targetLang) {
+        this.targetLang = targetLang;
     }
 
 

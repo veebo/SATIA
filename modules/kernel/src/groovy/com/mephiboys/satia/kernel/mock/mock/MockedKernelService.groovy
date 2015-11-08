@@ -8,9 +8,16 @@ import javax.sql.DataSource
 
 import static org.mockito.Mockito.mock
 
+import java.util.Calendar;
+
 class MockedKernelService implements KernelService {
 
     def tests = []
+    def tasks = []
+    def phrases = []
+    def generators = []
+    def users = []
+    def results = []
 
     @Override
     DataSource getDataSource() {
@@ -24,23 +31,38 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
+    Collection<Test> getAllTests() {
+        return tests;
+    }
+
+    @Override
     Test getTestById(long id) {
-        return null
+        for (Test t : tests) {
+            if (t.getTestId() == id) {
+                return t;
+            }
+        }
+        return null;
     }
 
     @Override
     Collection<Test> getTestsById(long id) {
-        return null
+        return [getTestById(id)];
     }
 
     @Override
     Task getTaskById(long id) {
-        return null
+        for (Task t : tasks) {
+            if (t.getTaskId() == id) {
+                return t;
+            }
+        }
+        return null;
     }
 
     @Override
     Collection<Task> getTasksById(long id) {
-        return null
+        return [getTaskById(id)];
     }
 
     @Override
@@ -50,22 +72,49 @@ class MockedKernelService implements KernelService {
 
     @Override
     Phrase getPhraseById(long id) {
-        return null
+        for (Phrase p : phrases) {
+            if (p.getPhraseId() == id) {
+                return p;
+            }
+        }
+        return null;
     }
 
     @Override
     Collection<Phrase> getPhrasesById(long id) {
-        return null
+        return [getPhraseById(id)];
     }
 
     @Override
     Generator getGeneratorById(long id) {
-        return null
+        for (Generator g : generators) {
+            if (g.getGenId() == id) {
+                return g;
+            }
+        }
+        return null;
     }
 
     @Override
     Collection<Generator> getGeneratorsById(long id) {
-        return null
+        return [getGeneratorById(id)];
+    }
+
+    @Override
+    Collection<Result> getResultsByTest(Test test) {
+        def res = []
+        results.each {
+            if (it.getTest().equals(test)) {
+                res << it;
+            }
+        }
+        return res;
+    }
+
+    @Override
+    Collection<Result> getResultsByTestId(long testId) {
+        Test t = getTestById(testId);
+        return getResultsByTest(t);
     }
 
     {
@@ -112,6 +161,21 @@ class MockedKernelService implements KernelService {
                 generator: g1,
                 tasks: [task1, task2, task3, task4]
         )
+
+        Result res1 = new Result(startTime : Calendar.getInstance(), sessionKey : "sessionKey1",
+                                 value : 50.00, test : test1, user : null);
+        Result res2 = new Result(startTime : Calendar.getInstance(), sessionKey : "sessionKey2",
+                                 value : 60.00, test : test1, user : null);
+        Result res3 = new Result(startTime : Calendar.getInstance(), sessionKey : "sessionKey3",
+                                 value : 70.00, test : test1, user : null);
+
+        tests << test1;
+        tasks << task1 << task2 << task3 << task4;
+        phrases << apple << orange << banana << lemon << yabloko << apelsin << banan << limon;
+        langs << eng << rus;
+        generators << g1;
+        users << u1;
+        results << res1 << res2 << res3;
     }
 
 }
