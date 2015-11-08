@@ -17,8 +17,7 @@ import org.springframework.web.servlet.ModelAndView
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import java.util.List;
-import java.com.mephiboys.satia.kernel.KernelService;
+import java.util.Collection;
 import java.com.mephiboys.satia.kernel.impl.entitiy.*;
 
 @Controller
@@ -30,36 +29,56 @@ public class SatiaWebController {
         return new MockedKernelService();
     };
 
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public final class ResourceNotFoundException extends RuntimeException {}
+
     @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {
         
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            return accesssDenied();
+        }
+
         ModelAndView model = new ModelAndView();
         model.setViewName("home");
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        User user = KernelService.getUserByName(auth.getName());
-        model.addObject("user_name", user?.getName());
-        if (user == null) {
-            return model;
-        }
-        // CREATED TESTS
-        def tests = [];
-        for (Test t : user.getTests()) {
-            tests << ["title" : t.getTitle(), "descr" : t.getDescription()];
-        }
-        model.addObject("created_tests", tests);
-        //AVAILABLE TESTS AND RESULTS
-        def testResults = [:];
-        for (Test t : KernelService.getAllTests()) {
-            def results = [];
-            for (Result r : user.getResults()) {
-                if (r.getTest().equals(t)) {
-                    results << ["grade" : r.getValue(), "time" : r.getStart_time()];
-                    break;
-                }
+        MockedKernelService ks = (MockedKernelService)getKernelService();
+        String userName = auth.getName();
+        model.addObject("user_name", userName);
+        def myTests = [];
+        Collection<Test> allTests = ks.getAllTests();
+        for (Test t : allTests) {
+            if (t.getUser().getUsername().equals(userName)) {
+                Collection<Result> results = ks.getResultsByTest(t);
+                myTests << ["test" : t, "results" : results];
+                break;
             }
-            testResults[t.getTitle()] = results;
         }
-        model.addObject("available_tests", testResults);
+        model.addObject("my_tests", myTests);
+        model.addObject("all_tests", allTests);
+
+        return model;
+    }
+
+    @RequestMapping(value="/edit/{testId}", method=RequestMethod.GET)
+    def ModelAndView testEditingPage(@PathVariable String testIdStr) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof AnonymousAuthenticationToken) {
+            return accesssDenied();
+        }
+
+        ModelAndView model = new ModelAndView();
+        model.setViewName("test_edit");
+        MockedKernelService ks = (MockedKernelService)getKernelService();
+        try {
+            long testId = Long.parseLong(testIdStr,10);
+            Test test = getTestById(testId);
+            model.addObject("test", test);
+        }
+        catch (NumberFormatException nf) {
+            throw new ResourceNotFoundException();
+        }
 
         return model;
     }
