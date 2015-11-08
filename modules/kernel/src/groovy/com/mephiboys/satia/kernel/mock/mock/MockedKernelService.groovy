@@ -11,6 +11,9 @@ import static org.mockito.Mockito.mock
 class MockedKernelService implements KernelService {
 
     def tests = []
+    def tasks = []
+    def phrases = []
+    def generators = []
 
     @Override
     DataSource getDataSource() {
@@ -25,22 +28,30 @@ class MockedKernelService implements KernelService {
 
     @Override
     Test getTestById(long id) {
-        return null
+        for (t : tests) {
+            if (t.getTestId() == id) {
+                return t;
+            }
+        }
     }
 
     @Override
     Collection<Test> getTestsById(long id) {
-        return null
+        return [getTestById(id)];
     }
 
     @Override
     Task getTaskById(long id) {
-        return null
+        for (t : tasks) {
+            if (t.getTaskId() == id) {
+                return t;
+            }
+        }
     }
 
     @Override
     Collection<Task> getTasksById(long id) {
-        return null
+        return [getTaskById(id)];
     }
 
     @Override
@@ -50,22 +61,30 @@ class MockedKernelService implements KernelService {
 
     @Override
     Phrase getPhraseById(long id) {
-        return null
+        for (p : phrases) {
+            if (p.getPhraseId() == id) {
+                return p;
+            }
+        }
     }
 
     @Override
     Collection<Phrase> getPhrasesById(long id) {
-        return null
+        return [getPhraseById(id)];
     }
 
     @Override
     Generator getGeneratorById(long id) {
-        return null
+        for (g : generators) {
+            if (g.getGenId() == id) {
+                return g;
+            }
+        }
     }
 
     @Override
     Collection<Generator> getGeneratorsById(long id) {
-        return null
+        return [getGeneratorById(id)];
     }
 
     {
@@ -112,6 +131,12 @@ class MockedKernelService implements KernelService {
                 generator: g1,
                 tasks: [task1, task2, task3, task4]
         )
+
+        tests << test1;
+        tasks << task1 << task2 << task3 << task4;
+        phrases << apple << orange << banana << lemon << yabloko << apelsin << banan << limon;
+        langs << eng << rus;
+        generators << g1;
     }
 
 }
