@@ -6,8 +6,8 @@ import javax.persistence.*;
 @Table(name = "translations")
 public class Translation {
     private long translationId;
-    private long phrase1Id;
-    private long phrase2Id;
+    private Phrase phrase1;
+    private Phrase phrase2;
 
     @Id
     @Column(name = "translation_id")
@@ -19,26 +19,26 @@ public class Translation {
         this.translationId = translationId;
     }
 
-
-    @Basic
-    @Column(name = "phrase1_id")
-    public long getPhrase1Id() {
-        return phrase1Id;
+    @ManyToOne
+    @JoinColumn(name = "phrase1_id", referencedColumnName = "phrase_id")
+    public Phrase getPhrase1() {
+        return phrase1;
     }
 
-    public void setPhrase1Id(long phrase1Id) {
-        this.phrase1Id = phrase1Id;
+    public void setPhrase1(Phrase phrase1) {
+        this.phrase1 = phrase1;
     }
 
-    @Basic
-    @Column(name = "phrase2_id")
-    public long getPhrase2Id() {
-        return phrase2Id;
+    @ManyToOne
+    @JoinColumn(name = "phrase2_id", referencedColumnName = "phrase_id")
+    public Phrase getPhrase2() {
+        return phrase2;
     }
 
-    public void setPhrase2Id(long phrase2Id) {
-        this.phrase2Id = phrase2Id;
+    public void setPhrase2(Phrase phrase2) {
+        this.phrase2 = phrase2;
     }
+
 
     @Override
     public boolean equals(Object o) {

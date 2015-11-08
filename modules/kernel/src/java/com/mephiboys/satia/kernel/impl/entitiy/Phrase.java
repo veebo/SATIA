@@ -3,7 +3,7 @@ package com.mephiboys.satia.kernel.impl.entitiy;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "phrase")
+@Table(name = "phrases")
 public class Phrase {
     private long phraseId;
     private String value;
@@ -30,7 +30,7 @@ public class Phrase {
     }
 
     @OneToOne
-    @JoinColumn(name = "lang_id", referencedColumnName = "lang_id", nullable = false)
+    @JoinColumn(name = "lang", referencedColumnName = "lang", nullable = false)
     public Lang getLang() {
         return lang;
     }
