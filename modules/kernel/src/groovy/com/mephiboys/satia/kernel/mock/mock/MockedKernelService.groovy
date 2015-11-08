@@ -14,6 +14,7 @@ class MockedKernelService implements KernelService {
     def tasks = []
     def phrases = []
     def generators = []
+    def users = []
 
     @Override
     DataSource getDataSource() {
@@ -137,6 +138,7 @@ class MockedKernelService implements KernelService {
         phrases << apple << orange << banana << lemon << yabloko << apelsin << banan << limon;
         langs << eng << rus;
         generators << g1;
+        users << u1;
     }
 
 }
