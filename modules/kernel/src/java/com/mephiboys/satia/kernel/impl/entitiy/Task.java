@@ -7,7 +7,7 @@ import java.util.List;
 @Table(name = "tasks")
 public class Task {
     private long taskId;
-    private long translationId;
+    private Translation translation;
     private byte sourceNum;
     private Generator generator;
     private List<Test> tests;
@@ -22,14 +22,14 @@ public class Task {
         this.taskId = taskId;
     }
 
-    @Basic
-    @Column(name = "translation_id")
-    public long getTranslationId() {
-        return translationId;
+    @ManyToOne
+    @JoinColumn(name = "translation_id", referencedColumnName = "translation_id")
+    public Translation getTranslation() {
+        return translation;
     }
 
-    public void setTranslationId(long translationId) {
-        this.translationId = translationId;
+    public void setTranslation(Translation translation) {
+        this.translation = translation;
     }
 
     @Basic
@@ -69,7 +69,6 @@ public class Task {
         Task task = (Task) o;
 
         if (taskId != task.taskId) return false;
-        if (translationId != task.translationId) return false;
 
         return true;
     }
@@ -77,7 +76,6 @@ public class Task {
     @Override
     public int hashCode() {
         int result = (int) (taskId ^ (taskId >>> 32));
-        result = 31 * result + (int) (translationId ^ (translationId >>> 32));
         return result;
     }
 }
