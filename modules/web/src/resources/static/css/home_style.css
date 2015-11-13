@@ -1,0 +1,11 @@
+.tests_col {
+	width: 70%;
+}
+.btn_col {
+	width: 20%;
+	vertical-align: middle;
+}
+.cell {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+}

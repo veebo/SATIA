@@ -76,15 +76,46 @@ public class SatiaWebController {
         MockedKernelService ks = (MockedKernelService)getKernelService();
         try {
             long testId = Long.parseLong(testIdStr,10);
-            Test test = ks.getTestById(testId);
-            model.addObject("test", test);
         }
         catch (NumberFormatException nf) {
             throw new ResourceNotFoundException();
         }
-
+        Test test = ks.getTestById(testId);
+        if (test == null) {
+            throw new ResourceNotFoundException();
+        }
+        model.addObject("test", test);
+        model.addObject("generators", ks.getAllGenerators());
+        
         return model;
     }
+
+    /*@RequestMapping(value="/edit/{testId}", method=RequestMethod.POST)
+    def ModelAndView updateTestPage(@PathVariable String testIdStr, HttpServletRequest request) {
+        
+        ModelAndView model = testEditingPage(testIdStr);
+        Test test = model.getModel().get("test");
+        Phrase[] phrases = new Phrase[2];
+        //modify existing phrases and tasks
+        for (Task t : test.getTasks()) {
+            boolean modified = false;
+            for (int i=0; i<2; i++) {
+                String newValue = request.getParameter("task_"+t.getTaskId()+"_phrase"+i);
+                if (!it.equals(  t.getTranslation()."${getPhrase+i}"()  )) {
+                    modified = true;
+                    //check if this phrase is used in other tasks
+                    //  if not - replace value to the new value
+                    //  else - create new phrase with value
+                    //save new Phrase instances in 'phrases' array
+                }
+            }
+            if (modified) {
+                //modify translation of current task
+            }
+        }
+        //add new tasks
+        //  ...
+    }*/
 
     @RequestMapping(value = "/admin**", method = RequestMethod.GET)
     def ModelAndView adminPage() {

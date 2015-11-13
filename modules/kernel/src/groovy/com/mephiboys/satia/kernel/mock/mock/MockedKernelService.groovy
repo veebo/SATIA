@@ -36,6 +36,11 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
+    Collection<Generator> getAllGenerators() {
+        return generators;
+    }
+
+    @Override
     Test getTestById(long id) {
         for (Test t : tests) {
             if (t.getTestId() == id) {
