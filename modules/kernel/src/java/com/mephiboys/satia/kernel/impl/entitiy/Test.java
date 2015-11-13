@@ -1,7 +1,7 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
@@ -10,7 +10,7 @@ public class Test {
     private long testId;
     private String title;
     private String description;
-    private Date createdWhen;
+    private Timestamp createdWhen;
     private User user;
     private Generator generator;
     private List<Task> tasks;
@@ -49,16 +49,16 @@ public class Test {
 
     @Basic
     @Column(name = "created_when")
-    public Date getCreatedWhen() {
+    public Timestamp getCreatedWhen() {
         return createdWhen;
     }
 
-    public void setCreatedWhen(Date createdWhen) {
+    public void setCreatedWhen(Timestamp createdWhen) {
         this.createdWhen = createdWhen;
     }
 
-    @Basic
-    @Column(name = "source_lang")
+    @ManyToOne
+    @JoinColumn(name = "source_lang", referencedColumnName = "lang", nullable = false)
     public Lang getSourceLang() {
         return sourceLang;
     }
@@ -67,9 +67,9 @@ public class Test {
         this.sourceLang = sourceLang;
     }
 
-    @Basic
-    @Column(name = "target_lang")
-    public Lang getTargerLang() {
+    @ManyToOne
+    @JoinColumn(name = "target_lang", referencedColumnName = "lang", nullable = false)
+    public Lang getTargetLang() {
         return targetLang;
     }
 

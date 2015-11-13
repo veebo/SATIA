@@ -1,7 +1,7 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "results")
@@ -9,7 +9,22 @@ public class Result {
 
     @EmbeddedId
     private ResultPK id;
+
     private Double value;
+
+    @ManyToOne
+    @MapsId("testId")
+    @JoinColumn(name = "test_id", referencedColumnName = "test_id", nullable = false)
+    private Test test;
+
+    @ManyToOne
+    @MapsId("username")
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private User user;
+
+    {
+        id = new ResultPK();
+    }
 
     public ResultPK getId() {
         return id;
@@ -19,37 +34,21 @@ public class Result {
         this.id = id;
     }
 
-//    public Test getTest() {
-//        return id.getTest();
-//    }
-//
-//    public void setTest(Test test) {
-//        this.id.setTest(test);
-//    }
-//
-//    public User getUser() {
-//        return this.id.getUser();
-//    }
-//
-//    public void setUser(User user) {
-//        this.id.setUser(user);
-//    }
-//
-//    public Date getStartTime() {
-//        return this.id.getStartTime();
-//    }
-//
-//    public void setStartTime(Date startTime) {
-//        this.id.setStartTime(startTime);
-//    }
-//
-//    public String getSessionKey() {
-//        return this.id.getSessionKey();
-//    }
-//
-//    public void setSessionKey(String sessionKey) {
-//        this.id.setSessionKey(sessionKey);
-//    }
+    public Timestamp getStartTime() {
+        return id.getStartTime();
+    }
+
+    public void setStartTime(Timestamp startTime) {
+        id.setStartTime(startTime);
+    }
+
+    public String getSessionKey() {
+        return id.getSessionKey();
+    }
+
+    public void setSessionKey(String sessionKey) {
+        id.setSessionKey(sessionKey);
+    }
 
     @Basic
     @Column(name = "value")
@@ -59,6 +58,22 @@ public class Result {
 
     public void setValue(Double value) {
         this.value = value;
+    }
+
+    public Test getTest() {
+        return test;
+    }
+
+    public void setTest(Test testsByTestId) {
+        this.test = testsByTestId;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User usersByUsername) {
+        this.user = usersByUsername;
     }
 
     @Override

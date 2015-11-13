@@ -1,5 +1,4 @@
 package com.mephiboys.satia.kernel.mock
-
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 
@@ -7,8 +6,6 @@ import javax.persistence.EntityManager
 import javax.sql.DataSource
 
 import static org.mockito.Mockito.mock
-
-import java.util.Calendar;
 
 class MockedKernelService implements KernelService {
 
@@ -30,12 +27,12 @@ class MockedKernelService implements KernelService {
         return mock(EntityManager.class)
     }
 
-    @Override
+//    @Override
     Collection<Test> getAllTests() {
         return tests;
     }
 
-    @Override
+//    @Override
     Collection<Generator> getAllGenerators() {
         return generators;
     }
@@ -105,7 +102,7 @@ class MockedKernelService implements KernelService {
         return [getGeneratorById(id)];
     }
 
-    @Override
+//    @Override
     Collection<Result> getResultsByTest(Test test) {
         def res = []
         results.each {
@@ -116,7 +113,7 @@ class MockedKernelService implements KernelService {
         return res;
     }
 
-    @Override
+//    @Override
     Collection<Result> getResultsByTestId(long testId) {
         Test t = getTestById(testId);
         return getResultsByTest(t);
@@ -135,15 +132,15 @@ class MockedKernelService implements KernelService {
         Phrase lemon = new Phrase(phraseId: 7, value: "Lemon", lang: eng)
         Phrase limon = new Phrase(phraseId: 8, value: "Лимон", lang: rus)
 
-        Translation tr1 = new Translation(translationId: 1, phrase1Id: apple, phrase2Id: yabloko)
-        Translation tr2 = new Translation(translationId: 2, phrase1Id: orange, phrase2Id: apelsin)
-        Translation tr3 = new Translation(translationId: 3, phrase1Id: banana, phrase2Id: banan)
-        Translation tr4 = new Translation(translationId: 4, phrase1Id: lemon, phrase2Id: limon)
+        Translation tr1 = new Translation(translationId: 1, phrase1: apple, phrase2: yabloko)
+        Translation tr2 = new Translation(translationId: 2, phrase1: orange, phrase2: apelsin)
+        Translation tr3 = new Translation(translationId: 3, phrase1: banana, phrase2: banan)
+        Translation tr4 = new Translation(translationId: 4, phrase1: lemon, phrase2: limon)
 
-        Task task1 = new Task(taskId: 1, translationId: 1, sourceNum: 2)
-        Task task2 = new Task(taskId: 2, translationId: 2, sourceNum: 2)
-        Task task3 = new Task(taskId: 3, translationId: 3, sourceNum: 2)
-        Task task4 = new Task(taskId: 4, translationId: 4, sourceNum: 2)
+        Task task1 = new Task(taskId: 1, translation: tr1, sourceNum: 2)
+        Task task2 = new Task(taskId: 2, translation: tr2, sourceNum: 2)
+        Task task3 = new Task(taskId: 3, translation: tr3, sourceNum: 2)
+        Task task4 = new Task(taskId: 4, translation: tr4, sourceNum: 2)
 
         User u1 =  new User(
                 username: "Guest",
@@ -161,17 +158,17 @@ class MockedKernelService implements KernelService {
                 testId: 1,
                 title: "Fruit test",
                 description: "Try to pass the simplest test ever",
-                createdWhen: new Date(),
+                createdWhen: new Date().toTimestamp(),
                 user: u1,
                 generator: g1,
                 tasks: [task1, task2, task3, task4]
         )
 
-        Result res1 = new Result(startTime : Calendar.getInstance(), sessionKey : "sessionKey1",
+        Result res1 = new Result(startTime : new Date().toTimestamp(), sessionKey : "sessionKey1",
                                  value : 50.00, test : test1, user : null);
-        Result res2 = new Result(startTime : Calendar.getInstance(), sessionKey : "sessionKey2",
+        Result res2 = new Result(startTime : new Date().toTimestamp(), sessionKey : "sessionKey2",
                                  value : 60.00, test : test1, user : null);
-        Result res3 = new Result(startTime : Calendar.getInstance(), sessionKey : "sessionKey3",
+        Result res3 = new Result(startTime : new Date().toTimestamp(), sessionKey : "sessionKey3",
                                  value : 70.00, test : test1, user : null);
 
         tests << test1;
