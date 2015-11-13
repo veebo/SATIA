@@ -9,12 +9,7 @@ public class Result {
 
     @EmbeddedId
     private ResultPK id;
-
-    private Date startTime;
-    private String sessionKey;
     private Double value;
-    private Test test;
-    private User user;
 
     public ResultPK getId() {
         return id;
@@ -24,23 +19,37 @@ public class Result {
         this.id = id;
     }
 
-    @Column(name = "start_time")
-    public Date getStartTime() {
-        return startTime;
-    }
-
-    public void setStartTime(Date startTime) {
-        this.startTime = startTime;
-    }
-
-    @Column(name = "session_key")
-    public String getSessionKey() {
-        return sessionKey;
-    }
-
-    public void setSessionKey(String sessionKey) {
-        this.sessionKey = sessionKey;
-    }
+//    public Test getTest() {
+//        return id.getTest();
+//    }
+//
+//    public void setTest(Test test) {
+//        this.id.setTest(test);
+//    }
+//
+//    public User getUser() {
+//        return this.id.getUser();
+//    }
+//
+//    public void setUser(User user) {
+//        this.id.setUser(user);
+//    }
+//
+//    public Date getStartTime() {
+//        return this.id.getStartTime();
+//    }
+//
+//    public void setStartTime(Date startTime) {
+//        this.id.setStartTime(startTime);
+//    }
+//
+//    public String getSessionKey() {
+//        return this.id.getSessionKey();
+//    }
+//
+//    public void setSessionKey(String sessionKey) {
+//        this.id.setSessionKey(sessionKey);
+//    }
 
     @Basic
     @Column(name = "value")
@@ -52,27 +61,6 @@ public class Result {
         this.value = value;
     }
 
-
-    @ManyToOne
-    @JoinColumn(name = "test_id", referencedColumnName = "test_id", nullable = false)
-    public Test getTest() {
-        return test;
-    }
-
-    public void setTest(Test testsByTestId) {
-        this.test = testsByTestId;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "username", referencedColumnName = "username")
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User usersByUsername) {
-        this.user = usersByUsername;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,8 +68,7 @@ public class Result {
 
         Result result = (Result) o;
 
-        if (startTime != null ? !startTime.equals(result.startTime) : result.startTime != null) return false;
-        if (sessionKey != null ? !sessionKey.equals(result.sessionKey) : result.sessionKey != null) return false;
+        if (id != null ? !id.equals(result.id) : result.id != null) return false;
         if (value != null ? !value.equals(result.value) : result.value != null) return false;
 
         return true;
@@ -90,8 +77,7 @@ public class Result {
     @Override
     public int hashCode() {
         int result = 1;
-        result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
-        result = 31 * result + (sessionKey != null ? sessionKey.hashCode() : 0);
+        result = 31 * result + (id != null ? id.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
