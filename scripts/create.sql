@@ -30,7 +30,7 @@ CREATE TABLE tests (
   username varchar(60) NOT NULL,
   description varchar(400),
   gen_id bigint,
-  created_when date NOT NULL,
+  created_when timestamp NOT NULL,
   PRIMARY KEY (test_id),
   FOREIGN KEY (username) REFERENCES users(username),
   FOREIGN KEY (gen_id) REFERENCES generators(gen_id)
@@ -74,7 +74,7 @@ CREATE TABLE phrases (
 CREATE TABLE results (
   username varchar(60) NOT NULL,
   test_id bigint NOT NULL,
-  start_time date NOT NULL,
+  start_time timestamp NOT NULL,
   session_key varchar (50) NOT NULL,
   value double precision,
   PRIMARY KEY (username, test_id, start_time, session_key),

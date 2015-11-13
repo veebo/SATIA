@@ -1,17 +1,19 @@
 package com.mephiboys.satia.kernel.impl.entitiy;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
+import java.sql.Timestamp;
 
 @Embeddable
 public class ResultPK implements Serializable {
     private String username;
+    private long testId;
+    private Timestamp startTime;
+    private String sessionKey;
 
+
+    @Basic
     @Column(name = "username")
-    @Id
     public String getUsername() {
         return username;
     }
@@ -20,10 +22,9 @@ public class ResultPK implements Serializable {
         this.username = username;
     }
 
-    private long testId;
 
+    @Basic
     @Column(name = "test_id")
-    @Id
     public long getTestId() {
         return testId;
     }
@@ -32,22 +33,20 @@ public class ResultPK implements Serializable {
         this.testId = testId;
     }
 
-    private Date startTime;
 
+    @Basic
     @Column(name = "start_time")
-    @Id
-    public Date getStartTime() {
+    public Timestamp getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Date startTime) {
+    public void setStartTime(Timestamp startTime) {
         this.startTime = startTime;
     }
 
-    private String sessionKey;
 
+    @Basic
     @Column(name = "session_key")
-    @Id
     public String getSessionKey() {
         return sessionKey;
     }

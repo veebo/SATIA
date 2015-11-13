@@ -1,4 +1,5 @@
 package com.mephiboys.satia.kernel.mock
+
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 
@@ -6,6 +7,8 @@ import javax.persistence.EntityManager
 import javax.sql.DataSource
 
 import static org.mockito.Mockito.mock
+
+import java.util.Calendar;
 
 class MockedKernelService implements KernelService {
 
@@ -28,59 +31,11 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    def <T> T getEntityById(Class<T> cls, Object id) {
-        return null
-    }
-
-    @Override
-    def <T> Collection<T> getEntitiesByIds(Class<T> cls, Collection ids) {
-        return null
-    }
-
-    @Override
-    def <T> T getEntityByQuery(Class<T> cls, String query, Object... params) {
-        return null
-    }
-
-    @Override
-    def <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params) {
-        return null
-    }
-
-    @Override
-    void saveEntity(Object entity) {
-
-    }
-
-    @Override
-    void saveEntities(Collection entities) {
-
-    }
-
-    @Override
-    def <T> void deleteEntityById(Class<T> cls, Object id) {
-
-    }
-
-    @Override
-    def <T> void deleteEntitiesByIds(Class<T> cls, Collection ids) {
-
-    }
-
-    @Override
-    def <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
-
-    }
-
-    @Override
-    def <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
-
-    }
-
     Collection<Test> getAllTests() {
         return tests;
     }
 
+    @Override
     Test getTestById(long id) {
         for (Test t : tests) {
             if (t.getTestId() == id) {
@@ -90,10 +45,12 @@ class MockedKernelService implements KernelService {
         return null;
     }
 
+    @Override
     Collection<Test> getTestsById(long id) {
         return [getTestById(id)];
     }
 
+    @Override
     Task getTaskById(long id) {
         for (Task t : tasks) {
             if (t.getTaskId() == id) {
@@ -103,14 +60,17 @@ class MockedKernelService implements KernelService {
         return null;
     }
 
+    @Override
     Collection<Task> getTasksById(long id) {
         return [getTaskById(id)];
     }
 
+    @Override
     Object getByQuery(String query) {
         return null
     }
 
+    @Override
     Phrase getPhraseById(long id) {
         for (Phrase p : phrases) {
             if (p.getPhraseId() == id) {
@@ -120,10 +80,12 @@ class MockedKernelService implements KernelService {
         return null;
     }
 
+    @Override
     Collection<Phrase> getPhrasesById(long id) {
         return [getPhraseById(id)];
     }
 
+    @Override
     Generator getGeneratorById(long id) {
         for (Generator g : generators) {
             if (g.getGenId() == id) {
@@ -133,10 +95,12 @@ class MockedKernelService implements KernelService {
         return null;
     }
 
+    @Override
     Collection<Generator> getGeneratorsById(long id) {
         return [getGeneratorById(id)];
     }
 
+    @Override
     Collection<Result> getResultsByTest(Test test) {
         def res = []
         results.each {
@@ -147,6 +111,7 @@ class MockedKernelService implements KernelService {
         return res;
     }
 
+    @Override
     Collection<Result> getResultsByTestId(long testId) {
         Test t = getTestById(testId);
         return getResultsByTest(t);
