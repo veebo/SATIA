@@ -2,10 +2,6 @@ package com.mephiboys.satia.kernel.impl;
 
 
 import com.mephiboys.satia.kernel.api.KernelService;
-import com.mephiboys.satia.kernel.impl.entitiy.Generator;
-import com.mephiboys.satia.kernel.impl.entitiy.Phrase;
-import com.mephiboys.satia.kernel.impl.entitiy.Task;
-import com.mephiboys.satia.kernel.impl.entitiy.Test;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Resource;
@@ -36,48 +32,53 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    public Test getTestById(long id) {
+    public <T> T getEntityById(Class<T> cls, Object id) {
         return null;
     }
 
     @Override
-    public Collection<Test> getTestsById(long id) {
+    public <T> Collection<T> getEntitiesByIds(Class<T> cls, Collection ids) {
         return null;
     }
 
     @Override
-    public Task getTaskById(long id) {
+    public <T> T getEntityByQuery(Class<T> cls, String query, Object... params) {
         return null;
     }
 
     @Override
-    public Collection<Task> getTasksById(long id) {
+    public <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params) {
         return null;
     }
 
     @Override
-    public Object getByQuery(String query) {
-        return null;
+    public void saveEntity(Object entity) {
+
     }
 
     @Override
-    public Phrase getPhraseById(long id) {
-        return null;
+    public void saveEntities(Collection entities) {
+
     }
 
     @Override
-    public Collection<Phrase> getPhrasesById(long id) {
-        return null;
+    public <T> void deleteEntityById(Class<T> cls, Object id) {
+
     }
 
     @Override
-    public Generator getGeneratorById(long id) {
-        return null;
+    public <T> void deleteEntitiesByIds(Class<T> cls, Collection ids) {
+
     }
 
     @Override
-    public Collection<Generator> getGeneratorsById(long id) {
-        return null;
+    public <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
+
+    }
+
+    @Override
+    public <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
+
     }
 
 }

@@ -1,10 +1,5 @@
 package com.mephiboys.satia.kernel.api;
 
-import com.mephiboys.satia.kernel.impl.entitiy.Generator;
-import com.mephiboys.satia.kernel.impl.entitiy.Phrase;
-import com.mephiboys.satia.kernel.impl.entitiy.Task;
-import com.mephiboys.satia.kernel.impl.entitiy.Test;
-
 import javax.ejb.Local;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
@@ -18,22 +13,24 @@ public interface KernelService {
 
     EntityManager getEntityManager();
 
-    Test getTestById(long id);
+    <T> T getEntityById(Class<T> cls, Object id);
 
-    Collection<Test> getTestsById(long id);
+    <T> Collection<T> getEntitiesByIds(Class<T> cls, Collection ids);
 
-    Task getTaskById(long id);
+    <T> T getEntityByQuery(Class<T> cls, String query, Object... params);
 
-    Collection<Task> getTasksById(long id);
+    <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params);
 
-    Object getByQuery(String query);
+    void saveEntity(Object entity);
 
-    Phrase getPhraseById(long id);
+    void saveEntities(Collection entities);
 
-    Collection<Phrase> getPhrasesById(long id);
+    <T> void deleteEntityById(Class<T> cls, Object id);
 
-    Generator getGeneratorById(long id);
+    <T> void deleteEntitiesByIds(Class<T> cls, Collection ids);
 
-    Collection<Generator> getGeneratorsById(long id);
+    <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params);
+
+    <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params);
 
 }
