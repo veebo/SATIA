@@ -49,10 +49,10 @@ public class SatiaWebController {
         String userName = auth.getName();
         model.addObject("user_name", userName);
         def tests_results = [:];   
-        Collection<Test> myTests = ks.getEntitiesByQuery(Test.getClass(), "SELECT * FROM tests WHERE username="+userName);
+        Collection<Test> myTests = ks.getEntitiesByQuery(Test.getClass(), "SELECT * FROM tests WHERE username=?",userName);
         for (Test t : myTests) {
             Collection<Result> results = ks.getEntitiesByQuery(Result.getClass(),
-                "SELECT * FROM results WHERE test_id="+t.getTestId());
+                "SELECT * FROM results WHERE test_id=?",t.getTestId());
             tests_results["test"] = t;
             tests_results["results"] = results;
         }
