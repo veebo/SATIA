@@ -45,20 +45,18 @@ public class SatiaWebController {
 
         ModelAndView model = new ModelAndView();
         model.setViewName("home");
-        MockedKernelService ks = (MockedKernelService)getKernelService();
+        KernelService ks = getKernelService();
         String userName = auth.getName();
         model.addObject("user_name", userName);
-        def myTests = [];
-        Collection<Test> allTests = ks.getAllTests();
-        for (Test t : allTests) {
-            if (t.getUser().getUsername().equals(userName)) {
-                Collection<Result> results = ks.getResultsByTest(t);
-                myTests << ["test" : t, "results" : results];
-                break;
-            }
+        def tests_results = [:];   
+        Collection<Test> myTests = ks.getEntitiesByQuery(Test.getClass(), "SELECT * FROM tests WHERE username="+userName);
+        for (Test t : myTests) {
+            Collection<Result> results = ks.getEntitiesByQuery(Result.getClass(),
+                "SELECT * FROM results WHERE test_id="+t.getTestId());
+            tests_results["test"] = t;
+            tests_results["results"] = results;
         }
-        model.addObject("my_tests", myTests);
-        model.addObject("all_tests", allTests);
+        model.addObject("tests_results", tests_results);
 
         return model;
     }
@@ -73,19 +71,21 @@ public class SatiaWebController {
 
         ModelAndView model = new ModelAndView();
         model.setViewName("test_edit");
-        MockedKernelService ks = (MockedKernelService)getKernelService();
+        KernelService ks = getKernelService();
         try {
             long testId = Long.parseLong(testIdStr,10);
         }
         catch (NumberFormatException nf) {
             throw new ResourceNotFoundException();
         }
-        Test test = ks.getTestById(testId);
+        Test test = ks.getEntityById(Test.getClass(), testId);
         if (test == null) {
             throw new ResourceNotFoundException();
         }
         model.addObject("test", test);
-        model.addObject("generators", ks.getAllGenerators());
+        Collection<Generator> generators = ks.getEntitiesByQuery(Generator.getClass(), 
+            "SELECT * FROM generators");
+        model.addObject("generators", generators);
         
         return model;
     }
