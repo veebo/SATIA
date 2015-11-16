@@ -90,32 +90,101 @@ public class SatiaWebController {
         return model;
     }
 
-    /*@RequestMapping(value="/edit/{testId}", method=RequestMethod.POST)
+    def newPhrase(String newValue, Lang lang) {
+        //...
+    }
+
+    def newTask(String[] values, Genrator gen) {
+        //...
+    }
+
+    def updatePhraseInTask(String newValue, int i, Task t, Test test) {
+        if (newValue.equals("")) {
+            return;
+        }
+        if (!newValue.equals(  t.getTranslation()."${"getPhrase"+i}"().getValue()  )) {
+            //check if translation is used in other tasks
+            Collection<Task> relTasks = ks.getEntitesByQuery(Task.getClass(),
+                                        "SELECT * FROM tasks where translation_id=?",
+                                        t.getTranslation().getTranslationId());
+            //  if yes - create new translation
+            if (!relTasks.isEmpty()) {
+                Translation newTr = new Translation(t.getTranslation().getPhrase1(),
+                                                    t.getTranslation().getPhrase2());
+                ks.saveEntity(newTr);
+                t.setTranslation(newTr);
+                ks.saveEntity(t);
+            }
+            //check if this phrase is used in other translations
+            Phrase phrase = t.getTranslation()."${"getPhrase"+i}"();
+            Collection<Object> query_res = ks.getEntityByQuery(Object.getClass(), "SELECT * FROM translations 
+                                                                WHERE tr.phrase1_id=? OR
+                                                                    tr.phrase2_id=?",
+                                                        phrase.getPhraseId(), phrase.getPhraseId());
+            //  if not - replace old value
+            if (!query_res.isEmpty()) {
+                phrase.setValue(newValue);
+                ks.saveEntity(phrase);
+            }
+            //  if yes - create new phrase with value
+            else {
+                Phrase p = newPhrase(newValue, t.getTranslation()."${"getPhrase"+i}"().getLang(), i);
+                t.getTranslation()."${setPhrase+i}"(p);
+                ks.saveEntity(t.getTranslation());
+            }
+        }
+    }
+
+    @RequestMapping(value="/edit/{testId}", method=RequestMethod.POST)
     def ModelAndView updateTestPage(@PathVariable String testIdStr, HttpServletRequest request) {
         
         ModelAndView model = testEditingPage(testIdStr);
         Test test = model.getModel().get("test");
-        Phrase[] phrases = new Phrase[2];
-        //modify existing phrases and tasks
-        for (Task t : test.getTasks()) {
-            boolean modified = false;
-            for (int i=0; i<2; i++) {
-                String newValue = request.getParameter("task_"+t.getTaskId()+"_phrase"+i);
-                if (!it.equals(  t.getTranslation()."${getPhrase+i}"()  )) {
-                    modified = true;
-                    //check if this phrase is used in other tasks
-                    //  if not - replace value to the new value
-                    //  else - create new phrase with value
-                    //save new Phrase instances in 'phrases' array
-                }
+        //add new tasks
+        int i = 0;
+        String[] values;
+        while (  ((values=request.getParameterValues("task_add_"+(i++))) != null)  ) {
+            if (values.length < 2) {
+                continue;
             }
-            if (modified) {
-                //modify translation of current task
+            Generator gen = null;
+            if (values.length >= 3) {
+                String genId = values[2];
+                gen = ks.getEntityByQuery(Generator.getClass(), "SELECT * FROM generators WHERE gen_id=?",
+                                                genId);
+            }
+            if (gen == null) {
+                gen = test.getGenerator();
+            }
+            newTask(values, gen);
+        }
+        //modify and delete existing tasks
+        for (Task t : test.getTasks()) {
+            //update phrases and translation
+            for (int i : [1,2]) {
+                String newValue = request.getParameter("task"+t.getTaskId()+"_phrase"+i);
+                updatePhraseInTask(newValue, i, t, test);
+            }
+            //update generator
+            String genId = request.getParameter("task"+t.getTaskid()+"_gen");
+            Generator gen = ks.getEntityByQuery(Generator.getClass(), "SELECT * FROM generators WHERE gen_id=?",
+                                                genId);
+            if ( (gen != null) && (!gen.equals(t.getGenerator())) ) {
+                t.setGenerator(gen);
+                ks.saveEntity(t);
+            }
+            //update sourceNum if needed
+            if (!t.getTranslation()."${"getPhrase"+t.getSourceNum()}"().getLang().equals(test.getSourceLang())) {
+                Translation tr = t.getTranslation();
+                tr.setSourceNum((t.getSourceNum() == 1) ? 2 : 1);
+                ks.saveEntity(tr);
+            }
+            //delete
+            if (request.getParameter("del_task"+t.getTaskId()) != null) {
+                //...
             }
         }
-        //add new tasks
-        //  ...
-    }*/
+    }
 
     @RequestMapping(value = "/admin**", method = RequestMethod.GET)
     def ModelAndView adminPage() {
