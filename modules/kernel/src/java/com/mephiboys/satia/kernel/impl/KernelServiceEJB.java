@@ -2,14 +2,18 @@ package com.mephiboys.satia.kernel.impl;
 
 
 import com.mephiboys.satia.kernel.api.KernelService;
+import com.mephiboys.satia.kernel.impl.entitiy.*;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.sql.DataSource;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 @Stateless
 public class KernelServiceEJB implements KernelService {
@@ -33,12 +37,45 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     public <T> T getEntityById(Class<T> cls, Object id) {
-        return null;
+        return entityManager.find(cls, id);
     }
 
     @Override
     public <T> Collection<T> getEntitiesByIds(Class<T> cls, Collection ids) {
-        return null;
+
+        if (cls == null || ids == null){
+            return Collections.EMPTY_LIST;
+        }
+
+        String sqlQuery = null;
+        if (Test.class.equals(cls.getClass())){
+            sqlQuery = "select e.testId from Test e where e.testId IN :keys";
+        } else if (Task.class.equals(cls.getClass())){
+            sqlQuery = "select e.id from Result e where e.id IN :keys";
+        } else if (Translation.class.equals(cls.getClass())){
+            sqlQuery = "select e.translationId from Translation e where e.translationId IN :keys";;
+        } else if (User.class.equals(cls.getClass())){
+            sqlQuery = "select e.username from User e where e.username IN :keys";;
+        } else if (Role.class.equals(cls.getClass())){
+            sqlQuery = "select e.roleId from Role e where e.roleId IN :keys";;
+        } else if (Result.class.equals(cls.getClass())){
+            sqlQuery = "select e.id from Result e where e.id IN :keys";;
+        } else if (Phrase.class.equals(cls.getClass())){
+            sqlQuery = "select e.phraseId from Phrase e where e.phraseId IN :keys";;
+        } else if (Lang.class.equals(cls.getClass())){
+            sqlQuery = "select e.lang from Lang e where e.lang IN :keys";;
+        } else if (Generator.class.equals(cls.getClass())){
+            sqlQuery = "select e.genId from Generator e where e.genId IN :keys";;
+        }
+
+        else {
+            throw new IllegalArgumentException("Class '"+cls+"' is not an entity");
+        }
+
+        Query q = entityManager.createQuery(sqlQuery, cls);
+        q.setParameter("keys", ids);
+        List results = q.getResultList();
+        return results;
     }
 
     @Override
