@@ -11,10 +11,13 @@ dependencies {
     providedCompile 'org.mockito:mockito-all:1.10.19'
 
     //EJB
-    providedCompile 'javax.ejb:ejb-api:3.0'
+    providedCompile 'javax:javaee-api:7.0'
 
     //JPA
     providedCompile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+
+    //Spring JDBC
+    providedCompile 'org.springframework:spring-jdbc:4.2.2.RELEASE'
 
     //Logging
     providedCompile 'log4j:log4j:1.2.17'
