@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse
 
 import java.util.Collection;
 import com.mephiboys.satia.kernel.impl.entitiy.*
+import com.mephiboys.satia.kernel.impl.KernelServiceEJB;
 
 @Controller
 public class SatiaWebController {
@@ -29,7 +30,7 @@ public class SatiaWebController {
     protected KernelService kernelService = getKernelService()
 
     KernelService getKernelService() {
-        return new MockedKernelService();
+        return new KernelServiceEJB();
     };
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -118,9 +119,9 @@ public class SatiaWebController {
         //modify and delete existing tasks
         for (Task t : test.getTasks()) {
             //update phrases and translation
-            for (int i : [1,2]) {
-                String newValue = request.getParameter("task"+t.getTaskId()+"_phrase"+i);
-                eu.updatePhraseInTask(newValue, i, t, test);
+            for (int j=1; j<=2; j++) {
+                String newValue = request.getParameter("task"+t.getTaskId()+"_phrase"+j);
+                eu.updatePhraseInTask(newValue, j, t, test);
             }
             //update generator
             String genId = request.getParameter("task"+t.getTaskid()+"_gen");

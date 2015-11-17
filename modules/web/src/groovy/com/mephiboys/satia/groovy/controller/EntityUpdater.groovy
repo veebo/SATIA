@@ -23,7 +23,7 @@ public class EntityUpdater {
         }
     }
 
-    def newTask(String[] values, Genrator gen, Test test) {
+    def newTask(String[] values, Generator gen, Test test) {
         Phrase p1 = newPhrase(values[0], test.getSourceLang());
         Phrase p2 = newPhrase(values[1], test.getTargetLang());
         Translation tr = ks.getEntityByQuery(Translation.getClass(),
@@ -59,9 +59,8 @@ public class EntityUpdater {
             }
             //check if this phrase is used in other translations
             Phrase phrase = t.getTranslation()."${"getPhrase"+i}"();
-            Collection<Object> query_res = ks.getEntityByQuery(Object.getClass(), "SELECT * FROM translations 
-                                                                WHERE tr.phrase1_id=? OR
-                                                                    tr.phrase2_id=?",
+            Collection<Object> query_res = ks.getEntityByQuery(Object.getClass(),
+            	                    "SELECT * FROM translations WHERE phrase1_id=? OR phrase2_id=?",
                                                         phrase.getPhraseId(), phrase.getPhraseId());
             //  if not - replace old value
             if (!query_res.isEmpty()) {
