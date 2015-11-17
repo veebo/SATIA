@@ -90,56 +90,13 @@ public class SatiaWebController {
         return model;
     }
 
-    def newPhrase(String newValue, Lang lang) {
-        //...
-    }
-
-    def newTask(String[] values, Genrator gen) {
-        //...
-    }
-
-    def updatePhraseInTask(String newValue, int i, Task t, Test test) {
-        if (newValue.equals("")) {
-            return;
-        }
-        if (!newValue.equals(  t.getTranslation()."${"getPhrase"+i}"().getValue()  )) {
-            //check if translation is used in other tasks
-            Collection<Task> relTasks = ks.getEntitesByQuery(Task.getClass(),
-                                        "SELECT * FROM tasks where translation_id=?",
-                                        t.getTranslation().getTranslationId());
-            //  if yes - create new translation
-            if (!relTasks.isEmpty()) {
-                Translation newTr = new Translation(t.getTranslation().getPhrase1(),
-                                                    t.getTranslation().getPhrase2());
-                ks.saveEntity(newTr);
-                t.setTranslation(newTr);
-                ks.saveEntity(t);
-            }
-            //check if this phrase is used in other translations
-            Phrase phrase = t.getTranslation()."${"getPhrase"+i}"();
-            Collection<Object> query_res = ks.getEntityByQuery(Object.getClass(), "SELECT * FROM translations 
-                                                                WHERE tr.phrase1_id=? OR
-                                                                    tr.phrase2_id=?",
-                                                        phrase.getPhraseId(), phrase.getPhraseId());
-            //  if not - replace old value
-            if (!query_res.isEmpty()) {
-                phrase.setValue(newValue);
-                ks.saveEntity(phrase);
-            }
-            //  if yes - create new phrase with value
-            else {
-                Phrase p = newPhrase(newValue, t.getTranslation()."${"getPhrase"+i}"().getLang(), i);
-                t.getTranslation()."${setPhrase+i}"(p);
-                ks.saveEntity(t.getTranslation());
-            }
-        }
-    }
-
     @RequestMapping(value="/edit/{testId}", method=RequestMethod.POST)
     def ModelAndView updateTestPage(@PathVariable String testIdStr, HttpServletRequest request) {
         
         ModelAndView model = testEditingPage(testIdStr);
         Test test = model.getModel().get("test");
+        KernelService ks = getKernelService();
+        EntityUpdater eu = new EntityUpdater(ks);
         //add new tasks
         int i = 0;
         String[] values;
@@ -156,14 +113,14 @@ public class SatiaWebController {
             if (gen == null) {
                 gen = test.getGenerator();
             }
-            newTask(values, gen);
+            eu.newTask(values, gen, test);
         }
         //modify and delete existing tasks
         for (Task t : test.getTasks()) {
             //update phrases and translation
             for (int i : [1,2]) {
                 String newValue = request.getParameter("task"+t.getTaskId()+"_phrase"+i);
-                updatePhraseInTask(newValue, i, t, test);
+                eu.updatePhraseInTask(newValue, i, t, test);
             }
             //update generator
             String genId = request.getParameter("task"+t.getTaskid()+"_gen");
@@ -181,9 +138,11 @@ public class SatiaWebController {
             }
             //delete
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
-                //...
+                eu.removeTask(t, test);
             }
         }
+
+        return defaultPage();
     }
 
     @RequestMapping(value = "/admin**", method = RequestMethod.GET)
