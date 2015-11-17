@@ -4,18 +4,24 @@ package com.mephiboys.satia.kernel.impl;
 import com.mephiboys.satia.kernel.api.KernelService;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
 import org.apache.log4j.Logger;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-@Stateless
+@Singleton
 public class KernelServiceEJB implements KernelService {
 
     private static Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
@@ -25,6 +31,13 @@ public class KernelServiceEJB implements KernelService {
 
     @Resource(lookup="java:jboss/datasources/PostgresDSource")
     private DataSource dataSource;
+
+    private JdbcTemplate jdbc;
+
+    @PostConstruct
+    protected void init(){
+        jdbc = new JdbcTemplate(dataSource);
+    }
 
     public DataSource getDataSource(){
         return dataSource;
@@ -48,74 +61,140 @@ public class KernelServiceEJB implements KernelService {
         }
 
         String sqlQuery = null;
-        if (Test.class.equals(cls.getClass())){
+        if (Test.class.equals(cls)){
             sqlQuery = "select e.testId from Test e where e.testId IN :keys";
-        } else if (Task.class.equals(cls.getClass())){
-            sqlQuery = "select e.id from Result e where e.id IN :keys";
-        } else if (Translation.class.equals(cls.getClass())){
+        } else if (Task.class.equals(cls)){
+            sqlQuery = "select e.taskId from Task e where e.taskId IN :keys";
+        } else if (Translation.class.equals(cls)){
             sqlQuery = "select e.translationId from Translation e where e.translationId IN :keys";;
-        } else if (User.class.equals(cls.getClass())){
-            sqlQuery = "select e.username from User e where e.username IN :keys";;
-        } else if (Role.class.equals(cls.getClass())){
-            sqlQuery = "select e.roleId from Role e where e.roleId IN :keys";;
-        } else if (Result.class.equals(cls.getClass())){
-            sqlQuery = "select e.id from Result e where e.id IN :keys";;
-        } else if (Phrase.class.equals(cls.getClass())){
-            sqlQuery = "select e.phraseId from Phrase e where e.phraseId IN :keys";;
-        } else if (Lang.class.equals(cls.getClass())){
-            sqlQuery = "select e.lang from Lang e where e.lang IN :keys";;
-        } else if (Generator.class.equals(cls.getClass())){
+        } else if (Generator.class.equals(cls)){
             sqlQuery = "select e.genId from Generator e where e.genId IN :keys";;
-        }
-
-        else {
+        }else if (Phrase.class.equals(cls)){
+            sqlQuery = "select e.phraseId from Phrase e where e.phraseId IN :keys";;
+        } else if (Role.class.equals(cls)){
+            sqlQuery = "select e.roleId from Role e where e.roleId IN :keys";;
+        }  else if (Lang.class.equals(cls)){
+            sqlQuery = "select e.lang from Lang e where e.lang IN :keys";;
+        } else if (User.class.equals(cls)){
+            sqlQuery = "select e.username from User e where e.username IN :keys";;
+        }else if (Result.class.equals(cls)){
+            sqlQuery = "select e.id from Result e where e.id IN :keys";;
+        }   else {
             throw new IllegalArgumentException("Class '"+cls+"' is not an entity");
         }
 
         Query q = entityManager.createQuery(sqlQuery, cls);
         q.setParameter("keys", ids);
-        List results = q.getResultList();
-        return results;
+        List<T> result = q.getResultList();
+        return result;
     }
 
     @Override
     public <T> T getEntityByQuery(Class<T> cls, String query, Object... params) {
-        return null;
+        Collection<T> result = getEntitiesByQuery(cls, query, params);
+        return result.isEmpty() ? null : result.iterator().next();
     }
 
     @Override
     public <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params) {
-        return null;
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        Class pkClass = null;
+        RowMapper rowMapper = null;
+        if (Test.class.equals(cls)){
+            pkClass = long.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("test_id"); };
+        } else if (Task.class.equals(cls)){
+            pkClass = long.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("task_id"); };
+        } else if (Translation.class.equals(cls)){
+            pkClass = long.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("translation_id"); };
+        } else if (Generator.class.equals(cls)){
+            pkClass = long.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("gen_id"); };
+        } else if (Phrase.class.equals(cls)){
+            pkClass = long.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("phrase_id"); };
+        } else if (Role.class.equals(cls)){
+            pkClass = int.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("role_id"); };
+        }  else if (Lang.class.equals(cls)){
+            pkClass = String.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("lang"); };
+        } else if (User.class.equals(cls)){
+            pkClass = String.class;
+            rowMapper = (rs, rowNum) -> { return rs.getLong("username"); };
+        }else if (Result.class.equals(cls)){
+            rowMapper = (rs, rowNum) -> {
+                ResultPK pk = new ResultPK();
+                pk.setSessionKey(rs.getString("session_key"));
+                pk.setStartTime(rs.getTimestamp("start_time"));
+                pk.setTestId(rs.getLong("test_id"));
+                pk.setSessionKey(rs.getString("session_key"));
+                return pk;
+            };
+        } else {
+            throw new IllegalArgumentException("Class '"+cls+"' is not an entity");
+        }
+
+        List keys = rowMapper == null
+                ? jdbc.queryForList(query, pkClass, params)
+                : jdbc.query(query, rowMapper, params);
+        return getEntitiesByIds(cls, keys);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void saveEntity(Object entity) {
-
+        entityManager.persist(entity);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void saveEntities(Collection entities) {
-
+        for (Object e : entities){
+            entityManager.persist(e);
+        }
     }
 
+
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public <T> void deleteEntityById(Class<T> cls, Object id) {
-
+        Object entity = entityManager.find(cls, id);
+        if (entity == null){
+           throw new RuntimeException("Object not found of class '" + cls + "' with id=" + id);
+        }
+        entityManager.remove(entity);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public <T> void deleteEntitiesByIds(Class<T> cls, Collection ids) {
-
+        Collection entities = getEntitiesByIds(cls, ids);
+        for (Object e : entities){
+            entityManager.remove(e);
+        }
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
-
+        Object entity = getEntityByQuery(cls, query, params);
+        if (entity == null){
+            throw new RuntimeException("Object not found of class '" + cls
+                    + "' by sql query '"+query+"' with params:"+ Arrays.toString(params));
+        }
+        entityManager.remove(entity);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
-
+        Collection entities = getEntitiesByQuery(cls, query, params);
+        for (Object e : entities){
+            entityManager.remove(e);
+        }
     }
 
 }
