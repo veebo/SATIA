@@ -1,7 +1,8 @@
 package com.mephiboys.satia.groovy.controller
-
-import com.mephiboys.satia.kernel.mock.MockedKernelService
 import com.mephiboys.satia.kernel.api.KernelService
+import com.mephiboys.satia.kernel.impl.entitiy.*
+import com.mephiboys.satia.kernel.mock.MockedKernelService
+import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -9,28 +10,19 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.stereotype.Controller
 import org.springframework.ui.ModelMap
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.servlet.ModelAndView
-import org.springframework.http.HttpStatus
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import java.util.Collection;
-import com.mephiboys.satia.kernel.impl.entitiy.*
-import com.mephiboys.satia.kernel.impl.KernelServiceEJB;
-
 @Controller
 public class SatiaWebController {
 
-    protected KernelService kernelService = getKernelService()
+    protected KernelService ks = getKernelService()
 
     KernelService getKernelService() {
-        return new KernelServiceEJB();
+        return new MockedKernelService();
     };
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -46,7 +38,6 @@ public class SatiaWebController {
 
         ModelAndView model = new ModelAndView();
         model.setViewName("home");
-        KernelService ks = getKernelService();
         String userName = auth.getName();
         model.addObject("user_name", userName);
         def tests_results = [:];   
@@ -72,7 +63,6 @@ public class SatiaWebController {
 
         ModelAndView model = new ModelAndView();
         model.setViewName("test_edit");
-        KernelService ks = getKernelService();
         try {
             long testId = Long.parseLong(testIdStr,10);
         }
@@ -96,7 +86,6 @@ public class SatiaWebController {
         
         ModelAndView model = testEditingPage(testIdStr);
         Test test = model.getModel().get("test");
-        KernelService ks = getKernelService();
         EntityUpdater eu = new EntityUpdater(ks);
         //add new tasks
         int i = 0;
