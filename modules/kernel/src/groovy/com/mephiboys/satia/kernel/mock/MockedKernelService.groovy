@@ -42,17 +42,18 @@ class MockedKernelService implements KernelService {
     @Override
     def <T> T getEntityById(Class<T> cls, Object id) {
         if (id == null) return null;
-        print(cls)
+        //print(cls)
+        Object res = null;
         switch (cls) {
-            case Test.class: tests.each { if(id.equals(((Test)it).getTestId())) return it}; break
-            case Task.class: tasks.each { if(id.equals(((Task)it).getTaskId())) return it}; break
-            case Phrase.class: phrases.each { if(id.equals(((Phrase)it).getPhraseId())) return it}; break
-            case Generator.class: generators.each { if(id.equals(((Generator)it).getImpl())) return it}; break
-            case User.class: users.each { if(id.equals(((User)it).getUsername())) return it}; break
-            case Result.class: results.each { if(id.equals(((Result)it).getId())) return it}; break
-            case Lang.class: langs.each { if(id.equals(((Lang)it).getLang())) return it}; break
+            case Test.class: tests.each { if(id.equals( new Long(((Test)it).getTestId()) )) res=it}; break
+            case Task.class: tasks.each { if(id.equals( new Long(((Task)it).getTaskId()) )) res=it}; break
+            case Phrase.class: phrases.each { if(id.equals( new Long(((Phrase)it).getPhraseId()) ) ) res=it}; break
+            case Generator.class: generators.each { if(id.equals( ((Generator)it).getImpl()) ) res=it}; break
+            case User.class: users.each { if(id.equals(((User)it).getUsername())) res=it}; break
+            case Result.class: results.each { if(id.equals(((Result)it).getId())) res=it}; break
+            case Lang.class: langs.each { if(id.equals(((Lang)it).getLang())) res=it}; break
         }
-
+        return res;
     }
 
     @Override

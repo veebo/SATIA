@@ -2,6 +2,7 @@
 <%@page session="true"%>
 <html>
 <head>
+	<meta http-equiv="Content-Type" content="text/html" charset="utf-16" >
 	<link rel="stylesheet" href="/resources/css/style.css" />
 	<link rel="stylesheet" href="/resources/css/test_edit_style.css" />
 </head>
@@ -11,42 +12,42 @@
     </div>
 	<div class="container">
 
-	<form action="<c:url value='/edit/${test.id}' />" method='POST'>
+	<form action="<c:url value='/edit/${test.testId}' />" method='POST'>
 	    <div id="tasks">
 	    	<div class="table">
 
-	    	<c:foreach var="task" items="${test.tasks}">
+	    	<c:forEach var="task" items="${test.tasks}">
 
 	            <div class="row">
 
 	            <c:choose>
-	              <c:when test="${test.sourceLang.lang==task.phrase1.lang.lang}">
+	              <c:when test="${test.sourceLang.lang==task.translation.phrase1.lang.lang}">
 	            	<div class="cell">
-	        	        <textarea name="task{task.id}_phrase1">${task.translation.phrase1.value}</textarea>
+	        	        <textarea name="task{task.taskId}_phrase1">${task.translation.phrase1.value}</textarea>
 	        	    </div>
 	        	    <div class="cell">
-	                    <textarea name="task{task.id}_phrase2">${task.translation.phrase2.value}</textarea>
+	                    <textarea name="task{task.taskId}_phrase2">${task.translation.phrase2.value}</textarea>
 	                </div>
 	              </c:when>
 	              <c:otherwise>
 	                <div class="cell">
-	                	<textarea name="task{task.id}_phrase2">${task.translation.phrase2.value}</textarea>
+	                	<textarea name="task{task.taskId}_phrase2">${task.translation.phrase2.value}</textarea>
 	        	    </div>
 	        	    <div class="cell">
-	                    <textarea name="task{task.id}_phrase1">${task.translation.phrase1.value}</textarea>
+	                    <textarea name="task{task.taskId}_phrase1">${task.translation.phrase1.value}</textarea>
 	                </div>
 	              </c:otherwise>
 	            </c:choose>
 
 	                <div class="cell">
-	                    <select name="task{task.id}_gen">
+	                    <select name="task{task.taskId}_gen">
 	                    	<option value="null">Default</option>
 
-	                    	<c:foreach var="g" items="${generators}">
+	                    	<c:forEach var="g" items="${generators}">
 
                             <option value="${g.genId}">${g.impl}</option>
 
-	                    	</c:foreach>
+	                    	</c:forEach>
 
 	                    </select>
 	                </div>
@@ -55,7 +56,7 @@
 	                </div>
 	            </div>
 
-	        </c:foreach>
+	        </c:forEach>
 
 	        </div>
 	    </div>

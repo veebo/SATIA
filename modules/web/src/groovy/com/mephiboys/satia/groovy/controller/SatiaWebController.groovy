@@ -1,7 +1,9 @@
 package com.mephiboys.satia.groovy.controller
+
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 import com.mephiboys.satia.kernel.mock.MockedKernelService
+
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -24,9 +26,6 @@ public class SatiaWebController {
     KernelService getKernelService() {
         return new MockedKernelService();
     };
-
-    @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public final class ResourceNotFoundException extends RuntimeException {}
 
     @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {
@@ -56,7 +55,7 @@ public class SatiaWebController {
         return model;
     }
 
-    @RequestMapping(value="/edit/{testId}", method=RequestMethod.GET)
+    @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.GET)
     def ModelAndView testEditingPage(@PathVariable String testIdStr) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -66,13 +65,14 @@ public class SatiaWebController {
 
         ModelAndView model = new ModelAndView();
         model.setViewName("test_edit");
+        Long testId;
         try {
-            long testId = Long.parseLong(testIdStr,10);
+            testId = new Long(Long.parseLong(testIdStr,10));
         }
         catch (NumberFormatException nf) {
             throw new ResourceNotFoundException();
         }
-        Test test = ks.getEntityById(Test.getClass(), testId);
+        Test test = ks.getEntityById(Test.class, testId);
         if (test == null) {
             throw new ResourceNotFoundException();
         }
@@ -85,7 +85,7 @@ public class SatiaWebController {
     }
 
     @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.POST)
-    def ModelAndView updateTestPage(@PathVariable String testIdStr, HttpServletRequest request) {
+    def ModelAndView updateTestPage(HttpServletRequest request, @PathVariable String testIdStr) {
         
         ModelAndView model = testEditingPage(testIdStr);
         Test test = model.getModel().get("test");

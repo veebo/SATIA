@@ -15,7 +15,7 @@
 
     <div class="container">
 
-    Hello, <strong>${userName}</strong>
+    Hello, <strong>${user_name}</strong>
     <a href="<c:url value="/logout" />">Logout</a>
     <br>
     <br>
