@@ -18,14 +18,28 @@
 	    	<c:foreach var="task" items="${test.tasks}">
 
 	            <div class="row">
+
+	            <c:choose>
+	              <c:when test="${test.sourceLang.lang==task.phrase1.lang.lang}">
 	            	<div class="cell">
-	        	        <textarea name="task_{task.id}_phrase_1">${task.translation.phrase1.value}</textarea>
+	        	        <textarea name="task{task.id}_phrase1">${task.translation.phrase1.value}</textarea>
 	        	    </div>
 	        	    <div class="cell">
-	                    <textarea name="task_{task.id}_phrase_2">${task.translation.phrase2.value}</textarea>
+	                    <textarea name="task{task.id}_phrase2">${task.translation.phrase2.value}</textarea>
 	                </div>
+	              </c:when>
+	              <c:otherwise>
 	                <div class="cell">
-	                    <select name="task_{task.id}_generator">
+	                	<textarea name="task{task.id}_phrase2">${task.translation.phrase2.value}</textarea>
+	        	    </div>
+	        	    <div class="cell">
+	                    <textarea name="task{task.id}_phrase1">${task.translation.phrase1.value}</textarea>
+	                </div>
+	              </c:otherwise>
+	            </c:choose>
+
+	                <div class="cell">
+	                    <select name="task{task.id}_gen">
 	                    	<option value="null">Default</option>
 
 	                    	<c:foreach var="g" items="${generators}">

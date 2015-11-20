@@ -40,13 +40,16 @@ public class SatiaWebController {
         model.setViewName("home");
         String userName = auth.getName();
         model.addObject("user_name", userName);
-        def tests_results = [:];   
-        Collection<Test> myTests = ks.getEntitiesByQuery(Test.getClass(), "SELECT * FROM tests WHERE username=?",userName);
+        def tests_results = [];   
+        Collection<Test> myTests = ks.getEntitiesByQuery(Test.class,
+            "SELECT test_id FROM tests WHERE username=?",userName);
         for (Test t : myTests) {
-            Collection<Result> results = ks.getEntitiesByQuery(Result.getClass(),
-                "SELECT * FROM results WHERE test_id=?",t.getTestId());
-            tests_results["test"] = t;
-            tests_results["results"] = results;
+            Collection<Result> results = ks.getEntitiesByQuery(Result.class,
+                "SELECT username,test_id,start_time,session_key FROM results WHERE test_id=?",t.getTestId());
+            def tr = [:];
+            tr["test"] = t;
+            tr["results"] = results;
+            tests_results << tr;
         }
         model.addObject("tests_results", tests_results);
 
@@ -74,14 +77,14 @@ public class SatiaWebController {
             throw new ResourceNotFoundException();
         }
         model.addObject("test", test);
-        Collection<Generator> generators = ks.getEntitiesByQuery(Generator.getClass(), 
-            "SELECT * FROM generators");
+        Collection<Generator> generators = ks.getEntitiesByQuery(Generator.class, 
+            "SELECT gen_id FROM generators");
         model.addObject("generators", generators);
         
         return model;
     }
 
-    @RequestMapping(value="/edit/{testId}", method=RequestMethod.POST)
+    @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.POST)
     def ModelAndView updateTestPage(@PathVariable String testIdStr, HttpServletRequest request) {
         
         ModelAndView model = testEditingPage(testIdStr);
@@ -97,8 +100,7 @@ public class SatiaWebController {
             Generator gen = null;
             if (values.length >= 3) {
                 String genId = values[2];
-                gen = ks.getEntityByQuery(Generator.getClass(), "SELECT * FROM generators WHERE gen_id=?",
-                                                genId);
+                gen = ks.getEntityById(Generator.class, genId);
             }
             if (gen == null) {
                 gen = test.getGenerator();
@@ -114,8 +116,7 @@ public class SatiaWebController {
             }
             //update generator
             String genId = request.getParameter("task"+t.getTaskid()+"_gen");
-            Generator gen = ks.getEntityByQuery(Generator.getClass(), "SELECT * FROM generators WHERE gen_id=?",
-                                                genId);
+            Generator gen = ks.getEntityById(Generator.class, genId);
             if ( (gen != null) && (!gen.equals(t.getGenerator())) ) {
                 t.setGenerator(gen);
                 ks.saveEntity(t);

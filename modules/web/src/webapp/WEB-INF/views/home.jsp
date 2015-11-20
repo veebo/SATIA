@@ -3,10 +3,10 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>User page</title>
-    <link rel="stylesheet" href="/resources/css/style.css" />
-    <link rel="stylesheet" href="/resources/css/home_style.css" />
+    <link rel="stylesheet" href='<c:url value="/resources/css/style.css" />' />
+    <link rel="stylesheet" href='<c:url value="/resources/css/home_style.css" />' />
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script type="text/javascript" src="/resources/js/show_hidden.js"></script>
+    <script type="text/javascript" src='<c:url value="/resources/js/show_hidden.js" />' ></script>
 </head>
 <body>
     <div class="header">
@@ -21,37 +21,15 @@
     <br>
 
     <div class="section" >
-        <div class="title center">Available tests:</div>
-        <div class="table">
-
-    	<c:forEach var="t" items="${all_tests}">
-
-    	<div class="row" >
-    	    <div class="cell test_col">
-                <div class="subtitle">${t.title}</div>
-                <div class="hint">${t.description}</div>
-                <div><b>author :</b> ${t.user.username}</div>
-            </div>
-            <div class="cell btn_col center">
-                <div class="button">pass now</div>
-            </div>
-    	</div>
-
-        </c:forEach>
-
-        </div>
-    </div>
-
-    <div class="section" >
     	<div class="title center">My tests:</div>
 
-    	<c:forEach var="t" items="${my_tests}">
+    	<c:forEach var="t" items="${tests_results}">
 
         <div class="item">
             <div class="subtitle">${t["test"].title}</div>
             <div class="hint">${t["test"].description}</div>
 
-            <a href='/edit/${t["test"].id}'>edit</a><br>
+            <a href='/edit/${t["test"].testId}'>edit</a><br>
             <div class="show_hidden hint click">show results</div><br>
 
             <div class="hidden">
