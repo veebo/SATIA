@@ -11,6 +11,7 @@ class MockedKernelService implements KernelService {
 
     def tests = []
     def tasks = []
+    def translations = []
     def phrases = []
     def generators = []
     def users = []
@@ -18,13 +19,14 @@ class MockedKernelService implements KernelService {
     def langs = []
 
     def class2List = [
-            (Test.class) : tests,
-            (Task.class) : tasks,
-            (Phrase.class) : phrases,
-            (Generator.class) : generators,
-            (User.class) : users,
-            (Result.class) : results,
-            (Lang.class) : langs
+            (Test.class.getSimpleName()) : tests,
+            (Task.class.getSimpleName()) : tasks,
+            (Translation.class.getSimpleName()) : translations,
+            (Phrase.class.getSimpleName()) : phrases,
+            (Generator.class.getSimpleName()) : generators,
+            (User.class.getSimpleName()) : users,
+            (Result.class.getSimpleName()) : results,
+            (Lang.class.getSimpleName()) : langs
 
     ]
 
@@ -47,6 +49,7 @@ class MockedKernelService implements KernelService {
         switch (cls) {
             case Test.class: tests.each { if(id.equals( new Long(((Test)it).getTestId()) )) res=it}; break
             case Task.class: tasks.each { if(id.equals( new Long(((Task)it).getTaskId()) )) res=it}; break
+            case Translation.class: translations.each {if(id.equals( new Long(((Translation)it).getTranslationId()) )) res=it}; break
             case Phrase.class: phrases.each { if(id.equals( new Long(((Phrase)it).getPhraseId()) ) ) res=it}; break
             case Generator.class: generators.each { if(id.equals( ((Generator)it).getImpl()) ) res=it}; break
             case User.class: users.each { if(id.equals(((User)it).getUsername())) res=it}; break
@@ -70,14 +73,14 @@ class MockedKernelService implements KernelService {
 
     @Override
     def <T> T getEntityByQuery(Class<T> cls, String query, Object... params) {
-        def list = class2List[cls]
+        def list = class2List[cls.getSimpleName()]
         if (!list.isEmpty()) return list[0]
         return null
     }
 
     @Override
     def <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params) {
-        def list = class2List[cls]
+        def list = class2List[cls.getSimpleName()]
         if (!list.isEmpty()) return list
         return Collections.EMPTY_LIST
     }
@@ -86,10 +89,11 @@ class MockedKernelService implements KernelService {
     void saveEntity(Object entity) {
         def cls = entity.getClass()
         switch (cls) {
-            case Test.class: tests << ((Test)entity).setTestId(tests.max { ((Test)it).getTestId() } + 1); break
-            case Task.class: tasks << ((Task)entity).setTaskId(tasks.max { ((Task)it).getTaskId() } + 1); break
-            case Phrase.class: phrases << ((Phrase)entity).setPhraseId(phrases.max { ((Phrase)it).getPhraseId() } + 1); break
-            case Generator.class: generators << ((Generator)entity).setGenId(generators.max { ((Generator)it).getGenId() } + 1); break
+            case Test.class: tests << ((Test)entity).setTestId(tests.max { ((Test)it).getTestId() }.getTestId() + 1); break
+            case Task.class: tasks << ((Task)entity).setTaskId(tasks.max { ((Task)it).getTaskId() }.getTaskId() + 1); break
+            case Translation.class: translations << ((Translation)entity).setTranslationId(translations.max { ((Translation)it).getTranslationId() }.getTranslationId() + 1); break
+            case Phrase.class: phrases << ((Phrase)entity).setPhraseId(phrases.max { ((Phrase)it).getPhraseId() }.getPhraseId() + 1); break
+            case Generator.class: generators << ((Generator)entity).setGenId(generators.max { ((Generator)it).getGenId() }.getGenId() + 1); break
             case User.class: users << entity; break
             case Result.class: results << entity; break
             case Lang.class: langs << entity; break
@@ -109,6 +113,7 @@ class MockedKernelService implements KernelService {
         switch (cls) {
             case Test.class: tests.removeAll(id.equals(((Test)id).getTestId())); break
             case Task.class: tasks.removeAll(id.equals(((Task)id).getTaskId())); break
+            case Translation.class: translations.removeAll(id.equals(((Translation)id).getTranslationId())); break
             case Phrase.class: phrases.removeAll(id.equals(((Phrase)id).getPhraseId())); break
             case Generator.class: generators.removeAll(id.equals(((Generator)id).getGenId())); break
             case User.class: users.removeAll(id.equals(((User)id).getUsername())); break
@@ -122,7 +127,7 @@ class MockedKernelService implements KernelService {
         def results = []
         for (Object id : ids){
             if (id != null){
-                deleteEntitiesByIds(cls, id);
+                deleteEntityById(cls, id);
             }
         }
     }
@@ -191,6 +196,7 @@ class MockedKernelService implements KernelService {
 
         tests << test1;
         tasks << task1 << task2 << task3 << task4;
+        translations << tr1 << tr2 << tr3 << tr4;
         phrases << apple << orange << banana << lemon << yabloko << apelsin << banan << limon;
         langs << eng << rus;
         generators << g1;

@@ -56,7 +56,7 @@ public class SatiaWebController {
     }
 
     @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.GET)
-    def ModelAndView testEditingPage(@PathVariable String testIdStr) {
+    def ModelAndView testEditingPage(@PathVariable String testIdStr) throws Exception {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof AnonymousAuthenticationToken) {
@@ -84,9 +84,9 @@ public class SatiaWebController {
         return model;
     }
 
-    @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.POST)
-    def ModelAndView updateTestPage(HttpServletRequest request, @PathVariable String testIdStr) {
-        
+    @RequestMapping(value="/post/{testIdStr}", method=RequestMethod.POST)
+    def ModelAndView updateTestPage(@PathVariable("testIdStr") String testIdStr, HttpServletRequest request)
+      throws Exception {
         ModelAndView model = testEditingPage(testIdStr);
         Test test = model.getModel().get("test");
         EntityUpdater eu = new EntityUpdater(ks);
@@ -94,7 +94,7 @@ public class SatiaWebController {
         int i = 0;
         String[] values;
         while (  ((values=request.getParameterValues("task_add_"+(i++))) != null)  ) {
-            if (values.length < 2) {
+            if ((values == null) || (values.length < 2)) {
                 continue;
             }
             Generator gen = null;
@@ -132,8 +132,7 @@ public class SatiaWebController {
                 eu.removeTask(t, test);
             }
         }
-
-        return defaultPage();
+        return model;
     }
 
     @RequestMapping(value = "/admin**", method = RequestMethod.GET)
