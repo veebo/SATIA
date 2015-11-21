@@ -115,7 +115,7 @@ public class SatiaWebController {
                 eu.updatePhraseInTask(newValue, j, t, test);
             }
             //update generator
-            String genId = request.getParameter("task"+t.getTaskid()+"_gen");
+            String genId = request.getParameter("task"+t.getTaskId()+"_gen");
             Generator gen = ks.getEntityById(Generator.class, genId);
             if ( (gen != null) && (!gen.equals(t.getGenerator())) ) {
                 t.setGenerator(gen);
@@ -123,9 +123,8 @@ public class SatiaWebController {
             }
             //update sourceNum if needed
             if (!t.getTranslation()."${"getPhrase"+t.getSourceNum()}"().getLang().equals(test.getSourceLang())) {
-                Translation tr = t.getTranslation();
-                tr.setSourceNum((t.getSourceNum() == 1) ? 2 : 1);
-                ks.saveEntity(tr);
+                t.setSourceNum((t.getSourceNum() == (byte)1) ? (byte)2 : (byte)1);
+                ks.saveEntity(t);
             }
             //delete
             if (request.getParameter("del_task"+t.getTaskId()) != null) {

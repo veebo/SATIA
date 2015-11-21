@@ -12,8 +12,9 @@ public class EntityUpdater {
     }
 
 	def newPhrase(String newValue, Lang lang) {
-        Object[] params = [newValue];
-        Phrase equalPhrase = ks.getEntityByQuery(Phrase.class,"SELECT phrase_id FROM phrases WHERE value=?", params);
+        Object[] params = [newValue, lang.getLang()];
+        Phrase equalPhrase = ks.getEntityByQuery(Phrase.class,"SELECT phrase_id FROM phrases "+
+                                        "WHERE value=? AND lang_id=?", params);
         if (equalPhrase != null) {
             return equalPhrase;
         }
