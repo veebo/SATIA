@@ -1,7 +1,7 @@
 package com.mephiboys.satia.groovy.controller
 
-import com.mephiboys.satia.kernel.api.KernelService
 import java.util.*;
+import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 
 public class EntityUpdater {
@@ -11,7 +11,61 @@ public class EntityUpdater {
     	this.ks = ks;
     }
 
-	def newPhrase(String newValue, Lang lang) {
+    def filterString(String str) {
+        if (str == null) {
+            return str;
+        }
+        str.replaceAll("[<>]","");
+        if (str.equals("")) {
+            return null;
+        }
+    }
+
+    def updateTestFields(test, testReqParams) throws IllegalArgumentException {
+        testReqParams.each {k,v ->
+            if (k.equals("Generator")) {
+                try {
+                    long genId = Long.parseLong(v);
+                } catch (NumberFormatException nf) {
+                    return;
+                }
+                Generator newGen = ks.getEntityById(new Long(genId));
+                if (newGen == null) {
+                    throw new IllegalArgumentException();
+                }
+                if (!test.getGenerator().equals(newGen)) {
+                    test.setGenerator(newGen);
+                }
+            }
+            else if ((k.equals("SourceLang")) || (k.equals("TargetLang"))) {
+                Lang newLang = ks.getEntityById(k);
+                if (newLang == null) {
+                    throw new IllegalArgumentException();
+                }
+                if (!test."${"get"+k}"().equals(newLang)) {
+                    test."${"set"+k}"(newLang);
+                }
+            }
+            else {
+                if ((v = filterString(v)) == null) {
+                    throw new IllegalArgumentException();
+                }
+                if (!test."${"get"+k}"().equals(v)) {
+                    test."${"set"+k}"(v);
+                }
+            }
+        };
+        if (test.getSourceLang().equals(test.getTargetLang())) {
+            throw new IllegalArgumentException();
+        }
+        ks.saveEntity(test);
+    }
+
+	def newPhrase(String newValue, Lang lang, boolean filter) throws IllegalArgumentException {
+        if ((lang == null) || (filter ? ((newValue = filterString(newValue)) == null) : true) ) {
+            throw new IllegalArgumentException();
+        }
+
         Object[] params = [newValue, lang.getLang()];
         Phrase equalPhrase = ks.getEntityByQuery(Phrase.class,"SELECT phrase_id FROM phrases "+
                                         "WHERE value=? AND lang_id=?", params);
@@ -27,9 +81,13 @@ public class EntityUpdater {
         }
     }
 
-    def newTask(String[] values, Generator gen, Test test) {
-        Phrase p1 = newPhrase(values[0], test.getSourceLang());
-        Phrase p2 = newPhrase(values[1], test.getTargetLang());
+    def newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
+        if ((values == null) || (values.length < 2) || (gen == null) || (test == null)) {
+            throw new IllegalArgumentException();
+        }
+        Phrase p1 = newPhrase(values[0], test.getSourceLang(), true);
+        Phrase p2 = newPhrase(values[1], test.getTargetLang(), true);
+
         Object[] params = [p1.getPhraseId(), p2.getPhraseId(), p2.getPhraseId(), p1.getPhraseId()];
         Translation tr = ks.getEntityByQuery(Translation.class,
   "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
@@ -42,7 +100,7 @@ public class EntityUpdater {
         }
         List<Test> tests = new ArrayList<Test>();
         tests.add(test);
-        int sourceNum = (tr.getPhrase1().getLang().equals(test.getSourceLang())) ? 1 : 2;
+        byte sourceNum = (byte)1;
         Task new_task = new Task();
         new_task.setTranslation(tr);
         new_task.setSourceNum(sourceNum);
@@ -52,11 +110,13 @@ public class EntityUpdater {
         return new_task;
     }
 
-    def updatePhraseInTask(String newValue, int i, Task t, Test test) {
-        if (newValue.equals("")) {
-            return;
+    def updatePhraseInTask(String newValue, int i, Task t, Test test) throws IllegalArgumentException {
+        newValue = filterString(newValue);
+        if ((newValue == null) || (t == null) || (test == null)) {
+            throw new IllegalArgumentException();
         }
-        if (!newValue.equals(  t.getTranslation()."${"getPhrase"+i}"().getValue()  )) {
+
+        if (!newValue.equals(  t.getTranslation()."${"getPhrase"+i}"().getValue())) {
             //check if translation is used in other tasks
             Object[] params = [t.getTranslation().getTranslationId()];
             Collection<Task> relTasks = ks.getEntitiesByQuery(Task.class,
@@ -75,7 +135,7 @@ public class EntityUpdater {
             Phrase phrase = t.getTranslation()."${"getPhrase"+i}"();
             params = [phrase.getPhraseId(), phrase.getPhraseId(), t.getTranslation().getTranslationId()];
             Collection<Translation> relTranslations = ks.getEntitiesByQuery(Translation.class,
-            	            "SELECT translation_id FROM translations "+
+                            "SELECT translation_id FROM translations "+
                             "WHERE (phrase1_id=? OR phrase2_id=?) AND translation_id <> ?",
                                                         params);
             //  if not - replace old value
@@ -85,7 +145,7 @@ public class EntityUpdater {
             }
             //  if yes - create new phrase with value
             else {
-                Phrase p = newPhrase(newValue, t.getTranslation()."${"getPhrase"+i}"().getLang());
+                Phrase p = newPhrase(newValue, t.getTranslation()."${"getPhrase"+i}"().getLang(), false);
                 t.getTranslation()."${"setPhrase"+i}"(p);
                 ks.saveEntity(t.getTranslation());
             }
@@ -93,6 +153,9 @@ public class EntityUpdater {
     }
 
     def removeTask(Task t, Test test) {
+        if ((t==null) || (test==null)) {
+            return;
+        }
     	Translation tr = t.getTranslation();
     	Phrase p1 = tr.getPhrase1();
     	Phrase p2 = tr.getPhrase2();

@@ -18,6 +18,8 @@ import org.springframework.web.servlet.ModelAndView
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import java.util.*;
+
 @Controller
 public class SatiaWebController {
 
@@ -32,7 +34,7 @@ public class SatiaWebController {
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof AnonymousAuthenticationToken) {
-            return accesssDenied();
+            return accessDenied();
         }
 
         ModelAndView model = new ModelAndView();
@@ -56,69 +58,123 @@ public class SatiaWebController {
     }
 
     @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.GET)
-    def ModelAndView testEditingPage(@PathVariable String testIdStr) throws Exception {
+    def ModelAndView testEditingPage(@PathVariable String testIdStr) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof AnonymousAuthenticationToken) {
             return accesssDenied();
         }
+        String authUserName = auth.getName();
+        User user = ks.getEntityById(User.class, authUserName);
+        if (user == null) {
+            return accessDenied();
+        }
 
         ModelAndView model = new ModelAndView();
         model.setViewName("test_edit");
+        Collection<Generator> generators = ks.getEntitiesByQuery(Generator.class, 
+            "SELECT gen_id FROM generators");
+        model.addObject("generators", generators);
+        //for creating new test
+        if (testIdStr.equals("create")) {
+            Test newTest = new Test();
+            newTest.setUser(user);
+            newTest.setTasks(new ArrayList<Task>());
+            model.addObject("test", newTest);
+            return model;
+        }
+        //for editing existing test
         Long testId;
         try {
             testId = new Long(Long.parseLong(testIdStr,10));
         }
         catch (NumberFormatException nf) {
-            throw new ResourceNotFoundException();
+            return notFound();
         }
         Test test = ks.getEntityById(Test.class, testId);
         if (test == null) {
-            throw new ResourceNotFoundException();
+            return notFound();
+        }
+        if (!(test.getUser().equals(user))) {
+            return accessDenied();
         }
         model.addObject("test", test);
-        Collection<Generator> generators = ks.getEntitiesByQuery(Generator.class, 
-            "SELECT gen_id FROM generators");
-        model.addObject("generators", generators);
-        
         return model;
     }
 
     @RequestMapping(value="/post/{testIdStr}", method=RequestMethod.POST)
-    def ModelAndView updateTestPage(@PathVariable("testIdStr") String testIdStr, HttpServletRequest request)
-      throws Exception {
+    def ModelAndView updateTestPage(@PathVariable("testIdStr") String testIdStr, HttpServletRequest request) {
+
         ModelAndView model = testEditingPage(testIdStr);
+        // if not found or denied
+        if (!model.getViewName().equals("test_edit")) {
+            return model;
+        }
+
         Test test = model.getModel().get("test");
         EntityUpdater eu = new EntityUpdater(ks);
+
+        //validate and modify test fields if needed and save tet entity
+        try {
+            eu.updateTestFields(test, ["Title" : request.getParameter("test_title"),
+                                       "Description" : request.getParameter("test_description"),
+                                       "Generator" : request.getParameter("test_generator"),
+                                       "SourceLang" : request.getParameter("test_sourcelang"),
+                                       "TargetLang" : request.getParameter("test_targetlang")]);
+        } catch (IllegalArgumentException ia) {
+            return badRequest();
+        }
+
         //add new tasks
-        int i = 0;
-        String[] values;
-        while (  ((values=request.getParameterValues("task_add_"+(i++))) != null)  ) {
-            if ((values == null) || (values.length < 2)) {
+        int addedTasks;
+        try {
+            addedTasks = Integer.parseInt(request.getParameter("added_tasks_num"));
+        } catch (NumberFormatException nf) {
+            addedTasks = 0;
+        }
+        String[] values = new String[2];
+        for (int i=0; i<addedTasks; i++) {
+            values[0] = request.getParameter("add_task"+i+"_phrase1");
+            values[1] = request.getParameter("add_task"+i+"_phrase2");
+            Generator newTaskGen = null;
+            try {
+                Long genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
+                newTaskGen = ks.getEntityById(Generator.class, genId);
+                if (newTaskGen == null) {
+                    newTaskGen = test.getGenerator();
+                }
+            }
+            catch (NumberFormatException nf) {
+                newTaskGen = test.getGenerator();
+            }
+            try {
+                eu.newTask(values, newTaskGen, test);
+            } catch (IllegalArgumentException ia) {
                 continue;
             }
-            Generator gen = null;
-            if (values.length >= 3) {
-                String genId = values[2];
-                gen = ks.getEntityById(Generator.class, genId);
-            }
-            if (gen == null) {
-                gen = test.getGenerator();
-            }
-            eu.newTask(values, gen, test);
         }
+
         //modify and delete existing tasks
         for (Task t : test.getTasks()) {
+            //delete if needed
+            if (request.getParameter("del_task"+t.getTaskId()) != null) {
+                eu.removeTask(t, test);
+                continue;
+            }
             //update phrases and translation
             for (int j=1; j<=2; j++) {
                 String newValue = request.getParameter("task"+t.getTaskId()+"_phrase"+j);
-                eu.updatePhraseInTask(newValue, j, t, test);
+                try {
+                    eu.updatePhraseInTask(newValue, j, t, test);
+                } catch (IllegalArgumentException ia) {
+                    continue;
+                }
             }
             //update generator
             String genId = request.getParameter("task"+t.getTaskId()+"_gen");
-            Generator gen = ks.getEntityById(Generator.class, genId);
-            if ( (gen != null) && (!gen.equals(t.getGenerator())) ) {
-                t.setGenerator(gen);
+            Generator taskGen = ks.getEntityById(Generator.class, genId);
+            if ( (taskGen != null) && (!taskGen.equals(t.getGenerator())) ) {
+                t.setGenerator(taskGen);
                 ks.saveEntity(t);
             }
             //update sourceNum if needed
@@ -126,11 +182,25 @@ public class SatiaWebController {
                 t.setSourceNum((t.getSourceNum() == (byte)1) ? (byte)2 : (byte)1);
                 ks.saveEntity(t);
             }
-            //delete
-            if (request.getParameter("del_task"+t.getTaskId()) != null) {
-                eu.removeTask(t, test);
-            }
         }
+
+        //save test
+        ks.saveEntity(test);
+
+        return model;
+    }
+
+    @RequestMapping(value="404")
+    def ModelAndView notFound() {
+        ModelAndView model = new ModelAndView();
+        model.setViewName("404");
+        return model;
+    }
+
+    @RequestMapping(value="400")
+    def ModelAndView badRequest() {
+        ModelAndView model = new ModelAndView();
+        model.setViewName("400");
         return model;
     }
 
@@ -176,7 +246,7 @@ public class SatiaWebController {
     }
 
     @RequestMapping(value = "/403", method = RequestMethod.GET)
-    def ModelAndView accesssDenied() {
+    def ModelAndView accessDenied() {
         ModelAndView model = new ModelAndView();
         //check if user is login
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
