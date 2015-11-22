@@ -62,23 +62,23 @@ public class KernelServiceEJB implements KernelService {
 
         String sqlQuery = null;
         if (Test.class.equals(cls)){
-            sqlQuery = "select e.testId from Test e where e.testId IN :keys";
+            sqlQuery = "select e from Test e where e.testId IN :keys";
         } else if (Task.class.equals(cls)){
-            sqlQuery = "select e.taskId from Task e where e.taskId IN :keys";
+            sqlQuery = "select e from Task e where e.taskId IN :keys";
         } else if (Translation.class.equals(cls)){
-            sqlQuery = "select e.translationId from Translation e where e.translationId IN :keys";;
+            sqlQuery = "select e from Translation e where e.translationId IN :keys";;
         } else if (Generator.class.equals(cls)){
-            sqlQuery = "select e.genId from Generator e where e.genId IN :keys";;
+            sqlQuery = "select e from Generator e where e.genId IN :keys";;
         }else if (Phrase.class.equals(cls)){
-            sqlQuery = "select e.phraseId from Phrase e where e.phraseId IN :keys";;
+            sqlQuery = "select e from Phrase e where e.phraseId IN :keys";;
         } else if (Role.class.equals(cls)){
-            sqlQuery = "select e.roleId from Role e where e.roleId IN :keys";;
+            sqlQuery = "select e from Role e where e.roleId IN :keys";;
         }  else if (Lang.class.equals(cls)){
-            sqlQuery = "select e.lang from Lang e where e.lang IN :keys";;
+            sqlQuery = "select e from Lang e where e.lang IN :keys";;
         } else if (User.class.equals(cls)){
-            sqlQuery = "select e.username from User e where e.username IN :keys";;
+            sqlQuery = "select e from User e where e.username IN :keys";;
         }else if (Result.class.equals(cls)){
-            sqlQuery = "select e.id from Result e where e.id IN :keys";;
+            sqlQuery = "select e from Result e where e.id IN :keys";;
         }   else {
             throw new IllegalArgumentException("Class '"+cls+"' is not an entity");
         }
