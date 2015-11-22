@@ -1,4 +1,5 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@page pageEncoding="UTF-8"%>
 <%@page session="true"%>
 <html>
 <head>
@@ -19,7 +20,12 @@
     </div>
 	<div class="container">
 
-	<form action="<c:url value='/post/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
+	<c:if test="${create}">
+	<form action="<c:url value='/edit/create?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
+    </c:if>
+    <c:if test="${!create}">
+    <form action="<c:url value='/edit/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
+    </c:if>
 	    <div class="section">
 	    	<div class="hint">Title:</div> <input type="text" name="test_title" value="${test.title}"/><br><br>
 	    	<div class="hint">Description:</div> <textarea name="test_description">${test.description}</textarea><br><br>

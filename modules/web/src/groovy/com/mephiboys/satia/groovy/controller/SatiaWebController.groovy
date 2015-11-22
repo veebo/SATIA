@@ -27,7 +27,7 @@ public class SatiaWebController {
     protected KernelService ks = getKernelService()
 
     KernelService getKernelService() {
-        return new KernelServiceEJB();
+        return new MockedKernelService();
     };
 
     @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
@@ -70,9 +70,9 @@ public class SatiaWebController {
         }
         String authUserName = auth.getName();
         User user = ks.getEntityById(User.class, authUserName);
-        if (user == null) {
+        /*if (user == null) {
             return accessDenied();
-        }
+        }*/
 
         ModelAndView model = new ModelAndView();
         model.setViewName("test_edit");
@@ -88,6 +88,7 @@ public class SatiaWebController {
             newTest.setUser(user);
             newTest.setTasks(new ArrayList<Task>());
             model.addObject("test", newTest);
+            model.addObject("create", true);
             return model;
         }
         //for editing existing test
@@ -102,14 +103,15 @@ public class SatiaWebController {
         if (test == null) {
             return notFound();
         }
-        if (!(test.getUser().equals(user))) {
+        /*if (!(test.getUser().equals(user))) {
             return accessDenied();
-        }
+        }*/
         model.addObject("test", test);
+        model.addObject("create", false);
         return model;
     }
 
-    @RequestMapping(value="/post/{testIdStr}", method=RequestMethod.POST)
+    @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.POST)
     def ModelAndView updateTestPage(@PathVariable("testIdStr") String testIdStr, HttpServletRequest request) {
 
         ModelAndView model = testEditingPage(testIdStr);
