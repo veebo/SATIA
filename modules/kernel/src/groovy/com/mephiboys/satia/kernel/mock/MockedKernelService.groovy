@@ -51,7 +51,7 @@ class MockedKernelService implements KernelService {
             case Task.class: tasks.each { if(id.equals( new Long(((Task)it).getTaskId()) )) res=it}; break
             case Translation.class: translations.each {if(id.equals( new Long(((Translation)it).getTranslationId()) )) res=it}; break
             case Phrase.class: phrases.each { if(id.equals( new Long(((Phrase)it).getPhraseId()) ) ) res=it}; break
-            case Generator.class: generators.each { if(id.equals( ((Generator)it).getImpl()) ) res=it}; break
+            case Generator.class: generators.each { if(id.equals( ((Generator)it).getGenId()) ) res=it}; break
             case User.class: users.each { if(id.equals(((User)it).getUsername())) res=it}; break
             case Result.class: results.each { if(id.equals(((Result)it).getId())) res=it}; break
             case Lang.class: langs.each { if(id.equals(((Lang)it).getLang())) res=it}; break
@@ -89,11 +89,31 @@ class MockedKernelService implements KernelService {
     void saveEntity(Object entity) {
         def cls = entity.getClass()
         switch (cls) {
-            case Test.class: tests << ((Test)entity).setTestId(tests.max { ((Test)it).getTestId() }.getTestId() + 1); break
-            case Task.class: tasks << ((Task)entity).setTaskId(tasks.max { ((Task)it).getTaskId() }.getTaskId() + 1); break
-            case Translation.class: translations << ((Translation)entity).setTranslationId(translations.max { ((Translation)it).getTranslationId() }.getTranslationId() + 1); break
-            case Phrase.class: phrases << ((Phrase)entity).setPhraseId(phrases.max { ((Phrase)it).getPhraseId() }.getPhraseId() + 1); break
-            case Generator.class: generators << ((Generator)entity).setGenId(generators.max { ((Generator)it).getGenId() }.getGenId() + 1); break
+            case Test.class: tests << ((Test)entity).setTestId(tests.max { a,b ->
+                    if (a == null) return -1
+                    if (b == null) return 1
+                    a.getTestId() <=> b.getTestId()
+                }.getTestId() + 1); break
+            case Task.class: tasks << ((Task)entity).setTaskId(tasks.max { a,b ->
+                    if (a == null) return -1
+                    if (b == null) return 1
+                    a.getTaskId() <=> b.getTaskId()
+                }.getTaskId() + 1); break
+            case Translation.class: translations << ((Translation)entity).setTranslationId(translations.max { a,b ->
+                    if (a == null) return -1
+                    if (b == null) return 1
+                    a.getTranslationId() <=> b.getTranslationId()
+                }.getTranslationId() + 1); break
+            case Phrase.class: phrases << ((Phrase)entity).setPhraseId(phrases.max { a,b ->
+                    if (a == null) return -1
+                    if (b == null) return 1
+                    a.getPhraseId() <=> b.getPhraseId()
+                }.getPhraseId() + 1); break
+            case Generator.class: generators << ((Generator)entity).setGenId(generators.max { a,b ->
+                    if (a == null) return -1
+                    if (b == null) return 1
+                    a.getGenId() <=> b.getGenId()
+                }.getGenId() + 1); break
             case User.class: users << entity; break
             case Result.class: results << entity; break
             case Lang.class: langs << entity; break
