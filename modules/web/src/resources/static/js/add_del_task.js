@@ -1,5 +1,5 @@
+var lastAddedTaskIndx = 0;
 $(document).ready(function() {
-	var lastAddedTaskIndx = 0;
 	var addedTasksInput = $("#added_tasks_input");
 
 	$("#add_task").click(function() {
@@ -14,21 +14,23 @@ $(document).ready(function() {
 		++lastAddedTaskIndx;
 	});
 
-	$(".remove").click(function() {
+	$("#tasks").on( "click", ".remove", function() {
 		var row = $(this).closest(".row");
 		if (row.hasClass("added")) {
 			row.remove();
 		}
 		else {
-			row.css({"display" : "none"});
-			var id = row.find("textarea")[0].attr("name").split("_")[0].split("task")[0];
+			var id = row.find("textarea").attr("name").split("_")[0].split("task")[1];
 			if (id == "-1") {
 				return;
 			}
 			row.find(".cell").remove();
-			var input = row.add("textarea");
+			var input = addedTasksInput.clone();
+			input.attr("id","");
 			input.attr("name", "del_task"+id);
-			input.text("+");
+			input.attr("value", "+");
+			row.append(input);
+			row.css({"display" : "none"});
 		}
 	});
 });
