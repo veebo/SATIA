@@ -15,7 +15,7 @@ public class EntityUpdater {
         if (str == null) {
             return str;
         }
-        str.replaceAll("[<>]{1}","");
+        str = str.replaceAll("[<>]{1}","");
         if (str.equals("")) {
             return null;
         }
@@ -105,7 +105,7 @@ public class EntityUpdater {
         }
         List<Test> tests = new ArrayList<Test>();
         tests.add(test);
-        byte sourceNum = (byte)1;
+        byte sourceNum = tr.getPhrase1().getLang().equals(test.getSourceLang()) ? (byte)1 : (byte)2;
         Task new_task = new Task();
         new_task.setTranslation(tr);
         new_task.setSourceNum(sourceNum);
