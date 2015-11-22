@@ -15,32 +15,37 @@ public class EntityUpdater {
         if (str == null) {
             return str;
         }
-        str.replaceAll("[<>]","");
+        str.replaceAll("[<>]{1}","");
         if (str.equals("")) {
             return null;
+        }
+        else {
+            return str;
         }
     }
 
     def updateTestFields(test, testReqParams) throws IllegalArgumentException {
         testReqParams.each {k,v ->
             if (k.equals("Generator")) {
+                long genId;
+                Generator newGen;
                 try {
-                    long genId = Long.parseLong(v);
+                    genId = Long.parseLong(v);
+                    newGen = ks.getEntityById(Generator.class, new Long(genId));
                 } catch (NumberFormatException nf) {
-                    return;
+                    newGen = null;
                 }
-                Generator newGen = ks.getEntityById(new Long(genId));
                 if (newGen == null) {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("invalid generator value: "+genId);
                 }
                 if (!test.getGenerator().equals(newGen)) {
                     test.setGenerator(newGen);
                 }
             }
             else if ((k.equals("SourceLang")) || (k.equals("TargetLang"))) {
-                Lang newLang = ks.getEntityById(k);
+                Lang newLang = ks.getEntityById(Lang.class, v);
                 if (newLang == null) {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("ivalid "+k+" value: "+v);
                 }
                 if (!test."${"get"+k}"().equals(newLang)) {
                     test."${"set"+k}"(newLang);
@@ -48,7 +53,7 @@ public class EntityUpdater {
             }
             else {
                 if ((v = filterString(v)) == null) {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException("ivalid "+k+" value: "+v);
                 }
                 if (!test."${"get"+k}"().equals(v)) {
                     test."${"set"+k}"(v);
@@ -56,7 +61,7 @@ public class EntityUpdater {
             }
         };
         if (test.getSourceLang().equals(test.getTargetLang())) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("target and source languages are the same");
         }
         ks.saveEntity(test);
     }

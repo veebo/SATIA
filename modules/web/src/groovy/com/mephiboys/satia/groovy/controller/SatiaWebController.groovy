@@ -1,6 +1,7 @@
 package com.mephiboys.satia.groovy.controller
 
 import com.mephiboys.satia.kernel.api.KernelService
+import com.mephiboys.satia.kernel.impl.KernelServiceEJB
 import com.mephiboys.satia.kernel.impl.entitiy.*
 import com.mephiboys.satia.kernel.mock.MockedKernelService
 
@@ -26,7 +27,7 @@ public class SatiaWebController {
     protected KernelService ks = getKernelService()
 
     KernelService getKernelService() {
-        return new MockedKernelService();
+        return new KernelServiceEJB();
     };
 
     @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
@@ -45,6 +46,9 @@ public class SatiaWebController {
         Collection<Test> myTests = ks.getEntitiesByQuery(Test.class,
             "SELECT test_id FROM tests WHERE username=?",userName);
         for (Test t : myTests) {
+            if (t == null) {
+                continue;
+            }
             Collection<Result> results = ks.getEntitiesByQuery(Result.class,
                 "SELECT username,test_id,start_time,session_key FROM results WHERE test_id=?",t.getTestId());
             def tr = [:];
@@ -75,6 +79,9 @@ public class SatiaWebController {
         Collection<Generator> generators = ks.getEntitiesByQuery(Generator.class, 
             "SELECT gen_id FROM generators");
         model.addObject("generators", generators);
+        Collection<Lang> langs = ks.getEntitiesByQuery(Lang.class, "SELECT lang FROM langs");
+        model.addObject("langs", langs);
+
         //for creating new test
         if (testIdStr.equals("create")) {
             Test newTest = new Test();
@@ -122,7 +129,7 @@ public class SatiaWebController {
                                        "SourceLang" : request.getParameter("test_sourcelang"),
                                        "TargetLang" : request.getParameter("test_targetlang")]);
         } catch (IllegalArgumentException ia) {
-            return badRequest();
+            return badRequest(ia.getMessage());
         }
 
         //add new tasks
@@ -190,16 +197,17 @@ public class SatiaWebController {
         return model;
     }
 
-    @RequestMapping(value="404")
+    @RequestMapping(value="/404")
     def ModelAndView notFound() {
         ModelAndView model = new ModelAndView();
         model.setViewName("404");
         return model;
     }
 
-    @RequestMapping(value="400")
-    def ModelAndView badRequest() {
+    @RequestMapping(value="/400")
+    def ModelAndView badRequest(String msg) {
         ModelAndView model = new ModelAndView();
+        model.addObject("msg", msg);
         model.setViewName("400");
         return model;
     }

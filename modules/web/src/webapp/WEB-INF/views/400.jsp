@@ -3,6 +3,6 @@
 <body>
 
 	<h1>HTTP Status 400 - Bad request</h1>
-	
+	${msg}
 </body>
 </html>

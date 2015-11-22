@@ -5,6 +5,7 @@
 	<meta http-equiv="Content-Type" content="text/html" charset="utf-16" >
 	<link rel="stylesheet" href="/resources/css/style.css" />
 	<link rel="stylesheet" href="/resources/css/test_edit_style.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 	<script type="text/javascript" src="/resources/js/add_del_task.js"></script>
 </head>
 <body>
@@ -20,30 +21,29 @@
 
 	<form action="<c:url value='/post/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
 	    <div class="section">
-	    	Title: <input type="text" name="text_title" value="${test.title}"/><br>
-	    	Title: <textarea name="test_description">${test.description}</textarea><br>
-	    	Generator:
+	    	<div class="hint">Title:</div> <input type="text" name="test_title" value="${test.title}"/><br><br>
+	    	<div class="hint">Description:</div> <textarea name="test_description">${test.description}</textarea><br><br>
+	    	<div class="hint">Generator:</div>
 	    	<select name="test_generator">
-	            <option value="null">Default</option>
 	            <c:forEach var="g" items="${generators}">
                 <option value="${g.genId}">${g.impl}</option>
 	            </c:forEach>
 	        </select>
-	        <br>
-	        Source lang:
+	        <br><br>
+	        <div class="hint">Source language:</div>
 	        <select name="test_sourcelang">
 	        	<c:forEach var="l" items="${langs}">
 	        	<option value="${l.lang}">${l.lang}</option>
 	            </c:forEach>
 	        </select>
-	        <br>
-	        Target lang:
+	        <br><br>
+	        <div class="hint">Target language:</div>
 	        <select name="test_targetlang">
 	        	<c:forEach var="l" items="${langs}">
 	        	<option value="${l.lang}">${l.lang}</option>
 	            </c:forEach>
 	        </select>
-	        <br>
+	        <br><br>
 	    </div>
 	    <div id="tasks" class="section">
 	    	<div class="table">
