@@ -16,10 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Singleton
 public class KernelServiceEJB implements KernelService {
@@ -66,25 +63,25 @@ public class KernelServiceEJB implements KernelService {
         } else if (Task.class.equals(cls)){
             sqlQuery = "select e from Task e where e.taskId IN :keys";
         } else if (Translation.class.equals(cls)){
-            sqlQuery = "select e from Translation e where e.translationId IN :keys";;
+            sqlQuery = "select e from Translation e where e.translationId IN :keys";
         } else if (Generator.class.equals(cls)){
-            sqlQuery = "select e from Generator e where e.genId IN :keys";;
+            sqlQuery = "select e from Generator e where e.genId IN :keys";
         }else if (Phrase.class.equals(cls)){
-            sqlQuery = "select e from Phrase e where e.phraseId IN :keys";;
+            sqlQuery = "select e from Phrase e where e.phraseId IN :keys";
         } else if (Role.class.equals(cls)){
-            sqlQuery = "select e from Role e where e.roleId IN :keys";;
+            sqlQuery = "select e from Role e where e.roleId IN :keys";
         }  else if (Lang.class.equals(cls)){
-            sqlQuery = "select e from Lang e where e.lang IN :keys";;
+            sqlQuery = "select e from Lang e where e.lang IN :keys";
         } else if (User.class.equals(cls)){
-            sqlQuery = "select e from User e where e.username IN :keys";;
+            sqlQuery = "select e from User e where e.username IN :keys";
         }else if (Result.class.equals(cls)){
-            sqlQuery = "select e from Result e where e.id IN :keys";;
+            sqlQuery = "select e from Result e where e.id IN :keys";
         }   else {
             throw new IllegalArgumentException("Class '"+cls+"' is not an entity");
         }
 
         Query q = entityManager.createQuery(sqlQuery, cls);
-        q.setParameter("keys", ids);
+        q.setParameter("keys", new ArrayList(ids));
         List<T> result = q.getResultList();
         return result;
     }
