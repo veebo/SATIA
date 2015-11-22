@@ -6,6 +6,7 @@
     <persistence-unit name="PostgresPU" transaction-type="JTA">
         <jta-data-source>java:jboss/datasources/PostgresDSource</jta-data-source>
         <properties>
+            <property name="showSql" value="true"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
         </properties>
     </persistence-unit>

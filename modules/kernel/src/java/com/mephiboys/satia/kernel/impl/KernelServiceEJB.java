@@ -83,7 +83,8 @@ public class KernelServiceEJB implements KernelService {
         }
 
         Query q = entityManager.createQuery(sqlQuery, cls);
-        q.setParameter("keys", new ArrayList(ids));
+        if (!ids.isEmpty())
+            q.setParameter("keys", new ArrayList(ids));
         List<T> result = q.getResultList();
         return result;
     }
