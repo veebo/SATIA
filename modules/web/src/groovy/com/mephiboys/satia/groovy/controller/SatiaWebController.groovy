@@ -1,25 +1,21 @@
 package com.mephiboys.satia.groovy.controller
-
 import com.mephiboys.satia.kernel.api.KernelService
-import com.mephiboys.satia.kernel.impl.KernelServiceEJB
 import com.mephiboys.satia.kernel.impl.entitiy.*
 import com.mephiboys.satia.kernel.mock.MockedKernelService
-
-import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.stereotype.Controller
 import org.springframework.ui.ModelMap
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-
-import java.util.*;
 
 @Controller
 public class SatiaWebController {
@@ -30,7 +26,7 @@ public class SatiaWebController {
         return new MockedKernelService();
     };
 
-    @RequestMapping(value = [ "/", "/welcome**" ], method = RequestMethod.GET)
+    @RequestMapping(value = [ "/" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -250,7 +246,7 @@ public class SatiaWebController {
         def auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null){
             new SecurityContextLogoutHandler().logout(request, response, auth);
-            model.addObject("msg", "You've been logged out successfully.");
+            model.addAttribute("msg", "You've been logged out successfully.");
         }
         return "redirect:/login";
     }
@@ -261,11 +257,14 @@ public class SatiaWebController {
         //check if user is login
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!(auth instanceof AnonymousAuthenticationToken)) {
-            UserDetails userDetail = (UserDetails) auth.getPrincipal();
-            model.addObject("username", userDetail.getUsername());
+//            UserDetails userDetail = (UserDetails) auth.getPrincipal();
+//            model.addObject("username", userDetail.getUsername());
+            model.setViewName("403");
+        } else {
+            model.setViewName("redirect:/login")
         }
 
-        model.setViewName("403");
+
         return model;
 
     }
