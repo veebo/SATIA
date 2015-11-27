@@ -30,9 +30,6 @@ public class SatiaWebController {
     def ModelAndView defaultPage() {
         
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof AnonymousAuthenticationToken) {
-            return accessDenied();
-        }
 
         ModelAndView model = new ModelAndView();
         model.setViewName("home");
@@ -61,14 +58,8 @@ public class SatiaWebController {
     def ModelAndView testEditingPage(@PathVariable String testIdStr) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof AnonymousAuthenticationToken) {
-            return accesssDenied();
-        }
         String authUserName = auth.getName();
         User user = ks.getEntityById(User.class, authUserName);
-        /*if (user == null) {
-            return accessDenied();
-        }*/
 
         ModelAndView model = new ModelAndView();
         model.setViewName("test_edit");

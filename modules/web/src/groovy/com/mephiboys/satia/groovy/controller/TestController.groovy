@@ -1,17 +1,11 @@
 package com.mephiboys.satia.groovy.controller
-
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
-
-import org.springframework.http.HttpStatus
-import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.stereotype.Controller
-import org.springframework.ui.ModelMap
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.ModelAndView
 
 import javax.naming.InitialContext
@@ -21,7 +15,7 @@ public class TestController {
 
     final KERNEL_SERVICE_JNDI = "java:app/satia-kernel/KernelServiceEJB"
 
-    @RequestMapping(value = [ "/kernelTest" ], method = RequestMethod.GET)
+    @RequestMapping(value = [ "/test_kernelTest" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {
         ModelAndView model = new ModelAndView()
         model.addObject("em", getKernelService().getEntityManager())
@@ -35,19 +29,14 @@ public class TestController {
         return (KernelService)ic.lookup(KERNEL_SERVICE_JNDI)
     }
 
-    @RequestMapping(value = "/addObjects", method = RequestMethod.GET)
+    @RequestMapping(value = "/test_addObjects", method = RequestMethod.GET)
     def ModelAndView addObjects() {
         KernelService ks = getKernelService();
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof AnonymousAuthenticationToken) {
-            return accesssDenied();
-        }
-        String authUserName = auth.getName();
+        def authUserName = auth.getName()
         User user = ks.getEntityById(User.class, authUserName);
-        if (user == null) {
-            return accessDenied();
-        }
-        
+
         def tests = []
         def tasks = []
         def translations = []
@@ -91,7 +80,9 @@ public class TestController {
                 createdWhen: new Date().toTimestamp(),
                 user: user,
                 generator: g1,
-                tasks: [task1, task2, task3, task4]
+                tasks: [task1, task2, task3, task4],
+                sourceLang: rus,
+                targetLang: eng
         )
 
         Result res1 = new Result(startTime : new Date().toTimestamp(), sessionKey : "sessionKey1",
@@ -109,7 +100,7 @@ public class TestController {
         generators << g1;
         results << res1 << res2 << res3;
 
-        def all = [langs, genrators, phrases, translations, tasks, tests, results];
+        def all = [langs, generators, phrases, translations, tasks, tests, results];
         all.each{
             it.each{
                 ks.saveEntity(it);
@@ -118,7 +109,7 @@ public class TestController {
         return showObjectsByQuery();
     }
 
-    @RequestMapping(value="showObjectsByIds", method=RequestMethod.GET)
+    @RequestMapping(value="test_showObjectsByIds", method=RequestMethod.GET)
     def ModelAndView showObjectsByIds() {
         ModelAndView model = new ModelAndView();
         model.setViewName("kernel_test");
@@ -132,7 +123,7 @@ public class TestController {
         return model;
     }
 
-    @RequestMapping(value="showObjectsByQuery", method=RequestMethod.GET)
+    @RequestMapping(value="test_showObjectsByQuery", method=RequestMethod.GET)
     def ModelAndView showObjectsByQuery() {
         ModelAndView model = new ModelAndView();
         model.setViewName("kernel_test");
@@ -145,18 +136,9 @@ public class TestController {
         return model;
     }
 
-    @RequestMapping(value="deleteObjects", method=RequestMethod.GET)
+    @RequestMapping(value="test_deleteObjects", method=RequestMethod.GET)
     def ModelAndView deleteObjects() {
         KernelService ks = getKernelService();
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof AnonymousAuthenticationToken) {
-            return accesssDenied();
-        }
-        String authUserName = auth.getName();
-        User user = ks.getEntityById(User.class, authUserName);
-        if (user == null) {
-            return accessDenied();
-        }
         Collection<Test> tests = ks.getEntitiesByQuery(Test.class, "SELECT test_id FROM tests", null);
         tests.each {
             ks.deleteEntityById(Test.class, it.getTestId());
@@ -164,19 +146,5 @@ public class TestController {
         return showObjectsByQuery();
     }
 
-    @RequestMapping(value = "/403kernel", method = RequestMethod.GET)
-    def ModelAndView accessDenied() {
-        ModelAndView model = new ModelAndView();
-        //check if user is login
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!(auth instanceof AnonymousAuthenticationToken)) {
-            UserDetails userDetail = (UserDetails) auth.getPrincipal();
-            model.addObject("username", userDetail.getUsername());
-        }
-
-        model.setViewName("403");
-        return model;
-
-    }
 
 }

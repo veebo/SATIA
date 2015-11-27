@@ -2,8 +2,8 @@ dependencies {
     //Kernel
     providedCompile project (":kernel")
 
-    //Servlet
-    providedCompile 'javax.servlet:javax.servlet-api:3.+'
+    //Servlet & JSP
+    providedCompile 'javax:javaee-api:7.0'
 
     //JSTL
     providedCompile 'jstl:jstl:1.2'
@@ -17,6 +17,10 @@ dependencies {
 
     //Logging
     providedCompile 'log4j:log4j:1.2.17'
+
+    //JSON
+    providedCompile 'com.fasterxml.jackson.core:jackson-core:2.6.3'
+    providedCompile 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
 
     //Spring
     providedCompile 'org.springframework:spring-core:4.2.1.RELEASE'
