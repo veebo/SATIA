@@ -77,9 +77,9 @@ CREATE TABLE test_tasks (
   FOREIGN KEY (task_id) REFERENCES tasks(task_id)
 );
 
-
 CREATE TABLE results (
   username varchar(60),
+  fullname varchar(60),
   test_id bigint NOT NULL,
   start_time date NOT NULL,
   session_key varchar (50) NOT NULL,
