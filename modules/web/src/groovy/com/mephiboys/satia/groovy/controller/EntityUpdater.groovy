@@ -117,7 +117,7 @@ public class EntityUpdater {
 
     def updatePhraseInTask(String newValue, int i, Task t, Test test) throws IllegalArgumentException {
         newValue = filterString(newValue);
-        if ((newValue == null) || (t == null) || (test == null)) {
+        if ((newValue == null) || (t == null) || (test == null) || (i < 1) || (i > 2)) {
             throw new IllegalArgumentException();
         }
 
@@ -185,6 +185,30 @@ public class EntityUpdater {
     		ks.deleteEntityById(Phrase.getClass(), p2.getPhraseId());
     	}
     	ks.deleteEntityById(Task.getClass(), t.getTaskId());
+    }
+
+    def updateTask(Test test, Task t, String[] values, Generator gen) {
+        if ((test == null) || (t == null)) {
+            return;
+        }
+        //update phrases and translation
+        for (int j=1; ((values != null) && (j<=2) && (values.length >= j)); j++) {;
+            try {
+                eu.updatePhraseInTask(values[j-1], j, t, test);
+            } catch (IllegalArgumentException ia) {
+                continue;
+            }
+        }
+        //update sourceNum if needed
+        if (!t.getTranslation()."${"getPhrase"+t.getSourceNum()}"().getLang().equals(test.getSourceLang())) {
+            t.setSourceNum((t.getSourceNum() == (byte)1) ? (byte)2 : (byte)1);
+            ks.saveEntity(t);
+        }
+        //update generator
+        if ( (gen != null) && (!gen.equals(t.getGenerator())) ) {
+            t.setGenerator(gen);
+            ks.saveEntity(t);
+        }
     }
 
 }

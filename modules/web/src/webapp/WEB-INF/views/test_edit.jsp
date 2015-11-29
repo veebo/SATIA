@@ -79,7 +79,7 @@
 
 	                <div class="cell gen">
 	                    <select name="task${task.taskId}_gen">
-	                    	<option value="null">Default</option>
+	                    	<option value="${test.generator.genId}">Default</option>
 
 	                    	<c:forEach var="g" items="${generators}">
 

@@ -19,6 +19,27 @@ CREATE TABLE generators (
   PRIMARY KEY (gen_id)
 );
 
+CREATE TABLE fields (
+  field_id bigserial NOT NULL,
+  gen_id bigserial NOT NULL,
+  name varchar(60),
+  type integer NOT NULL,
+  order integer NOT NULL,
+  multiple boolean NOT NULL,
+  PRIMARY KEY (field_id),
+  FOREIGN KEY (gen_id) REFERENCES generators(gen_id)
+);
+
+CREATE TABLE field_values (
+  field_value_id bigserial NOT NULL,
+  field_id bigserial NOT NULL,
+  task_id bigserial NOT NULL,
+  value varchar (400) ,
+  PRIMARY KEY (field_value_id),
+  FOREIGN KEY (field_id) REFERENCES fields(field_id),
+  FOREIGN KEY (task_id) REFERENCES tasks(task_id)
+);
+
 CREATE TABLE langs (
   lang char(3) NOT NULL,
   PRIMARY KEY (lang)
