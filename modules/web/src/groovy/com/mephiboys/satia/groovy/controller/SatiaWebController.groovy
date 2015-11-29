@@ -16,6 +16,8 @@ import org.springframework.web.servlet.ModelAndView
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
+import java.util.Date
 
 @Controller
 public class SatiaWebController {
@@ -185,6 +187,109 @@ public class SatiaWebController {
         ks.saveEntity(test);
         model.getModel().put("create", false);
 
+        return model;
+    }
+
+    @RequestMapping(value="start_test/{testIdStr}", method=RequestMethod.GET)
+    def ModelAndView startTest(@PathVariable("testIdStr") String testIdStr, HttpServletRequest request) {
+        ModelAndView model = new ModelAndView();
+        model.setViewName("start_test");
+        Long testId;
+        try {
+            testId = new Long(Long.parseLong(testIdStr,10));
+        }
+        catch (NumberFormatException nf) {
+            return notFound();
+        }
+        Test test = ks.getEntityById(Test.class, testId);
+        if (test == null) {
+            return notFound();
+        }
+        try {
+            HttpSession session = request.getSession();
+            session.setAttribute("test", test);
+            session.setAttribute("username", SecurityContextHolder.getContext().getAuthentication().getName());
+            session.setAttribute("next", new Integer(0));
+            session.setAttribute("right_answers", new Integer(0));
+        }
+        catch (IllegalStateException ilgState) {
+            return badRequest("invalidated session");
+        }
+        model.addObject("test", test);
+        return model;
+    }
+
+    @RequestMapping(value="/task", method=RequestMethod.POST)
+    def ModelAndView passTask(HttpServletRequest request) {
+        ModelAndView model = new ModelAndView();
+        int cur;
+        HttpSession session;
+        Test test;
+        int rightAnswers;
+        String username;
+        try {
+            //extract session attributes
+            session = request.getSession();
+            test = session.getAttribute("test");
+            username = session.getAttribute("username");
+            Integer intNext = session.getAttribute("next");
+            Integer intRigthAnswers = session.getAttribute("right_answers");
+            if ((intNext == null) || (intRigthAnswers == null) || (test == null)) {
+                return badRequest("invalidated session");
+            }
+            int next = integer.intValue();
+            rightAnswers = intRigthAnswers.intValue();
+            cur = next - 1;
+            //check answer
+            if ( (cur >= 0) && (cur < test.getTasks().size()) ) {
+                Task curTask = tests.getTasks().get(cur);
+                long answer;
+                try {
+                    answer = Long.parseLong(request.getParameter("answer"));
+                }
+                catch (NumberFormatException nf) {
+                    return badRequest("invalid request parameters");
+                }
+                Phrase rightPhrase = ((curTask.getSourceNum() == 1)? curTask.getPhrase2() : curTask.getPhrase1());
+                if (answer == rightPhrase.getPhraseId()) {
+                    ++rightAnswers;
+                    session.setAttribute("right_answers", rightAnswers);
+                }
+            }
+            else if (cur != -1) {
+                return badRequest("invalid request parameters");
+            }
+            //define next task and generate answers
+            try {
+                Task nextTask = test.getTasks().get(next);
+                ++next;
+                session.setAttribute("next", new Integer(next));
+                byte src = nextTask.getSourceNum();
+                byte dst = (src == 1) ? 2 : 1;
+                model.addObject("question", nextTask."${"getPhrase"+src}"().getValue());
+                //============TEST==============================
+                def answers = [];
+                Phrase answer = nextTask."${"getPhrase"+dst}"();
+                answers << ["id" : answer.getPhraseId(), "value" : answer.getValue()] <<
+                           ["id" : answer.getPhraseId()+1, "value" : "aaa"] <<
+                           ["id" : answer.getPhraseId()+2, "value" : "bbb"] <<
+                           ["id" : answer.getPhraseId()+3, "value" : "ccc"] <<
+                           ["id" : answer.getPhraseId()+4, "value" : "ddd"];
+                model.addObject("answers", answers);
+                //==========================================
+                model.addObject("end", false);
+            }
+            //if no tasks left - save result
+            catch (IndexOutOfBoundsException iob) {
+                EntityUpdater eu = new EntityUpdater();
+                Result result = eu.saveResult(username, test, session, rightAnswers);
+                model.addObject("result", result);
+                model.addObject("end", true);
+            }
+        }
+        catch (IllegalStateException ilgState) {
+            return badRequest("invalidated session");
+        }
         return model;
     }
 
