@@ -54,14 +54,10 @@ public class SatiaWebController {
         return model;
     }
 
-    @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.GET)
-    def ModelAndView testEditingPage(@PathVariable String testIdStr) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String authUserName = auth.getName();
-        User user = ks.getEntityById(User.class, authUserName);
+    def getTestModel(User user, String testIdStr) {
 
         ModelAndView model = new ModelAndView();
+        
         model.setViewName("test_edit");
         Collection<Generator> generators = ks.getEntitiesByQuery(Generator.class, 
             "SELECT gen_id FROM generators");
@@ -95,13 +91,28 @@ public class SatiaWebController {
         }*/
         model.addObject("test", test);
         model.addObject("create", false);
+
+        return model;
+    }
+
+    @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.GET)
+    def ModelAndView testEditingPage(@PathVariable String testIdStr) {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String authUserName = auth.getName();
+        User user = ks.getEntityById(User.class, authUserName);
+        ModelAndView model = getTestModel(user, testIdStr);
         return model;
     }
 
     @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.POST)
     def ModelAndView updateTestPage(@PathVariable("testIdStr") String testIdStr, HttpServletRequest request) {
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String authUserName = auth.getName();
+        User user = ks.getEntityById(User.class, authUserName);
+        ModelAndView model = getTestModel(user, testIdStr);
 
-        ModelAndView model = testEditingPage(testIdStr);
         // if not found or denied
         if (!model.getViewName().equals("test_edit")) {
             return model;
@@ -144,7 +155,7 @@ public class SatiaWebController {
                 newTaskGen = test.getGenerator();
             }
             try {
-                eu.newTask(values, newTaskGen, test);
+                Task createdTask = eu.newTask(values, newTaskGen, test);
             } catch (IllegalArgumentException ia) {
                 continue;
             }
@@ -152,36 +163,27 @@ public class SatiaWebController {
 
         //modify and delete existing tasks
         for (Task t : test.getTasks()) {
-            //delete if needed
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
                 eu.removeTask(t, test);
                 continue;
             }
-            //update phrases and translation
-            for (int j=1; j<=2; j++) {
-                String newValue = request.getParameter("task"+t.getTaskId()+"_phrase"+j);
-                try {
-                    eu.updatePhraseInTask(newValue, j, t, test);
-                } catch (IllegalArgumentException ia) {
-                    continue;
-                }
+            String[] phraseValues = new String[2];
+            phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
+            phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
+            Generator taskGen;
+            try {
+                long genId = Long.parseLong(request.getParameter("task"+t.getTaskId()+"_gen"));
+                taskGen = ks.getEntityById(Generator.class, genId);
             }
-            //update generator
-            String genId = request.getParameter("task"+t.getTaskId()+"_gen");
-            Generator taskGen = ks.getEntityById(Generator.class, genId);
-            if ( (taskGen != null) && (!taskGen.equals(t.getGenerator())) ) {
-                t.setGenerator(taskGen);
-                ks.saveEntity(t);
+            catch (NumberFormatException nf) {
+                taskGen = null;
             }
-            //update sourceNum if needed
-            if (!t.getTranslation()."${"getPhrase"+t.getSourceNum()}"().getLang().equals(test.getSourceLang())) {
-                t.setSourceNum((t.getSourceNum() == (byte)1) ? (byte)2 : (byte)1);
-                ks.saveEntity(t);
-            }
+            eu.updateTask(test, t, phraseValues, taskGen);
         }
 
         //save test
         ks.saveEntity(test);
+        model.getModel().put("create", false);
 
         return model;
     }
