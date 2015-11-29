@@ -1,6 +1,8 @@
 package com.mephiboys.satia.groovy.controller
 
 import java.util.*;
+import javax.servlet.http.HttpSession
+
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 
@@ -209,6 +211,15 @@ public class EntityUpdater {
             t.setGenerator(gen);
             ks.saveEntity(t);
         }
+    }
+
+    def saveResults(String username, Test test, HttpSession session, int rightAnswers) {
+        ResultPK resPk = new ResultPK(username : username, testId : test.getTestId(),
+                    startTime : new Date().toTimestamp(), sessionKey : session.getId());
+        Result res = new Result( id : resPk, value : 100*(rightAnswers / test.getTasks().size()) );
+        KernelService ks = getKernelService();
+        ks.saveEntity(res);
+        return res;
     }
 
 }
