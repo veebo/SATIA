@@ -4,6 +4,7 @@ import com.mephiboys.satia.kernel.impl.entitiy.*
 
 import javax.persistence.EntityManager
 import javax.sql.DataSource
+import java.util.concurrent.Callable
 
 import static org.mockito.Mockito.mock
 
@@ -86,6 +87,16 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
+    void saveEntityIfNotExists(Object entity) {
+
+    }
+
+    @Override
+    void saveEntitiesIfNotExist(Collection entities) {
+
+    }
+
+    @Override
     void saveEntity(Object entity) {
         def cls = entity.getClass()
         switch (cls) {
@@ -160,6 +171,11 @@ class MockedKernelService implements KernelService {
     @Override
     def <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
         //pass
+    }
+
+    @Override
+    def <T> T doInTransaction(Callable<T> call) {
+
     }
 
     {

@@ -4,6 +4,7 @@ import javax.ejb.Local;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 
 
 @Local
@@ -21,6 +22,10 @@ public interface KernelService {
 
     <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params);
 
+    void saveEntityIfNotExists(Object entity);
+
+    void saveEntitiesIfNotExist(Collection entities);
+
     void saveEntity(Object entity);
 
     void saveEntities(Collection entities);
@@ -32,5 +37,7 @@ public interface KernelService {
     <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params);
 
     <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params);
+
+    <T> T doInTransaction(Callable<T> action) throws Exception;
 
 }

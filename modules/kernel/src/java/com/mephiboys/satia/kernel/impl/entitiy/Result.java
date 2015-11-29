@@ -12,15 +12,16 @@ public class Result {
 
     private Double value;
 
+    private String fullname;
+
+    @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private User user;
+
     @ManyToOne
     @MapsId("testId")
     @JoinColumn(name = "test_id", referencedColumnName = "test_id", nullable = false)
     private Test test;
-
-    @ManyToOne
-    @MapsId("username")
-    @JoinColumn(name = "username", referencedColumnName = "username")
-    private User user;
 
     {
         id = new ResultPK();
@@ -68,12 +69,13 @@ public class Result {
         this.test = testsByTestId;
     }
 
+
     public User getUser() {
         return user;
     }
 
-    public void setUser(User usersByUsername) {
-        this.user = usersByUsername;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     @Override
@@ -97,4 +99,13 @@ public class Result {
         return result;
     }
 
+    @Basic
+    @Column(name = "fullname")
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
 }

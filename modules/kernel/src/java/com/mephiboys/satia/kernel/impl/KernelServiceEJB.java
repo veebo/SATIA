@@ -17,6 +17,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 @Singleton
 public class KernelServiceEJB implements KernelService {
@@ -144,22 +145,36 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void saveEntity(Object entity) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void saveEntityIfNotExists(Object entity) {
         entityManager.persist(entity);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void saveEntities(Collection entities) {
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void saveEntitiesIfNotExist(Collection entities) {
         for (Object e : entities){
             entityManager.persist(e);
         }
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void saveEntity(Object entity) {
+        entityManager.merge(entity);
+    }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void saveEntities(Collection entities) {
+        for (Object e : entities){
+            entityManager.merge(e);
+        }
+    }
+
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T> void deleteEntityById(Class<T> cls, Object id) {
         Object entity = entityManager.find(cls, id);
         if (entity == null){
@@ -169,7 +184,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T> void deleteEntitiesByIds(Class<T> cls, Collection ids) {
         Collection entities = getEntitiesByIds(cls, ids);
         for (Object e : entities){
@@ -178,7 +193,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
         Object entity = getEntityByQuery(cls, query, params);
         if (entity == null){
@@ -189,12 +204,18 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
         Collection entities = getEntitiesByQuery(cls, query, params);
         for (Object e : entities){
             entityManager.remove(e);
         }
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public <T> T doInTransaction(Callable<T> action) throws Exception {
+        return action.call();
     }
 
 }

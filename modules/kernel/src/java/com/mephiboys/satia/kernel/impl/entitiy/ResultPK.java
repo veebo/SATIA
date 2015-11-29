@@ -6,22 +6,16 @@ import java.sql.Timestamp;
 
 @Embeddable
 public class ResultPK implements Serializable {
-    private String username;
-    private long testId;
-    private Timestamp startTime;
-    private String sessionKey;
 
+    private long testId;
 
     @Basic
-    @Column(name = "username")
-    public String getUsername() {
-        return username;
-    }
+    @Column(name = "start_time")
+    private Timestamp startTime;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
+    @Basic
+    @Column(name = "session_key")
+    private String sessionKey;
 
     @Basic
     @Column(name = "test_id")
@@ -33,9 +27,6 @@ public class ResultPK implements Serializable {
         this.testId = testId;
     }
 
-
-    @Basic
-    @Column(name = "start_time")
     public Timestamp getStartTime() {
         return startTime;
     }
@@ -44,9 +35,6 @@ public class ResultPK implements Serializable {
         this.startTime = startTime;
     }
 
-
-    @Basic
-    @Column(name = "session_key")
     public String getSessionKey() {
         return sessionKey;
     }
@@ -63,7 +51,6 @@ public class ResultPK implements Serializable {
         ResultPK resultPK = (ResultPK) o;
 
         if (testId != resultPK.testId) return false;
-        if (username != null ? !username.equals(resultPK.username) : resultPK.username != null) return false;
         if (startTime != null ? !startTime.equals(resultPK.startTime) : resultPK.startTime != null) return false;
         if (sessionKey != null ? !sessionKey.equals(resultPK.sessionKey) : resultPK.sessionKey != null) return false;
 
@@ -72,8 +59,7 @@ public class ResultPK implements Serializable {
 
     @Override
     public int hashCode() {
-        int result = username != null ? username.hashCode() : 0;
-        result = 31 * result + (int) (testId ^ (testId >>> 32));
+        int result = (int) (testId ^ (testId >>> 32));
         result = 31 * result + (startTime != null ? startTime.hashCode() : 0);
         result = 31 * result + (sessionKey != null ? sessionKey.hashCode() : 0);
         return result;
