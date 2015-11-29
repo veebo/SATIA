@@ -84,7 +84,7 @@ CREATE TABLE results (
   start_time date NOT NULL,
   session_key varchar (50) NOT NULL,
   value double precision,
-  PRIMARY KEY (username, test_id, start_time, session_key),
+  PRIMARY KEY (test_id, start_time, session_key),
   FOREIGN KEY (username) REFERENCES users (username),
   FOREIGN KEY (test_id) REFERENCES tests (test_id)
 );
