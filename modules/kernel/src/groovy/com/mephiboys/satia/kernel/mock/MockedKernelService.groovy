@@ -164,11 +164,6 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    def <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
-        //pass
-    }
-
-    @Override
     def <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
         //pass
     }

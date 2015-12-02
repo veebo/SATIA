@@ -34,8 +34,6 @@ public interface KernelService {
 
     <T> void deleteEntitiesByIds(Class<T> cls, Collection ids);
 
-    <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params);
-
     <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params);
 
     <T> T doInTransaction(Callable<T> action) throws Exception;

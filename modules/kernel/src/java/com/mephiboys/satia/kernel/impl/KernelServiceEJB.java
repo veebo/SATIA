@@ -9,17 +9,19 @@ import org.springframework.jdbc.core.RowMapper;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Singleton
+@TransactionManagement(TransactionManagementType.CONTAINER)
 public class KernelServiceEJB implements KernelService {
 
     private static Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
@@ -130,7 +132,6 @@ public class KernelServiceEJB implements KernelService {
                 pk.setSessionKey(rs.getString("session_key"));
                 pk.setStartTime(rs.getTimestamp("start_time"));
                 pk.setTestId(rs.getLong("test_id"));
-                pk.setSessionKey(rs.getString("session_key"));
                 return pk;
             };
         } else {
@@ -144,13 +145,13 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntityIfNotExists(Object entity) {
         entityManager.persist(entity);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntitiesIfNotExist(Collection entities) {
         for (Object e : entities){
             entityManager.persist(e);
@@ -158,13 +159,13 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntity(Object entity) {
         entityManager.merge(entity);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntities(Collection entities) {
         for (Object e : entities){
             entityManager.merge(e);
@@ -173,7 +174,7 @@ public class KernelServiceEJB implements KernelService {
 
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T> void deleteEntityById(Class<T> cls, Object id) {
         Object entity = entityManager.find(cls, id);
         if (entity == null){
@@ -183,7 +184,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T> void deleteEntitiesByIds(Class<T> cls, Collection ids) {
         Collection entities = getEntitiesByIds(cls, ids);
         for (Object e : entities){
@@ -192,18 +193,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
-        Object entity = getEntityByQuery(cls, query, params);
-        if (entity == null){
-            throw new RuntimeException("Object not found of class '" + cls
-                    + "' by sql query '"+query+"' with params:"+ Arrays.toString(params));
-        }
-        entityManager.remove(entity);
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
         Collection entities = getEntitiesByQuery(cls, query, params);
         for (Object e : entities){

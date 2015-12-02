@@ -1,4 +1,6 @@
 package com.mephiboys.satia.groovy.controller
+
+import com.mephiboys.satia.groovy.model.EntityUpdater
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 import com.mephiboys.satia.kernel.mock.MockedKernelService

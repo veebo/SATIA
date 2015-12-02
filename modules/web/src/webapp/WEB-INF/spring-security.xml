@@ -12,7 +12,7 @@
         <intercept-url pattern="/admin**" access="hasRole('ROLE_ADMIN')" />
         <intercept-url pattern="/" access="hasAnyRole('ROLE_USER','ROLE_ADMIN')" />
         <!-- AJAX -->
-        <intercept-url pattern="/action**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN')" />
+        <intercept-url pattern="/actions**" access="hasAnyRole('ROLE_USER','ROLE_ADMIN')" />
         <!-- Testing path -->
         <intercept-url pattern="/test_**" access="hasRole('ROLE_ADMIN')" />
 
