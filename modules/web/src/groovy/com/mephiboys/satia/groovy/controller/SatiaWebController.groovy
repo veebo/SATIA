@@ -4,6 +4,7 @@ import com.mephiboys.satia.groovy.model.EntityUpdater
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 import com.mephiboys.satia.kernel.mock.MockedKernelService
+import org.apache.commons.lang.StringUtils
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -69,7 +70,7 @@ public class SatiaWebController {
         model.addObject("langs", langs);
 
         //for creating new test
-        if (testIdStr.equals("create")) {
+        if ("create".equals(testIdStr)) {
             Test newTest = new Test();
             newTest.setUser(user);
             newTest.setTasks(new ArrayList<Task>());
@@ -89,9 +90,7 @@ public class SatiaWebController {
         if (test == null) {
             return notFound();
         }
-        /*if (!(test.getUser().equals(user))) {
-            return accessDenied();
-        }*/
+
         model.addObject("test", test);
         model.addObject("create", false);
 
@@ -117,7 +116,7 @@ public class SatiaWebController {
         ModelAndView model = getTestModel(user, testIdStr);
 
         // if not found or denied
-        if (!model.getViewName().equals("test_edit")) {
+        if (!"test_edit".equals(model.getViewName())) {
             return model;
         }
 
@@ -226,20 +225,21 @@ public class SatiaWebController {
         int cur;
         HttpSession session;
         Test test;
-        int rightAnswers;
         String username;
         try {
             //extract session attributes
             session = request.getSession();
+
+
             test = session.getAttribute("test");
             username = session.getAttribute("username");
-            Integer intNext = session.getAttribute("next");
-            Integer intRigthAnswers = session.getAttribute("right_answers");
-            if ((intNext == null) || (intRigthAnswers == null) || (test == null)) {
+            String intNext = session.getAttribute("next");
+            String intRigthAnswers = session.getAttribute("right_answers");
+            if ((StringUtils.isEmpty(intNext)) || (StringUtils.isEmpty(intRigthAnswers)) || (test == null)) {
                 return badRequest("invalidated session");
             }
-            int next = integer.intValue();
-            rightAnswers = intRigthAnswers.intValue();
+            int next = Integer.parseInt(intNext)
+            int rightAnswers = Integer.parseInt(intRigthAnswers)
             cur = next - 1;
             //check answer
             if ( (cur >= 0) && (cur < test.getTasks().size()) ) {
@@ -356,8 +356,6 @@ public class SatiaWebController {
         //check if user is login
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!(auth instanceof AnonymousAuthenticationToken)) {
-//            UserDetails userDetail = (UserDetails) auth.getPrincipal();
-//            model.addObject("username", userDetail.getUsername());
             model.setViewName("403");
         } else {
             model.setViewName("redirect:/login")
