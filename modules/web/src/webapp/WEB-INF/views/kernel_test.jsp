@@ -4,8 +4,7 @@
     <title></title>
 </head>
 <body>
-Kernel Test:
-EntityManageer = ${em}
+Kernel Test:<br>
     <c:forEach var="test" items="${tests}">
     ${test.title}<br>
     ${test.description}<br>

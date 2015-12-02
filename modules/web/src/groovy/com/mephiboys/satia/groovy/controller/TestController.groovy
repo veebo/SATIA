@@ -120,10 +120,6 @@ public class TestController {
         KernelService ks = getKernelService();
         Collection<Test> tests = ks.getEntitiesByIds(Test.class, [1L,2L,3L]);
         model.addObject("tests", tests);
-        /*Collection<Result> results = ks.getEntitiesByIds(Result.class,
-        [new ResultPK(username : "guest", testId : 1, 
-                startTime : new Date().toTimestamp(), sessionKey : "sessionKey")]);
-        model.addObject("results", results);*/
         return model;
     }
 

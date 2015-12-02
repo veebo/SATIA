@@ -53,8 +53,7 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     public <T> Collection<T> getEntitiesByIds(Class<T> cls, Collection ids) {
-
-        if (cls == null || ids == null){
+        if (cls == null || ids == null || ids.isEmpty()){
             return Collections.EMPTY_LIST;
         }
 
@@ -124,7 +123,7 @@ public class KernelServiceEJB implements KernelService {
             rowMapper = (rs, rowNum) -> { return rs.getLong("lang"); };
         } else if (User.class.equals(cls)){
             pkClass = String.class;
-            rowMapper = (rs, rowNum) -> { return rs.getLong("username"); };
+            rowMapper = (rs, rowNum) -> { return rs.getString("username"); };
         }else if (Result.class.equals(cls)){
             rowMapper = (rs, rowNum) -> {
                 ResultPK pk = new ResultPK();

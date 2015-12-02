@@ -17,12 +17,11 @@ import org.springframework.web.servlet.ModelAndView
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
-import java.util.Date
 
 @Controller
 public class SatiaWebController {
 
-    protected KernelService ks = getKernelService()
+    protected KernelService ks = getKernelService() //KernelHelper.getKernelService()
 
     KernelService getKernelService() {
         return new MockedKernelService();
