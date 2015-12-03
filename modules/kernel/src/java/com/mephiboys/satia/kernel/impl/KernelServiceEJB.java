@@ -59,8 +59,7 @@ public class KernelServiceEJB implements KernelService {
             return Collections.EMPTY_LIST;
         }
 
-        String sqlQuery = null;
-        String inClause = ids.isEmpty() ? "" : " where e.testId IN :keys";
+        String sqlQuery;
 
         if (Test.class.equals(cls)){
             sqlQuery = "select e from Test e" + (ids.isEmpty() ? "" : " where e.testId IN :keys");
@@ -119,10 +118,10 @@ public class KernelServiceEJB implements KernelService {
             rowMapper = (rs, rowNum) -> { return rs.getLong("phrase_id"); };
         } else if (Role.class.equals(cls)){
             pkClass = int.class;
-            rowMapper = (rs, rowNum) -> { return rs.getLong("role_id"); };
+            rowMapper = (rs, rowNum) -> { return rs.getInt("role_id"); };
         }  else if (Lang.class.equals(cls)){
             pkClass = String.class;
-            rowMapper = (rs, rowNum) -> { return rs.getLong("lang"); };
+            rowMapper = (rs, rowNum) -> { return rs.getString("lang"); };
         } else if (User.class.equals(cls)){
             pkClass = String.class;
             rowMapper = (rs, rowNum) -> { return rs.getString("username"); };

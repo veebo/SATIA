@@ -52,7 +52,7 @@ public class Task {
         this.generator = generator;
     }
 
-    @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     public List<Test> getTests() {
         return tests;
     }
