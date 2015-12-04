@@ -52,7 +52,8 @@ public class Task {
         this.generator = generator;
     }
 
-    @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(mappedBy = "tasks", fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
     public List<Test> getTests() {
         return tests;
     }
@@ -78,4 +79,6 @@ public class Task {
         int result = (int) (taskId ^ (taskId >>> 32));
         return result;
     }
+    
+
 }
