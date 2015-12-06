@@ -131,17 +131,16 @@ public class KernelServiceEJB implements KernelService {
             rowMapper = (rs, rowNum) -> { return rs.getLong("role_id"); };
         }  else if (Lang.class.equals(cls)){
             pkClass = String.class;
-            rowMapper = (rs, rowNum) -> { return rs.getLong("lang"); };
+            rowMapper = (rs, rowNum) -> { return rs.getString("lang"); };
         } else if (User.class.equals(cls)){
             pkClass = String.class;
-            rowMapper = (rs, rowNum) -> { return rs.getLong("username"); };
+            rowMapper = (rs, rowNum) -> { return rs.getString("username"); };
         }else if (Result.class.equals(cls)){
             rowMapper = (rs, rowNum) -> {
                 ResultPK pk = new ResultPK();
                 pk.setSessionKey(rs.getString("session_key"));
                 pk.setStartTime(rs.getTimestamp("start_time"));
                 pk.setTestId(rs.getLong("test_id"));
-                pk.setSessionKey(rs.getString("session_key"));
                 return pk;
             };
         } else {
@@ -201,7 +200,7 @@ public class KernelServiceEJB implements KernelService {
             entityManager.remove(e);
         }
     }
-    
+
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
