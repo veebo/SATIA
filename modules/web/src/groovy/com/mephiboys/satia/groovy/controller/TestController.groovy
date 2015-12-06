@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.ModelAndView
 
 import javax.naming.InitialContext
+import java.lang.Class
 
 @Controller
 public class TestController {
@@ -113,7 +114,7 @@ public class TestController {
         return showObjectsByQuery();
     }
 
-    @RequestMapping(value="test_showObjectsByIds", method=RequestMethod.GET)
+    @RequestMapping(value="test_showObjectsByIds", method=RequestMethod.GET )
     def ModelAndView showObjectsByIds() {
         ModelAndView model = new ModelAndView();
         model.setViewName("kernel_test");

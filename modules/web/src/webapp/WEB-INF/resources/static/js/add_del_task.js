@@ -6,9 +6,9 @@ $(document).ready(function() {
 		var table = $(this).closest("form").find("#tasks .table");
 		var newRow = $("#add_task_row_to_clone").clone();
 		newRow.attr("id", "");
-		newRow.find(".phr1").attr("name", "add_task"+lastAddedTaskIndx+"_phrase1");
-		newRow.find(".phr2").attr("name", "add_task"+lastAddedTaskIndx+"_phrase2");
-		newRow.find(".gen").attr("name", "add_task"+lastAddedTaskIndx+"_gen");
+		newRow.find(".phr1 textarea").attr("name", "add_task"+lastAddedTaskIndx+"_phrase1");
+		newRow.find(".phr2 textarea").attr("name", "add_task"+lastAddedTaskIndx+"_phrase2");
+		newRow.find(".gen select").attr("name", "add_task"+lastAddedTaskIndx+"_gen");
 		table.append(newRow);
 		addedTasksInput.attr("value", lastAddedTaskIndx+1);
 		++lastAddedTaskIndx;
