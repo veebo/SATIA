@@ -201,17 +201,7 @@ public class KernelServiceEJB implements KernelService {
             entityManager.remove(e);
         }
     }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public <T> void deleteEntityByQuery(Class<T> cls, String query, Object... params) {
-        Object entity = getEntityByQuery(cls, query, params);
-        if (entity == null){
-            throw new RuntimeException("Object not found of class '" + cls
-                    + "' by sql query '"+query+"' with params:"+ Arrays.toString(params));
-        }
-        entityManager.remove(entity);
-    }
+    
 
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
