@@ -21,8 +21,8 @@ CREATE TABLE generators (
 
 CREATE TABLE fields (
   field_id bigserial NOT NULL,
-  gen_id bigserial NOT NULL,
-  name varchar(60),
+  gen_id bigint NOT NULL,
+  name varchar(60) NOT NULL,
   type integer NOT NULL,
   "order" integer NOT NULL,
   multiple boolean NOT NULL,
@@ -32,9 +32,9 @@ CREATE TABLE fields (
 
 CREATE TABLE field_values (
   field_value_id bigserial NOT NULL,
-  field_id bigserial NOT NULL,
-  task_id bigserial NOT NULL,
-  value varchar (400) ,
+  field_id bigint NOT NULL,
+  task_id bigint NOT NULL,
+  value varchar (400),
   PRIMARY KEY (field_value_id),
   FOREIGN KEY (field_id) REFERENCES fields(field_id),
   FOREIGN KEY (task_id) REFERENCES tasks(task_id)
