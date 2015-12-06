@@ -39,14 +39,24 @@
 	        <div class="hint">Source language:</div>
 	        <select name="test_sourcelang">
 	        	<c:forEach var="l" items="${langs}">
-	        	<option value="${l.lang}">${l.lang}</option>
+	        	  <c:if test="${test.sourceLang.lang == l.lang}" >
+	        	    <option value="${l.lang}" selected >${l.lang}</option>
+	        	  </c:if>
+	        	  <c:if test="${test.sourceLang.lang != l.lang}" >
+	        	    <option value="${l.lang}" >${l.lang}</option>
+	        	  </c:if>
 	            </c:forEach>
 	        </select>
 	        <br><br>
 	        <div class="hint">Target language:</div>
 	        <select name="test_targetlang">
 	        	<c:forEach var="l" items="${langs}">
-	        	<option value="${l.lang}">${l.lang}</option>
+	        	  <c:if test="${test.targetLang.lang == l.lang}" >
+	        	    <option value="${l.lang}" selected >${l.lang}</option>
+	        	  </c:if>
+	        	  <c:if test="${test.targetLang.lang != l.lang}" >
+	        	    <option value="${l.lang}" >${l.lang}</option>
+	        	  </c:if>
 	            </c:forEach>
 	        </select>
 	        <br><br>

@@ -2,6 +2,7 @@ package com.mephiboys.satia.groovy.controller
 
 import com.mephiboys.satia.groovy.model.EntityUpdater
 import com.mephiboys.satia.kernel.api.KernelService
+import com.mephiboys.satia.kernel.api.KernelHelper
 import com.mephiboys.satia.kernel.impl.entitiy.*
 import com.mephiboys.satia.kernel.mock.MockedKernelService
 import org.apache.commons.lang.StringUtils
@@ -24,11 +25,7 @@ import javax.servlet.http.HttpSession
 @Controller
 public class SatiaWebController {
 
-    protected KernelService ks = getKernelService() //KernelHelper.getKernelService()
-
-    KernelService getKernelService() {
-        return new MockedKernelService();
-    };
+    protected KernelService ks = KernelHelper.getKernelService();
 
     @RequestMapping(value = [ "/" ], method = RequestMethod.GET)
     def ModelAndView defaultPage() {
@@ -71,9 +68,8 @@ public class SatiaWebController {
 
         //for creating new test
         if ("create".equals(testIdStr)) {
-            Test newTest = new Test();
-            newTest.setUser(user);
-            newTest.setTasks(new ArrayList<Task>());
+            Test newTest = new Test(createdWhen : new Date().toTimestamp(),
+                user : user, tasks : new ArrayList<Task>());
             model.addObject("test", newTest);
             model.addObject("create", true);
             return model;
@@ -89,6 +85,9 @@ public class SatiaWebController {
         Test test = ks.getEntityById(Test.class, testId);
         if (test == null) {
             return notFound();
+        }
+        if ( (user == null) || (!user.getUsername().equals(test.getUser().getUsername())) ) {
+            return accessDenied();
         }
 
         model.addObject("test", test);
@@ -143,6 +142,7 @@ public class SatiaWebController {
         }
         String[] values = new String[2];
         for (int i=0; i<addedTasks; i++) {
+            //extract request parameters
             values[0] = request.getParameter("add_task"+i+"_phrase1");
             values[1] = request.getParameter("add_task"+i+"_phrase2");
             Generator newTaskGen = null;
@@ -156,19 +156,23 @@ public class SatiaWebController {
             catch (NumberFormatException nf) {
                 newTaskGen = test.getGenerator();
             }
+            //save
             try {
                 Task createdTask = eu.newTask(values, newTaskGen, test);
+                //eu.updateTaskFieldValues(createdTask, request, "add_task"+i);
             } catch (IllegalArgumentException ia) {
-                continue;
+                return badRequest(ia.getMessage());
             }
         }
 
         //modify and delete existing tasks
         for (Task t : test.getTasks()) {
+            //delete if needed
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
                 eu.removeTask(t, test);
                 continue;
             }
+            //extract request parameters
             String[] phraseValues = new String[2];
             phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
             phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
@@ -180,7 +184,14 @@ public class SatiaWebController {
             catch (NumberFormatException nf) {
                 taskGen = null;
             }
-            eu.updateTask(test, t, phraseValues, taskGen);
+            //save
+            try {
+                eu.updateTask(test, t, phraseValues, taskGen);
+                //eu.updateTaskFieldValues(t, request, "task"+t.getTaskId());
+            }
+            catch (IllegalArgumentException ia) {
+                return badRequest(ia.getMessage());
+            }
         }
 
         //save test
@@ -282,7 +293,7 @@ public class SatiaWebController {
             }
             //if no tasks left - save result
             catch (IndexOutOfBoundsException iob) {
-                EntityUpdater eu = new EntityUpdater();
+                EntityUpdater eu = new EntityUpdater(ks);
                 Result result = eu.saveResult(username, test, session, rightAnswers);
                 model.addObject("result", result);
                 model.addObject("end", true);

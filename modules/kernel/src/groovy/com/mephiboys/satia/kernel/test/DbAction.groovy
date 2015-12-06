@@ -14,6 +14,8 @@ class DbAction {
             def translations = []
             def phrases = []
             def generators = []
+            def fields = []
+            def fieldValues = []
             def results = []
             def langs = []
 
@@ -44,6 +46,11 @@ class DbAction {
                     impl: "com.mephiboys.satia.generator.SimpleGenerator"
             )
 
+            Field f1 = new Field(fieldId : 1, generator : g1, name : "answers", order : 1, multiple : true)
+
+            FieldValue fv1 = new FieldValue(fieldValueId : 1, field : f1, task : task1, value : "Pineapple")
+            FieldValue fv2 = new FieldValue(fieldValueId : 2, field : f1, task : task1, value : "Grape")
+            FieldValue fv3 = new FieldValue(fieldValueId : 3, field : f1, task : task1, value : "Tomato")
 
             Test test1 = new Test(
                     testId: 1,
@@ -70,9 +77,11 @@ class DbAction {
             phrases << apple << orange << banana << lemon << yabloko << apelsin << banan << limon;
             langs << eng << rus;
             generators << g1;
+            fields << f1;
+            fieldValues << fv1 << fv2 << fv3;
             results << res1 << res2 << res3;
 
-            def all = [langs, generators, phrases, translations, tests, results];
+            def all = [langs, generators, fields, fieldValues, phrases, translations, tasks, tests, results];
             all.each{
                 it.each{
                     ks.saveEntity(it);
