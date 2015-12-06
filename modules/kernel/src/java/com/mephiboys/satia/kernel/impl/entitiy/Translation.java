@@ -5,17 +5,17 @@ import javax.persistence.*;
 @Entity
 @Table(name = "translations")
 public class Translation {
-    private long translationId;
+    private Long translationId;
     private Phrase phrase1;
     private Phrase phrase2;
 
     @Id
     @Column(name = "translation_id")
-    public long getTranslationId() {
+    public Long getTranslationId() {
         return translationId;
     }
 
-    public void setTranslationId(long translationId) {
+    public void setTranslationId(Long translationId) {
         this.translationId = translationId;
     }
 

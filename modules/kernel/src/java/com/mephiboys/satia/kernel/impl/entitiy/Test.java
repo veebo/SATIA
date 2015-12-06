@@ -7,7 +7,7 @@ import java.util.List;
 @Entity
 @Table(name = "tests")
 public class Test {
-    private long testId;
+    private Long testId;
     private String title;
     private String description;
     private Timestamp createdWhen;
@@ -19,11 +19,11 @@ public class Test {
 
     @Id
     @Column(name = "test_id")
-    public long getTestId() {
+    public Long getTestId() {
         return testId;
     }
 
-    public void setTestId(long testId) {
+    public void setTestId(Long testId) {
         this.testId = testId;
     }
 
@@ -98,7 +98,7 @@ public class Test {
         this.generator = generator;
     }
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
         name="test_tasks",
         joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},

@@ -6,7 +6,7 @@ import java.util.List;
 @Entity
 @Table(name = "tasks")
 public class Task {
-    private long taskId;
+    private Long taskId;
     private Translation translation;
     private byte sourceNum;
     private Generator generator;
@@ -14,11 +14,11 @@ public class Task {
 
     @Id
     @Column(name = "task_id")
-    public long getTaskId() {
+    public Long getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(long taskId) {
+    public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
 
@@ -52,8 +52,7 @@ public class Task {
         this.generator = generator;
     }
 
-    @ManyToMany(mappedBy = "tasks", fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToMany(mappedBy = "tasks")
     public List<Test> getTests() {
         return tests;
     }
@@ -79,6 +78,4 @@ public class Task {
         int result = (int) (taskId ^ (taskId >>> 32));
         return result;
     }
-    
-
 }

@@ -5,16 +5,16 @@ import javax.persistence.*;
 @Entity
 @Table(name = "generators")
 public class Generator {
-    private long genId;
+    private Long genId;
     private String impl;
 
     @Id
     @Column(name = "gen_id")
-    public long getGenId() {
+    public Long getGenId() {
         return genId;
     }
 
-    public void setGenId(long genId) {
+    public void setGenId(Long genId) {
         this.genId = genId;
     }
 

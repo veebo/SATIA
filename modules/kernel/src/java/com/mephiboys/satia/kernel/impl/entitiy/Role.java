@@ -5,16 +5,16 @@ import javax.persistence.*;
 @Entity
 @Table(name = "roles")
 public class Role {
-    private int roleId;
+    private Long roleId;
     private String role;
 
     @Id
     @Column(name = "role_id")
-    public int getRoleId() {
+    public Long getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(int roleId) {
+    public void setRoleId(Long roleId) {
         this.roleId = roleId;
     }
 
@@ -43,7 +43,7 @@ public class Role {
 
     @Override
     public int hashCode() {
-        int result = roleId;
+        int result = roleId == null ? 1 : (int)roleId.longValue();
         result = 31 * result + (role != null ? role.hashCode() : 0);
         return result;
     }

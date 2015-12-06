@@ -7,9 +7,7 @@ import java.sql.Timestamp;
 @Embeddable
 public class ResultPK implements Serializable {
 
-    @Basic
-    @Column(name = "test_id")
-    private long testId;
+    private Long testId;
 
     @Basic
     @Column(name = "start_time")
@@ -19,11 +17,13 @@ public class ResultPK implements Serializable {
     @Column(name = "session_key")
     private String sessionKey;
 
-    public long getTestId() {
+    @Basic
+    @Column(name = "test_id")
+    public Long getTestId() {
         return testId;
     }
 
-    public void setTestId(long testId) {
+    public void setTestId(Long testId) {
         this.testId = testId;
     }
 

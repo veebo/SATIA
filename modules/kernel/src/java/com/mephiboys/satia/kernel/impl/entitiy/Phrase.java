@@ -5,17 +5,17 @@ import javax.persistence.*;
 @Entity
 @Table(name = "phrases")
 public class Phrase {
-    private long phraseId;
+    private Long phraseId;
     private String value;
     private Lang lang;
 
     @Id
     @Column(name = "phrase_id")
-    public long getPhraseId() {
+    public Long getPhraseId() {
         return phraseId;
     }
 
-    public void setPhraseId(long phraseId) {
+    public void setPhraseId(Long phraseId) {
         this.phraseId = phraseId;
     }
 
