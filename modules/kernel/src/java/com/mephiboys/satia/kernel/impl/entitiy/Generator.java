@@ -9,6 +9,7 @@ public class Generator {
     private String impl;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "gen_id")
     public Long getGenId() {
         return genId;

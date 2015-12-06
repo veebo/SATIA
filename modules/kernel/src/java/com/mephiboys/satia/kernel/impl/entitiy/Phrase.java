@@ -10,6 +10,7 @@ public class Phrase {
     private Lang lang;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "phrase_id")
     public Long getPhraseId() {
         return phraseId;

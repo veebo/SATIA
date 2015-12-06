@@ -7,6 +7,7 @@ import javax.persistence.*;
 public class Field {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "field_id")
     private Long fieldId;
 

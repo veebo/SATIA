@@ -13,6 +13,7 @@ public class Task {
     private List<Test> tests;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
     public Long getTaskId() {
         return taskId;

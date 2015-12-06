@@ -18,6 +18,7 @@ public class Test {
     private Lang targetLang;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "test_id")
     public Long getTestId() {
         return testId;
