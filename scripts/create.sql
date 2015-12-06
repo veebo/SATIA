@@ -1,5 +1,5 @@
 CREATE TABLE roles (
-  role_id serial NOT NULL,
+  role_id bigserial NOT NULL,
   role varchar(20) NOT NULL,
   PRIMARY KEY (role_id)
 );
@@ -7,7 +7,7 @@ CREATE TABLE roles (
 CREATE TABLE users (
   username varchar(60) NOT NULL,
   password varchar(60) NOT NULL,
-  role_id integer NOT NULL,
+  role_id bigint NOT NULL,
   enabled boolean NOT NULL DEFAULT true,
   PRIMARY KEY (username),
   FOREIGN KEY (role_id) REFERENCES roles (role_id)
@@ -24,7 +24,7 @@ CREATE TABLE fields (
   gen_id bigserial NOT NULL,
   name varchar(60),
   type integer NOT NULL,
-  order integer NOT NULL,
+  "order" integer NOT NULL,
   multiple boolean NOT NULL,
   PRIMARY KEY (field_id),
   FOREIGN KEY (gen_id) REFERENCES generators(gen_id)
