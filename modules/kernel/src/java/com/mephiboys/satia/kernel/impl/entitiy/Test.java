@@ -98,7 +98,7 @@ public class Test {
         this.generator = generator;
     }
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
         name="test_tasks",
         joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},

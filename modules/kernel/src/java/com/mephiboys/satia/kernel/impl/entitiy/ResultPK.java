@@ -7,6 +7,8 @@ import java.sql.Timestamp;
 @Embeddable
 public class ResultPK implements Serializable {
 
+    @Basic
+    @Column(name = "test_id")
     private Long testId;
 
     @Basic
@@ -17,8 +19,6 @@ public class ResultPK implements Serializable {
     @Column(name = "session_key")
     private String sessionKey;
 
-    @Basic
-    @Column(name = "test_id")
     public Long getTestId() {
         return testId;
     }

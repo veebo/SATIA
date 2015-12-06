@@ -53,4 +53,25 @@ public class FieldValue {
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FieldValue fieldValue = (FieldValue) o;
+
+        if (fieldValueId != fieldValue.fieldValueId) return false;
+        if (field != null ? !field.equals(fieldValue.field) : fieldValue.field != null) return false;
+        if (task != null ? !task.equals(fieldValue.task) : fieldValue.task != null) return false;
+        if (value != null ? !value.equals(fieldValue.value) : fieldValue.value != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (fieldValueId ^ (fieldValueId >>> 32));
+        return result;
+    }
 }

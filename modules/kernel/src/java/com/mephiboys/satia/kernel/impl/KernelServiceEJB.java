@@ -9,17 +9,19 @@ import org.springframework.jdbc.core.RowMapper;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import javax.ejb.*;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Singleton
+@TransactionManagement(TransactionManagementType.CONTAINER)
 public class KernelServiceEJB implements KernelService {
 
     private static Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
@@ -53,13 +55,11 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     public <T> Collection<T> getEntitiesByIds(Class<T> cls, Collection ids) {
-
-        if (cls == null || ids == null){
+        if (cls == null || ids == null || ids.isEmpty()){
             return Collections.EMPTY_LIST;
         }
 
-        String sqlQuery = null;
-        String inClause = ids.isEmpty() ? "" : " where e.testId IN :keys";
+        String sqlQuery;
 
         if (Test.class.equals(cls)){
             sqlQuery = "select e from Test e" + (ids.isEmpty() ? "" : " where e.testId IN :keys");
@@ -81,9 +81,9 @@ public class KernelServiceEJB implements KernelService {
             sqlQuery = "select e from Lang e" + (ids.isEmpty() ? "" : " where e.lang IN :keys");
         } else if (User.class.equals(cls)){
             sqlQuery = "select e from User e" + (ids.isEmpty() ? "" : " where e.username IN :keys");
-        } else if (Result.class.equals(cls)){
+        }else if (Result.class.equals(cls)){
             sqlQuery = "select e from Result e" + (ids.isEmpty() ? "" : " where e.id IN :keys");
-        } else {
+        }   else {
             throw new IllegalArgumentException("Class '"+cls+"' is not an entity");
         }
 
@@ -117,17 +117,18 @@ public class KernelServiceEJB implements KernelService {
         } else if (FieldValue.class.equals(cls)){
             pkClass = Long.class;
             rowMapper = (rs, rowNum) -> { return rs.getLong("field_value_id"); };
-        } else if (Translation.class.equals(cls)){
+        }  else if (Translation.class.equals(cls)){
             pkClass = Long.class;
             rowMapper = (rs, rowNum) -> { return rs.getLong("translation_id"); };
         } else if (Generator.class.equals(cls)){
             pkClass = Long.class;
-            rowMapper = (rs, rowNum) -> { return rs.getLong("gen_id"); };
+            rowMapper = (rs, rowNum) -> { return rs.getLong("gen_id");
+            };
         } else if (Phrase.class.equals(cls)){
             pkClass = Long.class;
             rowMapper = (rs, rowNum) -> { return rs.getLong("phrase_id"); };
         } else if (Role.class.equals(cls)){
-            pkClass = int.class;
+            pkClass = Long.class;
             rowMapper = (rs, rowNum) -> { return rs.getLong("role_id"); };
         }  else if (Lang.class.equals(cls)){
             pkClass = String.class;
@@ -154,13 +155,13 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntityIfNotExists(Object entity) {
         entityManager.persist(entity);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntitiesIfNotExist(Collection entities) {
         for (Object e : entities){
             entityManager.persist(e);
@@ -168,13 +169,13 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntity(Object entity) {
         entityManager.merge(entity);
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntities(Collection entities) {
         for (Object e : entities){
             entityManager.merge(e);
@@ -183,7 +184,7 @@ public class KernelServiceEJB implements KernelService {
 
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T> void deleteEntityById(Class<T> cls, Object id) {
         Object entity = entityManager.find(cls, id);
         if (entity == null){
@@ -193,7 +194,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T> void deleteEntitiesByIds(Class<T> cls, Collection ids) {
         Collection entities = getEntitiesByIds(cls, ids);
         for (Object e : entities){
@@ -201,9 +202,8 @@ public class KernelServiceEJB implements KernelService {
         }
     }
 
-
     @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public <T> void deleteEntitiesByQuery(Class<T> cls, String query, Object... params) {
         Collection entities = getEntitiesByQuery(cls, query, params);
         for (Object e : entities){
