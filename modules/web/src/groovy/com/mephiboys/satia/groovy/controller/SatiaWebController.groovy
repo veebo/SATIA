@@ -121,7 +121,7 @@ public class SatiaWebController {
 
         //validate and modify test fields if needed and save tet entity
         try {
-            ks.updateTestFields(test, ["Title" : request.getParameter("test_title"),
+            ks.updateTest(test, ["Title" : request.getParameter("test_title"),
                                        "Description" : request.getParameter("test_description"),
                                        "Generator" : request.getParameter("test_generator"),
                                        "SourceLang" : request.getParameter("test_sourcelang"),
