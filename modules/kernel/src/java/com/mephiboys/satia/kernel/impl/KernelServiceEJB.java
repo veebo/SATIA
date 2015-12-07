@@ -377,10 +377,7 @@ public class KernelServiceEJB implements KernelService {
                 }
                 //  if yes - create new phrase with new value
                 else {
-                    Phrase newPhrase = new Phrase();
-                    newPhrase.setValue(newValue);
-                    newPhrase.setLang(phraseToUpdate.getLang());
-                    saveEntity(newPhrase);
+                    Phrase newPhrase = newPhrase(newValue, phraseToUpdate.getLang(), false);
                     if (i == 1) {
                         task.getTranslation().setPhrase1(newPhrase);
                     }
