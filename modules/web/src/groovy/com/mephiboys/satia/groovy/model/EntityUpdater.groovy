@@ -252,7 +252,7 @@ public class EntityUpdater {
         });
     }*/
 
-    def saveResults(String username, Test test, HttpSession session, int rightAnswers) {
+    def saveResult(String username, Test test, HttpSession session, int rightAnswers) {
             ResultPK resPk = new ResultPK(username: username, testId: test.getTestId(),
                     startTime: new Date().toTimestamp(), sessionKey: session.getId());
             Result res = new Result(id: resPk, value: 100 * ((double)rightAnswers / test.getTasks().size()));
