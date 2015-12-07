@@ -8,10 +8,10 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "langs")
 public class Lang {
-    private String lang;
-
     @Id
     @Column(name = "lang")
+    private String lang;
+
     public String getLang() {
         return lang;
     }

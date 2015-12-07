@@ -5,13 +5,19 @@ import javax.persistence.*;
 @Entity
 @Table(name = "phrases")
 public class Phrase {
-    private Long phraseId;
-    private String value;
-    private Lang lang;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "phrase_id")
+    private Long phraseId;
+
+    @Basic
+    @Column(name = "value")
+    private String value;
+
+    @ManyToOne
+    @JoinColumn(name = "lang", referencedColumnName = "lang", nullable = false)
+    private Lang lang;
+
     public Long getPhraseId() {
         return phraseId;
     }
@@ -20,8 +26,7 @@ public class Phrase {
         this.phraseId = phraseId;
     }
 
-    @Basic
-    @Column(name = "value")
+
     public String getValue() {
         return value;
     }
@@ -30,8 +35,6 @@ public class Phrase {
         this.value = value;
     }
 
-    @OneToOne
-    @JoinColumn(name = "lang", referencedColumnName = "lang", nullable = false)
     public Lang getLang() {
         return lang;
     }

@@ -5,12 +5,15 @@ import javax.persistence.*;
 @Entity
 @Table(name = "roles")
 public class Role {
-    private int roleId;
-    private String role;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
+    private int roleId;
+
+    @Basic
+    @Column(name = "role")
+    private String role;
+
     public int getRoleId() {
         return roleId;
     }
@@ -19,8 +22,6 @@ public class Role {
         this.roleId = roleId;
     }
 
-    @Basic
-    @Column(name = "role")
     public String getRole() {
         return role;
     }

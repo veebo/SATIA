@@ -5,7 +5,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "generators")
 public class Generator {
+
+
     private Long genId;
+
+    @Basic
+    @Column(name = "impl")
     private String impl;
 
     @Id
@@ -19,8 +24,6 @@ public class Generator {
         this.genId = genId;
     }
 
-    @Basic
-    @Column(name = "impl")
     public String getImpl() {
         return impl;
     }

@@ -22,9 +22,9 @@ public interface KernelService {
 
     <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params);
 
-    void saveEntityIfNotExists(Object entity);
+    void mergeEntity(Object entity);
 
-    void saveEntitiesIfNotExist(Collection entities);
+    void mergeEntities(Collection entities);
 
     void saveEntity(Object entity);
 

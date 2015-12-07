@@ -24,8 +24,8 @@ public class Field {
     private int type;
 
     @Basic
-    @Column(name = "order")
-    private int order;
+    @Column(name = "show_order")
+    private int showOrder;
 
     @Basic
     @Column(name = "multiple")
@@ -63,12 +63,12 @@ public class Field {
         this.type = type;
     }
 
-    public int getOrder() {
-        return order;
+    public int getShowOrder() {
+        return showOrder;
     }
 
-    public void setOrder(int order) {
-        this.order = order;
+    public void setShowOrder(int showOrder) {
+        this.showOrder = showOrder;
     }
 
     public boolean isMultiple() {
@@ -90,7 +90,7 @@ public class Field {
         if (generator != null ? !generator.equals(field.generator) : field.generator != null) return false;
         if (name != null ? !name.equals(field.name) : field.name != null) return false;
         if (type != field.type) return false;
-        if (order != field.order) return false;
+        if (showOrder != field.showOrder) return false;
         if (multiple != field.multiple) return false;
 
         return true;

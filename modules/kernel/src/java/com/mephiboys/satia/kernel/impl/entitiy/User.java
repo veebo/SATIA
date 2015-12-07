@@ -5,13 +5,23 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
-    private String username;
-    private String password;
-    private boolean enabled;
-    private Role role;
 
     @Id
     @Column(name = "username")
+    private String username;
+
+    @Basic
+    @Column(name = "password")
+    private String password;
+
+    @Basic
+    @Column(name = "enabled")
+    private boolean enabled;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", referencedColumnName = "role_id")
+    private Role role;
+
     public String getUsername() {
         return username;
     }
@@ -20,8 +30,7 @@ public class User {
         this.username = username;
     }
 
-    @Basic
-    @Column(name = "password")
+
     public String getPassword() {
         return password;
     }
@@ -30,8 +39,6 @@ public class User {
         this.password = password;
     }
 
-    @Basic
-    @Column(name = "enabled")
     public boolean isEnabled() {
         return enabled;
     }
@@ -40,8 +47,6 @@ public class User {
         this.enabled = enabled;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "role_id", referencedColumnName = "role_id")
     public Role getRole() {
         return role;
     }

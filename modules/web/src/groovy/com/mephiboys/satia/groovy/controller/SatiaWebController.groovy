@@ -1,10 +1,8 @@
 package com.mephiboys.satia.groovy.controller
-
 import com.mephiboys.satia.groovy.model.EntityUpdater
-import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.api.KernelHelper
+import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
-import com.mephiboys.satia.kernel.mock.MockedKernelService
 import org.apache.commons.lang.StringUtils
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
@@ -149,19 +147,14 @@ public class SatiaWebController {
             try {
                 Long genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
                 newTaskGen = ks.getEntityById(Generator.class, genId);
-                if (newTaskGen == null) {
-                    newTaskGen = test.getGenerator();
-                }
             }
-            catch (NumberFormatException nf) {
-                newTaskGen = test.getGenerator();
-            }
+            catch (NumberFormatException ignored) {}
             //save
             try {
                 Task createdTask = eu.newTask(values, newTaskGen, test);
                 //eu.updateTaskFieldValues(createdTask, request, "add_task"+i);
-            } catch (IllegalArgumentException ia) {
-                return badRequest(ia.getMessage());
+            } catch (IllegalArgumentException e) {
+                return badRequest(e.getMessage());
             }
         }
 

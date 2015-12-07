@@ -87,12 +87,12 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    void saveEntityIfNotExists(Object entity) {
+    void mergeEntity(Object entity) {
 
     }
 
     @Override
-    void saveEntitiesIfNotExist(Collection entities) {
+    void mergeEntities(Collection entities) {
 
     }
 

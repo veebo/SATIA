@@ -5,13 +5,20 @@ import javax.persistence.*;
 @Entity
 @Table(name = "translations")
 public class Translation {
-    private Long translationId;
-    private Phrase phrase1;
-    private Phrase phrase2;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "translation_id")
+    private Long translationId;
+
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+    @JoinColumn(name = "phrase1_id", referencedColumnName = "phrase_id")
+    private Phrase phrase1;
+
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+    @JoinColumn(name = "phrase2_id", referencedColumnName = "phrase_id")
+    private Phrase phrase2;
+
     public Long getTranslationId() {
         return translationId;
     }
@@ -20,8 +27,7 @@ public class Translation {
         this.translationId = translationId;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "phrase1_id", referencedColumnName = "phrase_id")
+
     public Phrase getPhrase1() {
         return phrase1;
     }
@@ -30,8 +36,6 @@ public class Translation {
         this.phrase1 = phrase1;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "phrase2_id", referencedColumnName = "phrase_id")
     public Phrase getPhrase2() {
         return phrase2;
     }

@@ -156,29 +156,37 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void saveEntityIfNotExists(Object entity) {
-        entityManager.persist(entity);
+    public void mergeEntity(Object entity) {
+        try {
+            entityManager.persist(entity);
+        } catch (Exception e){
+            entityManager.merge(entity);
+        }
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void saveEntitiesIfNotExist(Collection entities) {
-        for (Object e : entities){
-            entityManager.persist(e);
+    public void mergeEntities(Collection entities) {
+        for (Object o : entities){
+            try {
+                entityManager.persist(o);
+            } catch (Exception e){
+                entityManager.merge(o);
+            }
         }
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntity(Object entity) {
-        entityManager.merge(entity);
+        entityManager.persist(entity);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntities(Collection entities) {
         for (Object e : entities){
-            entityManager.merge(e);
+            entityManager.persist(e);
         }
     }
 

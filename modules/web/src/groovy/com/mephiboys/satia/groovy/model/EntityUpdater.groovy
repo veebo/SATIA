@@ -15,7 +15,6 @@ public class EntityUpdater {
     }
 
     def updateTestFields(test, testReqParams) throws IllegalArgumentException {
-        ks.doInTransaction({
             testReqParams.each {k,v ->
                 if (k.equals("Generator")) {
                     long genId;
@@ -53,34 +52,30 @@ public class EntityUpdater {
                 throw new IllegalArgumentException("target and source languages are the same");
             }
             ks.saveEntity(test);
-        })
     }
 
 	def newPhrase(String newValue, Lang lang, boolean filter) throws IllegalArgumentException {
-        ks.doInTransaction({
-            if (lang == null) {
-                throw new IllegalArgumentException();
-            }
-            if (filter) {
-                newValue = filterString(newValue);
-            }
+        if (lang == null) {
+            throw new IllegalArgumentException();
+        }
+        if (filter) {
+            newValue = filterString(newValue);
+        }
 
-            Object[] params = [newValue, lang.getLang()];
-            Phrase equalPhrase = ks.getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
-                    "WHERE value=? AND lang=?", params);
-            if (equalPhrase != null) {
-                return equalPhrase;
-            } else {
-                Phrase new_phrase = new Phrase(value : newValue, lang : lang);
-                ks.saveEntity(new_phrase);
-                return new_phrase;
-            }
-        })
+        Object[] params = [newValue, lang.getLang()];
+        Phrase equalPhrase = ks.getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
+                "WHERE value=? AND lang=?", params);
+        if (equalPhrase != null) {
+            return equalPhrase;
+        } else {
+            Phrase new_phrase = new Phrase(value : newValue, lang : lang);
+            ks.saveEntity(new_phrase);
+            return new_phrase;
+        }
     }
 
     def newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
-        ks.doInTransaction({
-            if ((gen == null) || (test == null)) {
+            if (test == null) {
                 throw new IllegalArgumentException();
             }
             if ((values == null) || (values.length < 2)) {
@@ -104,11 +99,9 @@ public class EntityUpdater {
             Task new_task = new Task(translation : tr, sourceNum : sourceNum, generator : gen, tests : tests);
             ks.saveEntity(new_task);
             return new_task;
-        })
     }
 
     def updatePhraseInTask(String newValue, int i, Task t, Test test) throws IllegalArgumentException {
-        ks.doInTransaction({
             if ((t == null) || (test == null) || (i < 1) || (i > 2)) {
                 throw new IllegalArgumentException();
             }
@@ -148,11 +141,9 @@ public class EntityUpdater {
                     ks.saveEntity(t.getTranslation());
                 }
             }
-        })
     }
 
     def removeTask(Task t, Test test) {
-        ks.doInTransaction({
             if ((t == null) || (test == null)) {
                 return;
             }
@@ -183,11 +174,9 @@ public class EntityUpdater {
             if (relTranlations2.isEmpty()) {
                 ks.deleteEntityById(Phrase.getClass(), p2.getPhraseId());
             }
-        })
     }
 
     def updateTask(Test test, Task t, String[] values, Generator gen) throws IllegalArgumentException {
-        ks.doInTransaction({
             if ((test == null) || (t == null)) {
                 return;
             }
@@ -205,7 +194,6 @@ public class EntityUpdater {
                 t.setGenerator(gen);
                 ks.saveEntity(t);
             }
-        })
     }
 
     /*def validateFieldValue(Field field, String value) throws IllegalArgumentException {
@@ -265,17 +253,14 @@ public class EntityUpdater {
     }*/
 
     def saveResults(String username, Test test, HttpSession session, int rightAnswers) {
-        ks.doInTransaction({
             ResultPK resPk = new ResultPK(username: username, testId: test.getTestId(),
                     startTime: new Date().toTimestamp(), sessionKey: session.getId());
             Result res = new Result(id: resPk, value: 100 * ((double)rightAnswers / test.getTasks().size()));
             ks.saveEntity(res);
             return res;
-        })
     }
 
     def filterString(String str) throws IllegalArgumentException {
-        ks.doInTransaction({
             if (str == null) {
                 throw new IllegalArgumentException("invalid string: " + str);
             }
@@ -284,7 +269,6 @@ public class EntityUpdater {
                 throw new IllegalArgumentException("invalid string: " + str);
             }
             return filtered;
-        })
     }
 
 }

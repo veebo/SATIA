@@ -10,15 +10,19 @@ public class Result {
     @EmbeddedId
     private ResultPK id;
 
+    @Basic
+    @Column(name = "value")
     private Double value;
 
+    @Basic
+    @Column(name = "fullname")
     private String fullname;
 
     @ManyToOne
     @JoinColumn(name = "username", referencedColumnName = "username")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @MapsId("testId")
     @JoinColumn(name = "test_id", referencedColumnName = "test_id", nullable = false)
     private Test test;
@@ -51,8 +55,7 @@ public class Result {
         id.setSessionKey(sessionKey);
     }
 
-    @Basic
-    @Column(name = "value")
+
     public Double getValue() {
         return value;
     }
@@ -91,6 +94,14 @@ public class Result {
         return true;
     }
 
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
     @Override
     public int hashCode() {
         int result = 1;
@@ -99,13 +110,4 @@ public class Result {
         return result;
     }
 
-    @Basic
-    @Column(name = "fullname")
-    public String getFullname() {
-        return fullname;
-    }
-
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
-    }
 }

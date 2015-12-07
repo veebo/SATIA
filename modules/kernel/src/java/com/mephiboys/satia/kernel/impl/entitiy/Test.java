@@ -7,19 +7,48 @@ import java.util.List;
 @Entity
 @Table(name = "tests")
 public class Test {
-    private Long testId;
-    private String title;
-    private String description;
-    private Timestamp createdWhen;
-    private User user;
-    private Generator generator;
-    private List<Task> tasks;
-    private Lang sourceLang;
-    private Lang targetLang;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "test_id")
+    private Long testId;
+
+    @Basic
+    @Column(name = "title")
+    private String title;
+
+    @Basic
+    @Column(name = "description")
+    private String description;
+
+    @Basic
+    @Column(name = "created_when")
+    private Timestamp createdWhen;
+
+    @ManyToOne
+    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id", nullable = false)
+    private Generator generator;
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+    @JoinTable(
+            name="test_tasks",
+            joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},
+            inverseJoinColumns={@JoinColumn(name="task_id", referencedColumnName="task_id")}
+    )
+    private List<Task> tasks;
+
+    @ManyToOne
+    @JoinColumn(name = "source_lang", referencedColumnName = "lang", nullable = false)
+    private Lang sourceLang;
+
+    @ManyToOne
+    @JoinColumn(name = "target_lang", referencedColumnName = "lang", nullable = false)
+    private Lang targetLang;
+
     public Long getTestId() {
         return testId;
     }
@@ -28,8 +57,7 @@ public class Test {
         this.testId = testId;
     }
 
-    @Basic
-    @Column(name = "title")
+
     public String getTitle() {
         return title;
     }
@@ -38,8 +66,7 @@ public class Test {
         this.title = title;
     }
 
-    @Basic
-    @Column(name = "description")
+
     public String getDescription() {
         return description;
     }
@@ -48,8 +75,7 @@ public class Test {
         this.description = description;
     }
 
-    @Basic
-    @Column(name = "created_when")
+
     public Timestamp getCreatedWhen() {
         return createdWhen;
     }
@@ -58,8 +84,7 @@ public class Test {
         this.createdWhen = createdWhen;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "source_lang", referencedColumnName = "lang", nullable = false)
+
     public Lang getSourceLang() {
         return sourceLang;
     }
@@ -68,8 +93,6 @@ public class Test {
         this.sourceLang = sourceLang;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "target_lang", referencedColumnName = "lang", nullable = false)
     public Lang getTargetLang() {
         return targetLang;
     }
@@ -78,9 +101,6 @@ public class Test {
         this.targetLang = targetLang;
     }
 
-
-    @ManyToOne
-    @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
     public User getUser() {
         return user;
     }
@@ -89,8 +109,7 @@ public class Test {
         this.user = user;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id", nullable = false)
+
     public Generator getGenerator() {
         return generator;
     }
@@ -99,12 +118,6 @@ public class Test {
         this.generator = generator;
     }
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(
-        name="test_tasks",
-        joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},
-        inverseJoinColumns={@JoinColumn(name="task_id", referencedColumnName="task_id")}
-    )
     public List<Task> getTasks() {
         return tasks;
     }

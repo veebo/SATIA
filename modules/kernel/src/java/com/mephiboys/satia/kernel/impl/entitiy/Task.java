@@ -6,15 +6,27 @@ import java.util.List;
 @Entity
 @Table(name = "tasks")
 public class Task {
-    private Long taskId;
-    private Translation translation;
-    private byte sourceNum;
-    private Generator generator;
-    private List<Test> tests;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "task_id")
+    private Long taskId;
+
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH})
+    @JoinColumn(name = "translation_id", referencedColumnName = "translation_id")
+    private Translation translation;
+
+    @Basic
+    @Column(name = "source_num")
+    private byte sourceNum;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id")
+    private Generator generator;
+
+    @ManyToMany(mappedBy = "tasks", fetch = FetchType.LAZY,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+    private List<Test> tests;
+
     public Long getTaskId() {
         return taskId;
     }
@@ -23,8 +35,7 @@ public class Task {
         this.taskId = taskId;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "translation_id", referencedColumnName = "translation_id")
+
     public Translation getTranslation() {
         return translation;
     }
@@ -33,8 +44,7 @@ public class Task {
         this.translation = translation;
     }
 
-    @Basic
-    @Column(name = "source_num")
+
     public byte getSourceNum() {
         return sourceNum;
     }
@@ -43,8 +53,6 @@ public class Task {
         this.sourceNum = sourceNum;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "gen_id", referencedColumnName = "gen_id")
     public Generator getGenerator() {
         return generator;
     }
@@ -53,8 +61,7 @@ public class Task {
         this.generator = generator;
     }
 
-    @ManyToMany(mappedBy = "tasks", fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+
     public List<Test> getTests() {
         return tests;
     }
