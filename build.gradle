@@ -1,3 +1,23 @@
+plugins {
+    id 'org.hidetake.ssh' version '1.1.4'
+}
+
+apply plugin: 'org.hidetake.ssh'
+
+def kernelJar = 'modules/kernel/build/libs/satia-kernel.jar'
+def webWar = 'modules/web/build/libs/satia-web.war'
+def dest = '/usr/jboss/standalone/deployments/satia.ear'
+
+remotes {
+    jboss {
+        role 'masterNode'
+        host = '46.101.217.250'
+        user = 'sysad'
+        identity = file("$System.env.HOME"+'/.ssh/id_rsa')
+    }
+}
+
+
 subprojects {
     apply plugin: 'idea'
     apply plugin: 'groovy'
@@ -27,3 +47,20 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.7'
 }
 
+
+task deploy {
+    doLast {
+        ssh.run {
+            session(remotes.jboss) {
+                put from: kernelJar, into: dest
+                execute("mkdir -p " + dest + "/satia-web.war")
+                execute("mkdir -p " + dest + "/tmp")
+                put from: webWar, into: dest + "/tmp"
+                execute("rm -rf " + dest + "/satia-web.war/*")
+                execute("unzip -d " + dest + "/satia-web.war " + dest + "/tmp/satia-web.war")
+                execute("touch " + dest + "/satia-web.war.dodeploy")
+                execute("rm -rf " + dest + "/tmp")
+            }
+        }
+    }
+}
