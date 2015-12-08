@@ -40,7 +40,6 @@ public class Generator {
         Generator that = (Generator) o;
 
         if (genId != null ? !genId.equals(that.genId) : that.genId != null) return false;
-        if (impl != null ? !impl.equals(that.impl) : that.impl != null) return false;
 
         return true;
     }

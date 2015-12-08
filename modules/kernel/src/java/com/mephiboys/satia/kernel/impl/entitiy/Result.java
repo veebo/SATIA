@@ -22,7 +22,7 @@ public class Result {
     @JoinColumn(name = "username", referencedColumnName = "username")
     private User user;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST})
     @MapsId("testId")
     @JoinColumn(name = "test_id", referencedColumnName = "test_id", nullable = false)
     private Test test;
