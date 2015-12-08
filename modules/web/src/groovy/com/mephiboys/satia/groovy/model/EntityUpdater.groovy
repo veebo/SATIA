@@ -75,8 +75,14 @@ public class EntityUpdater {
     }
 
     def newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
+        ks.doInTransaction({
             if (test == null) {
                 throw new IllegalArgumentException();
+            }
+            ks.mergeEntity(test)
+
+            if (gen != null){
+                ks.mergeEntity(gen)
             }
             if ((values == null) || (values.length < 2)) {
                 throw new IllegalArgumentException("phrases not set");
@@ -90,15 +96,16 @@ public class EntityUpdater {
                     "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
                     params);
             if (tr == null) {
-                tr = new Translation(phrase1 : p1, phrase2 : p2);
+                tr = new Translation(phrase1: p1, phrase2: p2);
                 ks.saveEntity(tr);
             }
             List<Test> tests = new ArrayList<Test>();
             tests.add(test);
             byte sourceNum = tr.getPhrase1().getLang().equals(test.getSourceLang()) ? (byte) 1 : (byte) 2;
-            Task new_task = new Task(translation : tr, sourceNum : sourceNum, generator : gen, tests : tests);
+            Task new_task = new Task(translation: tr, sourceNum: sourceNum, generator: gen, tests: tests);
             ks.saveEntity(new_task);
             return new_task;
+        })
     }
 
     def updatePhraseInTask(String newValue, int i, Task t, Test test) throws IllegalArgumentException {

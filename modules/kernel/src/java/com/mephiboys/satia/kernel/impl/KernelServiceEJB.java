@@ -157,22 +157,14 @@ public class KernelServiceEJB implements KernelService {
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void mergeEntity(Object entity) {
-        try {
-            entityManager.persist(entity);
-        } catch (Exception e){
-            entityManager.merge(entity);
-        }
+        entityManager.merge(entity);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void mergeEntities(Collection entities) {
         for (Object o : entities){
-            try {
-                entityManager.persist(o);
-            } catch (Exception e){
-                entityManager.merge(o);
-            }
+            entityManager.merge(o);
         }
     }
 
