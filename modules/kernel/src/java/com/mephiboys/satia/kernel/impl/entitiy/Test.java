@@ -29,11 +29,11 @@ public class Test {
     @JoinColumn(name = "username", referencedColumnName = "username", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.REFRESH})
     @JoinColumn(name = "gen_id", referencedColumnName = "gen_id", nullable = false)
     private Generator generator;
 
-    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name="test_tasks",
             joinColumns={@JoinColumn(name="test_id", referencedColumnName="test_id")},

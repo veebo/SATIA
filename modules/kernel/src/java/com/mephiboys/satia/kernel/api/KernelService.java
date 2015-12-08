@@ -1,14 +1,17 @@
 package com.mephiboys.satia.kernel.api;
 
-import com.mephiboys.satia.kernel.impl.entitiy.*;
+import com.mephiboys.satia.kernel.impl.entitiy.Generator;
+import com.mephiboys.satia.kernel.impl.entitiy.Result;
+import com.mephiboys.satia.kernel.impl.entitiy.Task;
+import com.mephiboys.satia.kernel.impl.entitiy.Test;
 
 import javax.ejb.Local;
 import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.util.Collection;
-import java.util.concurrent.Callable;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 
 @Local
@@ -26,9 +29,9 @@ public interface KernelService {
 
     <T> Collection<T> getEntitiesByQuery(Class<T> cls, String query, Object... params);
 
-    void mergeEntity(Object entity);
+    void updateEntity(Object entity);
 
-    void mergeEntities(Collection entities);
+    void updateEntities(Collection entities);
 
     void saveEntity(Object entity);
 

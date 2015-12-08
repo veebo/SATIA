@@ -1,5 +1,5 @@
 package com.mephiboys.satia.groovy.controller
-import com.mephiboys.satia.groovy.model.EntityUpdater
+
 import com.mephiboys.satia.kernel.api.KernelHelper
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
@@ -161,7 +161,7 @@ public class SatiaWebController {
         for (Task t : test.getTasks()) {
             //delete if needed
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
-                eu.removeTask(t, test);
+                ks.removeTask(t, test);
                 continue;
             }
             //extract request parameters
@@ -187,7 +187,7 @@ public class SatiaWebController {
         }
 
         //save test
-        ks.saveEntity(test);
+        ks.updateEntity(test);
         model.getModel().put("create", false);
 
         return model;

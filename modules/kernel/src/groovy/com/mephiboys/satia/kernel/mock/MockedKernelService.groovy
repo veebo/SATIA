@@ -89,12 +89,12 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    void mergeEntity(Object entity) {
+    void updateEntity(Object entity) {
 
     }
 
     @Override
-    void mergeEntities(Collection entities) {
+    void updateEntities(Collection entities) {
 
     }
 
