@@ -5,6 +5,8 @@ import com.mephiboys.satia.kernel.impl.entitiy.*
 import javax.persistence.EntityManager
 import javax.sql.DataSource
 import java.util.concurrent.Callable
+import javax.servlet.http.HttpServletRequest
+import java.util.Map
 
 import static org.mockito.Mockito.mock
 
@@ -171,6 +173,36 @@ class MockedKernelService implements KernelService {
     @Override
     def <T> T doInTransaction(Callable<T> call) {
 
+    }
+
+    @Override
+    public void updateTest(Test test, Map<String, String> testReqParams) throws IllegalArgumentException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public void removeTask(Task task, Test test) {
+        return;
+    }
+
+    @Override
+    public void updateTask(Test test, Task task, String[] values, Generator gen) throws IllegalArgumentException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException {
+        throw new IllegalArgumentException();
+    }
+
+    @Override
+    public Result saveResult(String username, Test test, String sessionId, int rightAnswers) {
+        return null;
     }
 
     {

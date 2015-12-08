@@ -19,6 +19,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.Date;
+import java.util.Map;
+import java.sql.Timestamp;
+import javax.servlet.http.HttpServletRequest;
 
 @Singleton
 @TransactionManagement(TransactionManagementType.CONTAINER)
@@ -215,6 +219,311 @@ public class KernelServiceEJB implements KernelService {
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public <T> T doInTransaction(Callable<T> action) throws Exception {
         return action.call();
+    }
+
+    @Override
+    public void updateTest(Test test, Map<String, String> testReqParams) throws IllegalArgumentException {
+        for (Map.Entry<String, String> entry : testReqParams.entrySet()) {
+            String k = entry.getKey();
+            String v = entry.getValue();
+            if (k.equals("Generator")) {
+                long genId = 0;
+                Generator newGen;
+                try {
+                    genId = Long.parseLong(v);
+                    newGen = getEntityById(Generator.class, new Long(genId));
+                } catch (NumberFormatException nf) {
+                    throw new IllegalArgumentException("invalid generator id: "+v);
+                }
+                if (newGen == null) {
+                    throw new IllegalArgumentException("invalid generator id: "+genId);
+                }
+                if (!test.getGenerator().equals(newGen)) {
+                    test.setGenerator(newGen);
+                }
+            }
+            else if ( (k.equals("SourceLang")) || (k.equals("TargetLang")) ) {
+                Lang newLang = getEntityById(Lang.class, v);
+                if (newLang == null) {
+                    throw new IllegalArgumentException("ivalid "+k+": "+v);
+                }
+                if (k.equals("SourceLang")) {
+                    if (!test.getSourceLang().equals(newLang)) {
+                        test.setSourceLang(newLang);
+                    }
+                }
+                else {
+                    if (!test.getTargetLang().equals(newLang)) {
+                        test.setTargetLang(newLang);
+                    }
+                }
+            }
+            else {
+                v = filterString(v);
+                if (k.equals("Title")) {
+                    if (!test.getTitle().equals(v)) {
+                        test.setTitle(v);
+                    }
+                }
+                else {
+                    if (!test.getDescription().equals(v)) {
+                        test.setDescription(v);
+                    }
+                }
+            }
+        }
+        if (test.getSourceLang().equals(test.getTargetLang())) {
+            throw new IllegalArgumentException("target and source languages are the same");
+        }
+        saveEntity(test);
+    }
+
+    private Phrase newPhrase(String newValue, Lang lang, boolean filter) throws IllegalArgumentException {
+        if (lang == null) {
+            throw new IllegalArgumentException();
+        }
+        if (filter) {
+            newValue = filterString(newValue);
+        }
+
+        Object[] params = {newValue, lang.getLang()};
+        Phrase equalPhrase = getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
+                "WHERE value=? AND lang=?", params);
+        if (equalPhrase != null) {
+            return equalPhrase;
+        } else {
+            Phrase newPhrase = new Phrase();
+            newPhrase.setValue(newValue);
+            newPhrase.setLang(lang);
+            saveEntity(newPhrase);
+            return newPhrase;
+        }
+    }
+
+    @Override
+    public Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
+            if (test == null) {
+                throw new IllegalArgumentException();
+            }
+            if ((values == null) || (values.length < 2)) {
+                throw new IllegalArgumentException("phrases not set");
+            }
+
+            Phrase p1 = newPhrase(values[0], test.getSourceLang(), true);
+            Phrase p2 = newPhrase(values[1], test.getTargetLang(), true);
+
+            Object[] params = {p1.getPhraseId(), p2.getPhraseId(), p2.getPhraseId(), p1.getPhraseId()};
+            Translation tr = getEntityByQuery(Translation.class,
+                    "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
+                    params);
+            if (tr == null) {
+                tr = new Translation();
+                tr.setPhrase1(p1);
+                tr.setPhrase2(p2);
+                saveEntity(tr);
+            }
+            List<Test> tests = new ArrayList<Test>();
+            tests.add(test);
+            byte sourceNum = tr.getPhrase1().getLang().equals(test.getSourceLang()) ? (byte) 1 : (byte) 2;
+            Task newTask = new Task();
+            newTask.setTranslation(tr);
+            newTask.setSourceNum(sourceNum);
+            newTask.setGenerator(gen);
+            newTask.setTests(tests);
+            saveEntity(newTask);
+            return newTask;
+    }
+
+    private void updatePhraseInTask(String newValue, int i, Task task, Test test) throws IllegalArgumentException {
+            if ((task == null) || (test == null) || (i < 1) || (i > 2)) {
+                throw new IllegalArgumentException();
+            }
+            newValue = filterString(newValue);
+
+            Phrase phraseToUpdate = ((i == 1) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
+            if (!newValue.equals(phraseToUpdate.getValue())) {
+                //check if translation is used in other tasks
+                Object[] params = {task.getTranslation().getTranslationId(), task.getTaskId()};
+                Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+                        "SELECT task_id FROM tasks where translation_id = ? AND task_id <> ?",
+                        params);
+                //  if yes - create new translation
+                if (!relTasks.isEmpty()) {
+                    Translation newTr = new Translation();
+                    newTr.setPhrase1(task.getTranslation().getPhrase1());
+                    newTr.setPhrase2(task.getTranslation().getPhrase2());
+                    saveEntity(newTr);
+                    task.setTranslation(newTr);
+                    saveEntity(task);
+                }
+                //check if this phrase is used in other translations
+                params = new Object[] {phraseToUpdate.getPhraseId(), phraseToUpdate.getPhraseId(), task.getTranslation().getTranslationId()};
+                Collection<Translation> relTranslations = getEntitiesByQuery(Translation.class,
+                        "SELECT translation_id FROM translations " +
+                                "WHERE (phrase1_id = ? OR phrase2_id = ?) AND translation_id <> ?",
+                        params);
+                //  if not - replace old value
+                if (relTranslations.isEmpty()) {
+                    phraseToUpdate.setValue(newValue);
+                    saveEntity(phraseToUpdate);
+                }
+                //  if yes - create new phrase with new value
+                else {
+                    Phrase newPhrase = newPhrase(newValue, phraseToUpdate.getLang(), false);
+                    if (i == 1) {
+                        task.getTranslation().setPhrase1(newPhrase);
+                    }
+                    else {
+                        task.getTranslation().setPhrase2(newPhrase);
+                    }
+                    saveEntity(task.getTranslation());
+                }
+            }
+    }
+
+    @Override
+    public void removeTask(Task task, Test test) {
+            if ((task == null) || (test == null)) {
+                return;
+            }
+            Translation tr = task.getTranslation();
+            Phrase p1 = tr.getPhrase1();
+            Phrase p2 = tr.getPhrase2();
+
+            deleteEntityById(Task.class, task.getTaskId());
+
+            Object[] params = {tr.getTranslationId()};
+            Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+                    "SELECT task_id FROM tasks WHERE translation_id=?", params);
+            if (relTasks.isEmpty()) {
+                deleteEntityById(Translation.class, tr.getTranslationId());
+            }
+            
+            params = new Object[] {p1.getPhraseId(), p1.getPhraseId()};
+            Collection<Translation> relTranlations1 = getEntitiesByQuery(Translation.class,
+                    "SELECT translation_id FROM translations WHERE phrase1_id=? OR phrase2_id=?",
+                    params);
+            if (relTranlations1.isEmpty()) {
+                deleteEntityById(Phrase.class, p1.getPhraseId());
+            }
+            params = new Object[] {p2.getPhraseId(), p2.getPhraseId()};
+            Collection<Translation> relTranlations2 = getEntitiesByQuery(Translation.class,
+                    "SELECT translation_id FROM translations WHERE phrase1_id=? OR phrase2_id=?",
+                    params);
+            if (relTranlations2.isEmpty()) {
+                deleteEntityById(Phrase.class, p2.getPhraseId());
+            }
+    }
+
+    @Override
+    public void updateTask(Test test, Task task, String[] values, Generator gen) throws IllegalArgumentException {
+            if ((test == null) || (task == null)) {
+                return;
+            }
+            //update phrases and translation
+            for (int j = 1; ( (values != null) && (j <= 2) && (values.length >= j) ); j++) {
+                updatePhraseInTask(values[j - 1], j, task, test);
+            }
+            //update sourceNum if needed
+            Phrase sourcePhrase = ( (task.getSourceNum() == (byte)1) ?
+                                       task.getTranslation().getPhrase1() :
+                                       task.getTranslation().getPhrase2() );
+            if (!sourcePhrase.getLang().equals(test.getSourceLang())) {
+                task.setSourceNum( (task.getSourceNum() == (byte)1) ? (byte)2 : (byte)1 );
+            }
+            //update generator
+            if ((gen != null) && (!gen.equals(task.getGenerator()))) {
+                task.setGenerator(gen);
+            }
+            //save task
+            saveEntity(task);
+    }
+
+    private void validateFieldValue(Field field, String value) throws IllegalArgumentException {
+        if (field == null) {
+            throw new IllegalArgumentException();
+        }
+        value = filterString(value);
+        switch (field.getType()) {
+        case 1:
+            try {
+                Integer.parseInt(value, 10);
+            }
+            catch (NumberFormatException nf) {
+                throw new IllegalArgumentException(field.getName() + " must be integer");
+            }
+            break;
+        case 2:
+            try {
+                Double.parseDouble(value);
+            }
+            catch (NumberFormatException nf) {
+                throw new IllegalArgumentException(field.getName() + " must be real number");
+            }
+            break;
+        }
+    }
+
+    @Override
+    public void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException {
+        if ((task == null) || (request == null)) {
+            throw new IllegalArgumentException();
+        }
+
+        Generator gen = task.getGenerator();
+        Object[] params = {gen.getGenId()};
+        Collection<Field> genFields = getEntitiesByQuery(Field.class,
+                "SELECT field_id FROM fields WHERE gen_id = ?", params);
+        List<FieldValue> fieldValuesToSave = new ArrayList<FieldValue>();
+        //validate values
+        for (Field f : genFields) {
+            String[] values = request.getParameterValues(paramPrefix + "_" + f.getName());
+            if ((values == null) || (values.length < 1)) {
+                continue;
+            }
+            int addedValues = 0;
+            for (String v : values) {
+                if ((!f.isMultiple()) || (addedValues > 0)) {
+                    break;
+                }
+                validateFieldValue(f, v);
+                FieldValue newFieldValue = new FieldValue();
+                newFieldValue.setField(f);
+                newFieldValue.setTask(task);
+                newFieldValue.setValue(v);
+                fieldValuesToSave.add(newFieldValue);
+                ++addedValues;
+            }
+        }
+        //save values
+        for (FieldValue fv : fieldValuesToSave) {
+            saveEntity(fv);
+        }
+    }
+
+    @Override
+    public Result saveResult(String username, Test test, String sessionId, int rightAnswers) {
+            ResultPK resPk = new ResultPK();
+            resPk.setTestId(test.getTestId());
+            resPk.setStartTime(new Timestamp(new Date().getTime()));
+            resPk.setSessionKey(sessionId);
+            Result res = new Result();
+            res.setId(resPk);
+            res.setUser(getEntityById(User.class, username));
+            res.setValue(new Double( 100 * ((double)rightAnswers / (double)test.getTasks().size()) ));
+            saveEntity(res);
+            return res;
+    }
+
+    private String filterString(String str) throws IllegalArgumentException {
+            if (str == null) {
+                throw new IllegalArgumentException("invalid string: " + str);
+            }
+            String filtered = str.replaceAll("[<>]{1}", "");
+            if (filtered.equals("")) {
+                throw new IllegalArgumentException("invalid string: " + str);
+            }
+            return filtered;
     }
 
 }

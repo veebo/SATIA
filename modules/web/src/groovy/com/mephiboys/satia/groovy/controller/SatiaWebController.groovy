@@ -118,11 +118,10 @@ public class SatiaWebController {
         }
 
         Test test = model.getModel().get("test");
-        EntityUpdater eu = new EntityUpdater(ks);
 
         //validate and modify test fields if needed and save tet entity
         try {
-            eu.updateTestFields(test, ["Title" : request.getParameter("test_title"),
+            ks.updateTest(test, ["Title" : request.getParameter("test_title"),
                                        "Description" : request.getParameter("test_description"),
                                        "Generator" : request.getParameter("test_generator"),
                                        "SourceLang" : request.getParameter("test_sourcelang"),
@@ -151,8 +150,8 @@ public class SatiaWebController {
             catch (NumberFormatException ignored) {}
             //save
             try {
-                Task createdTask = eu.newTask(values, newTaskGen, test);
-                //eu.updateTaskFieldValues(createdTask, request, "add_task"+i);
+                Task createdTask = ks.newTask(values, newTaskGen, test);
+                //ks.updateTaskFieldValues(createdTask, request, "add_task"+i);
             } catch (IllegalArgumentException e) {
                 return badRequest(e.getMessage());
             }
@@ -179,8 +178,8 @@ public class SatiaWebController {
             }
             //save
             try {
-                eu.updateTask(test, t, phraseValues, taskGen);
-                //eu.updateTaskFieldValues(t, request, "task"+t.getTaskId());
+                ks.updateTask(test, t, phraseValues, taskGen);
+                //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
             }
             catch (IllegalArgumentException ia) {
                 return badRequest(ia.getMessage());
@@ -286,8 +285,7 @@ public class SatiaWebController {
             }
             //if no tasks left - save result
             catch (IndexOutOfBoundsException iob) {
-                EntityUpdater eu = new EntityUpdater(ks);
-                Result result = eu.saveResult(username, test, session, rightAnswers);
+                Result result = ks.saveResult(username, test, session.getId(), rightAnswers);
                 model.addObject("result", result);
                 model.addObject("end", true);
             }
