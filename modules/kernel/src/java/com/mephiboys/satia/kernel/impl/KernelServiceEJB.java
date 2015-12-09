@@ -227,38 +227,40 @@ public class KernelServiceEJB implements KernelService {
         for (Map.Entry<String, String> entry : testReqParams.entrySet()) {
             String k = entry.getKey();
             String v = entry.getValue();
+            if (v == null) {
+                continue;
+            }
             if (k.equals("Generator")) {
                 long genId = 0;
                 Generator newGen;
                 try {
                     genId = Long.parseLong(v);
                     newGen = getEntityById(Generator.class, genId);
-                } catch (NumberFormatException nf) {
-                    throw new IllegalArgumentException("invalid generator id: "+v);
-                }
-                if (newGen == null) {
-                    throw new IllegalArgumentException("invalid generator id: "+genId);
-                }
-                test.setGenerator(newGen);
+                    if (newGen != null) {
+                        test.setGenerator(newGen);
+                    }
+                } catch (NumberFormatException ignored) {}
             }
             else if ( (k.equals("SourceLang")) || (k.equals("TargetLang")) ) {
                 Lang newLang = getEntityById(Lang.class, v);
-                if (newLang == null) {
-                    throw new IllegalArgumentException("ivalid "+k+": "+v);
-                }
-                if (k.equals("SourceLang")) {
-                    test.setSourceLang(newLang);
-                } else {
-                    test.setTargetLang(newLang);
+                if (newLang != null) {
+                    if (k.equals("SourceLang")) {
+                        test.setSourceLang(newLang);
+                    } else {
+                        test.setTargetLang(newLang);
+                    }
                 }
             }
             else {
-                v = filterString(v);
-                if (k.equals("Title")) {
-                    test.setTitle(v);
-                } else {
-                    test.setDescription(v);
+                try {
+                    v = filterString(v);
+                    if (k.equals("Title")) {
+                        test.setTitle(v);
+                    } else {
+                        test.setDescription(v);
+                    }
                 }
+                catch (IllegalArgumentException ignored) { }
             }
         }
         if (test.getSourceLang().equals(test.getTargetLang())) {
@@ -297,16 +299,22 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
+    public Task newTask(String[] values, Generator gen, Test test) {
             if (test == null) {
-                throw new IllegalArgumentException();
+                return null;
             }
             if ((values == null) || (values.length < 2)) {
-                throw new IllegalArgumentException("phrases not set");
+                return null;
             }
 
-            Phrase p1 = newPhrase(values[0], test.getSourceLang(), true);
-            Phrase p2 = newPhrase(values[1], test.getTargetLang(), true);
+            Phrase p1;
+            Phrase p2;
+            try {
+                p1 = newPhrase(values[0], test.getSourceLang(), true);
+                p2 = newPhrase(values[1], test.getTargetLang(), true);
+            } catch (IllegalArgumentException ie) {
+                return null;
+            }
 
             Object[] params = {p1.getPhraseId(), p2.getPhraseId(), p2.getPhraseId(), p1.getPhraseId()};
             Translation tr = getEntityByQuery(Translation.class,
@@ -326,7 +334,8 @@ public class KernelServiceEJB implements KernelService {
             newTask.setSourceNum(sourceNum);
             newTask.setGenerator(gen);
             newTask.setTests(tests);
-            saveEntity(newTask);
+            test.getTasks().add(newTask);
+            updateEntity(test);
             return newTask;
     }
 
@@ -387,6 +396,8 @@ public class KernelServiceEJB implements KernelService {
             Phrase p1 = tr.getPhrase1();
             Phrase p2 = tr.getPhrase2();
 
+            test.getTasks().remove(task);
+            updateEntity(test);
             deleteEntityById(Task.class, task.getTaskId());
 
             Object[] params = {tr.getTranslationId()};
@@ -414,34 +425,43 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
+    public void updateTask(Test test, Task task, String[] values, Long genId) {
             if ((test == null) || (task == null)) {
                 return;
             }
+
             //update phrases and translation
             for (int j = 1; ( (values != null) && (j <= 2) && (values.length >= j) ); j++) {
-                updatePhraseInTask(values[j - 1], j, task, test);
+                try {
+                    updatePhraseInTask(values[j - 1], j, task, test);
+                } catch (IllegalArgumentException ignored) { continue; }
             }
+            boolean changed = false;
             //update sourceNum if needed
             Phrase sourcePhrase = ( (task.getSourceNum() == (byte)1) ?
                                        task.getTranslation().getPhrase1() :
                                        task.getTranslation().getPhrase2() );
             if (!sourcePhrase.getLang().equals(test.getSourceLang())) {
                 task.setSourceNum( (task.getSourceNum() == (byte)1) ? (byte)2 : (byte)1 );
+                changed = true;
             }
             //update generator
             if (genId != null) {
                 if (genId.equals(new Long(-1))) {
                     task.setGenerator(null);
+                    changed = true;
                 } else {
                     Generator taskGen = getEntityById(Generator.class, genId);
                     if (taskGen != null) {
                         task.setGenerator(taskGen);
+                        changed = true;
                     }
                 }
             }
             //save task
-            updateEntity(task);
+            if (changed) {
+                updateEntity(task);
+            }
     }
 
     private void validateFieldValue(Field field, String value) throws IllegalArgumentException {

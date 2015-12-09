@@ -20,7 +20,7 @@ $(document).ready(function() {
 			row.remove();
 		}
 		else {
-			var id = row.find("textarea").attr("name").split("_")[0].split("task")[1];
+			var id = row.find("textarea").first().attr("name").split("_")[0].split("task")[1];
 			if (id == "-1") {
 				return;
 			}

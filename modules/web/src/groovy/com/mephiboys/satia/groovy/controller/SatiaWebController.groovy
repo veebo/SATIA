@@ -118,15 +118,16 @@ public class SatiaWebController {
         }
 
         Test test = model.getModel().get("test");
+        boolean createTest = model.getModel().get("create");
 
         //validate and modify test fields if needed and save tet entity
         try {
-            ks.updateTest(test, ["Title" : request.getParameter("test_title"),
+            ks.updateTest(test, createTest, ["Title" : request.getParameter("test_title"),
                                        "Description" : request.getParameter("test_description"),
                                        "Generator" : request.getParameter("test_generator"),
                                        "SourceLang" : request.getParameter("test_sourcelang"),
                                        "TargetLang" : request.getParameter("test_targetlang")]);
-        } catch (IllegalArgumentException ia) {
+        } catch (Exception ia) {
             return badRequest(ia.getMessage());
         }
 
@@ -149,19 +150,16 @@ public class SatiaWebController {
             }
             catch (NumberFormatException ignored) {}
             //save
-            try {
-                Task createdTask = ks.newTask(values, newTaskGen, test);
-                //ks.updateTaskFieldValues(createdTask, request, "add_task"+i);
-            } catch (IllegalArgumentException e) {
-                return badRequest(e.getMessage());
-            }
+            Task createdTask = ks.newTask(values, newTaskGen, test);
+            //ks.updateTaskFieldValues(createdTask, request, "add_task"+i);
         }
 
         //modify and delete existing tasks
+        def tasksToRemove = [];
         for (Task t : test.getTasks()) {
             //delete if needed
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
-                ks.removeTask(t, test);
+                tasksToRemove << t;
                 continue;
             }
             //extract request parameters
@@ -180,19 +178,14 @@ public class SatiaWebController {
             catch (NumberFormatException ignored) {}
 
             //save
-            try {
-                ks.updateTask(test, t, phraseValues, genId);
-                //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
-            }
-            catch (IllegalArgumentException ia) {
-                return badRequest(ia.getMessage());
-            }
+            ks.updateTask(test, t, phraseValues, genId);
+            //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
+        }
+        for (Task t : tasksToRemove) {
+            ks.removeTask(t, test);
         }
 
-        //save test
-        ks.updateEntity(test);
         model.getModel().put("create", false);
-
         return model;
     }
 

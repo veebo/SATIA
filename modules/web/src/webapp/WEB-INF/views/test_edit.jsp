@@ -133,7 +133,7 @@
 	        </div>
 	    </div>
 	    <div id="add_task" class="button">+</div><br>
-	    <input id="added_tasks_input" type="text" value="0" name="added_tasks_num" />
+	    <input id="added_tasks_input" class="ignore_unchanged" type="text" value="0" name="added_tasks_num" />
 	    <div class="center">
 	    	<input type="submit" value="save changes" class="button"></input>
 	    </div>
