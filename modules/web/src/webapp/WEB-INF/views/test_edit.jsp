@@ -8,6 +8,7 @@
 	<link rel="stylesheet" href="/resources/css/test_edit_style.css" />
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 	<script type="text/javascript" src="/resources/js/add_del_task.js"></script>
+	<script type="text/javascript" src="/resources/js/unchanged_inputs.js"></script>
 </head>
 <body>
 	<style>
