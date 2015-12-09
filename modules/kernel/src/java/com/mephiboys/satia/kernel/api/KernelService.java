@@ -45,7 +45,7 @@ public interface KernelService {
 
     <T> T doInTransaction(Callable<T> action) throws Exception;
 
-    void updateTest(Test test, Map<String, String> testReqParams) throws IllegalArgumentException;
+    void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException;
 
     Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException;
 

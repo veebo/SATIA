@@ -175,7 +175,7 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    public void updateTest(Test test, Map<String, String> testReqParams) throws IllegalArgumentException {
+    public void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException {
         throw new IllegalArgumentException();
     }
 
