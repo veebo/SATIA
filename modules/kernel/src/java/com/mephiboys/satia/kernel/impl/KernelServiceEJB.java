@@ -223,7 +223,7 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void updateTest(Test test, Map<String, String> testReqParams) throws IllegalArgumentException {
+    public void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException {
         for (Map.Entry<String, String> entry : testReqParams.entrySet()) {
             String k = entry.getKey();
             String v = entry.getValue();
@@ -239,9 +239,7 @@ public class KernelServiceEJB implements KernelService {
                 if (newGen == null) {
                     throw new IllegalArgumentException("invalid generator id: "+genId);
                 }
-                if (!test.getGenerator().equals(newGen)) {
-                    test.setGenerator(newGen);
-                }
+                test.setGenerator(newGen);
             }
             else if ( (k.equals("SourceLang")) || (k.equals("TargetLang")) ) {
                 Lang newLang = getEntityById(Lang.class, v);
@@ -249,34 +247,29 @@ public class KernelServiceEJB implements KernelService {
                     throw new IllegalArgumentException("ivalid "+k+": "+v);
                 }
                 if (k.equals("SourceLang")) {
-                    if (!test.getSourceLang().equals(newLang)) {
-                        test.setSourceLang(newLang);
-                    }
-                }
-                else {
-                    if (!test.getTargetLang().equals(newLang)) {
-                        test.setTargetLang(newLang);
-                    }
+                    test.setSourceLang(newLang);
+                } else {
+                    test.setTargetLang(newLang);
                 }
             }
             else {
                 v = filterString(v);
                 if (k.equals("Title")) {
-                    if (!test.getTitle().equals(v)) {
-                        test.setTitle(v);
-                    }
-                }
-                else {
-                    if (!test.getDescription().equals(v)) {
-                        test.setDescription(v);
-                    }
+                    test.setTitle(v);
+                } else {
+                    test.setDescription(v);
                 }
             }
         }
         if (test.getSourceLang().equals(test.getTargetLang())) {
             throw new IllegalArgumentException("target and source languages are the same");
         }
-        updateEntity(test);
+        if (createTest) {
+            saveEntity(test);
+        }
+        else {
+            updateEntity(test);
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -437,9 +430,15 @@ public class KernelServiceEJB implements KernelService {
                 task.setSourceNum( (task.getSourceNum() == (byte)1) ? (byte)2 : (byte)1 );
             }
             //update generator
-            if (genId != null && !(task.getGenerator() != null && genId.equals(task.getGenerator().getGenId()))) {
-                Generator taskGen = getEntityById(Generator.class, genId);
-                task.setGenerator(taskGen);
+            if (genId != null) {
+                if (genId.equals(new Long(-1))) {
+                    task.setGenerator(null);
+                } else {
+                    Generator taskGen = getEntityById(Generator.class, genId);
+                    if (taskGen != null) {
+                        task.setGenerator(taskGen);
+                    }
+                }
             }
             //save task
             updateEntity(task);

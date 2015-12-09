@@ -170,8 +170,12 @@ public class SatiaWebController {
             phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
             Long genId = null;
             try {
-                genId = Long.parseLong(request.getParameter("task"+t.getTaskId()+"_gen"));
-
+                String genIdParam = request.getParameter("task"+t.getTaskId()+"_gen");
+                if (genIdParam.equals("null")) {
+                    genId = new Long(-1);
+                } else {
+                    genId = Long.parseLong(genIdParam);
+                }
             }
             catch (NumberFormatException ignored) {}
 
