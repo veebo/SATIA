@@ -421,7 +421,7 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void updateTask(Test test, Task task, String[] values, Generator gen) throws IllegalArgumentException {
+    public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
             if ((test == null) || (task == null)) {
                 return;
             }
@@ -437,8 +437,9 @@ public class KernelServiceEJB implements KernelService {
                 task.setSourceNum( (task.getSourceNum() == (byte)1) ? (byte)2 : (byte)1 );
             }
             //update generator
-            if ((gen != null) && (!gen.equals(task.getGenerator()))) {
-                task.setGenerator(gen);
+            if (genId != null && !(task.getGenerator() != null && genId.equals(task.getGenerator().getGenId()))) {
+                Generator taskGen = getEntityById(Generator.class, genId);
+                task.setGenerator(taskGen);
             }
             //save task
             updateEntity(task);

@@ -168,17 +168,16 @@ public class SatiaWebController {
             String[] phraseValues = new String[2];
             phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
             phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
-            Generator taskGen;
+            Long genId = null;
             try {
-                long genId = Long.parseLong(request.getParameter("task"+t.getTaskId()+"_gen"));
-                taskGen = ks.getEntityById(Generator.class, genId);
+                genId = Long.parseLong(request.getParameter("task"+t.getTaskId()+"_gen"));
+
             }
-            catch (NumberFormatException nf) {
-                taskGen = null;
-            }
+            catch (NumberFormatException ignored) {}
+
             //save
             try {
-                ks.updateTask(test, t, phraseValues, taskGen);
+                ks.updateTask(test, t, phraseValues, genId);
                 //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
             }
             catch (IllegalArgumentException ia) {

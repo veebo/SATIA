@@ -6,7 +6,6 @@ import javax.persistence.EntityManager
 import javax.sql.DataSource
 import java.util.concurrent.Callable
 import javax.servlet.http.HttpServletRequest
-import java.util.Map
 
 import static org.mockito.Mockito.mock
 
@@ -191,7 +190,7 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    public void updateTask(Test test, Task task, String[] values, Generator gen) throws IllegalArgumentException {
+    public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
         throw new IllegalArgumentException();
     }
 

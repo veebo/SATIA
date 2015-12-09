@@ -19,7 +19,7 @@ public class Task {
     @Column(name = "source_num")
     private byte sourceNum;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "gen_id", referencedColumnName = "gen_id")
     private Generator generator;
 

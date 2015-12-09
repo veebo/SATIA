@@ -51,7 +51,7 @@ public interface KernelService {
 
     void removeTask(Task task, Test test);
 
-    void updateTask(Test test, Task task, String[] values, Generator gen) throws IllegalArgumentException;
+    void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException;
 
     void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException;
 
