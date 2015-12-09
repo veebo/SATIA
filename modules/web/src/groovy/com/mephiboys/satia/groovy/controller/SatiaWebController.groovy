@@ -1,5 +1,5 @@
 package com.mephiboys.satia.groovy.controller
-import com.mephiboys.satia.groovy.model.EntityUpdater
+
 import com.mephiboys.satia.kernel.api.KernelHelper
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
@@ -161,24 +161,23 @@ public class SatiaWebController {
         for (Task t : test.getTasks()) {
             //delete if needed
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
-                eu.removeTask(t, test);
+                ks.removeTask(t, test);
                 continue;
             }
             //extract request parameters
             String[] phraseValues = new String[2];
             phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
             phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
-            Generator taskGen;
+            Long genId = null;
             try {
-                long genId = Long.parseLong(request.getParameter("task"+t.getTaskId()+"_gen"));
-                taskGen = ks.getEntityById(Generator.class, genId);
+                genId = Long.parseLong(request.getParameter("task"+t.getTaskId()+"_gen"));
+
             }
-            catch (NumberFormatException nf) {
-                taskGen = null;
-            }
+            catch (NumberFormatException ignored) {}
+
             //save
             try {
-                ks.updateTask(test, t, phraseValues, taskGen);
+                ks.updateTask(test, t, phraseValues, genId);
                 //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
             }
             catch (IllegalArgumentException ia) {
@@ -187,7 +186,7 @@ public class SatiaWebController {
         }
 
         //save test
-        ks.saveEntity(test);
+        ks.updateEntity(test);
         model.getModel().put("create", false);
 
         return model;

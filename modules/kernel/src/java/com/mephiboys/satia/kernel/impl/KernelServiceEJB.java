@@ -160,13 +160,13 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void mergeEntity(Object entity) {
+    public void updateEntity(Object entity) {
         entityManager.merge(entity);
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void mergeEntities(Collection entities) {
+    public void updateEntities(Collection entities) {
         for (Object o : entities){
             entityManager.merge(o);
         }
@@ -222,6 +222,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void updateTest(Test test, Map<String, String> testReqParams) throws IllegalArgumentException {
         for (Map.Entry<String, String> entry : testReqParams.entrySet()) {
             String k = entry.getKey();
@@ -231,7 +232,7 @@ public class KernelServiceEJB implements KernelService {
                 Generator newGen;
                 try {
                     genId = Long.parseLong(v);
-                    newGen = getEntityById(Generator.class, new Long(genId));
+                    newGen = getEntityById(Generator.class, genId);
                 } catch (NumberFormatException nf) {
                     throw new IllegalArgumentException("invalid generator id: "+v);
                 }
@@ -275,9 +276,10 @@ public class KernelServiceEJB implements KernelService {
         if (test.getSourceLang().equals(test.getTargetLang())) {
             throw new IllegalArgumentException("target and source languages are the same");
         }
-        saveEntity(test);
+        updateEntity(test);
     }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private Phrase newPhrase(String newValue, Lang lang, boolean filter) throws IllegalArgumentException {
         if (lang == null) {
             throw new IllegalArgumentException();
@@ -301,6 +303,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
             if (test == null) {
                 throw new IllegalArgumentException();
@@ -354,7 +357,7 @@ public class KernelServiceEJB implements KernelService {
                     newTr.setPhrase2(task.getTranslation().getPhrase2());
                     saveEntity(newTr);
                     task.setTranslation(newTr);
-                    saveEntity(task);
+                    updateEntity(task);
                 }
                 //check if this phrase is used in other translations
                 params = new Object[] {phraseToUpdate.getPhraseId(), phraseToUpdate.getPhraseId(), task.getTranslation().getTranslationId()};
@@ -365,7 +368,7 @@ public class KernelServiceEJB implements KernelService {
                 //  if not - replace old value
                 if (relTranslations.isEmpty()) {
                     phraseToUpdate.setValue(newValue);
-                    saveEntity(phraseToUpdate);
+                    updateEntity(phraseToUpdate);
                 }
                 //  if yes - create new phrase with new value
                 else {
@@ -376,12 +379,13 @@ public class KernelServiceEJB implements KernelService {
                     else {
                         task.getTranslation().setPhrase2(newPhrase);
                     }
-                    saveEntity(task.getTranslation());
+                    updateEntity(task.getTranslation());
                 }
             }
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void removeTask(Task task, Test test) {
             if ((task == null) || (test == null)) {
                 return;
@@ -416,7 +420,8 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    public void updateTask(Test test, Task task, String[] values, Generator gen) throws IllegalArgumentException {
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
             if ((test == null) || (task == null)) {
                 return;
             }
@@ -432,11 +437,12 @@ public class KernelServiceEJB implements KernelService {
                 task.setSourceNum( (task.getSourceNum() == (byte)1) ? (byte)2 : (byte)1 );
             }
             //update generator
-            if ((gen != null) && (!gen.equals(task.getGenerator()))) {
-                task.setGenerator(gen);
+            if (genId != null && !(task.getGenerator() != null && genId.equals(task.getGenerator().getGenId()))) {
+                Generator taskGen = getEntityById(Generator.class, genId);
+                task.setGenerator(taskGen);
             }
             //save task
-            saveEntity(task);
+            updateEntity(task);
     }
 
     private void validateFieldValue(Field field, String value) throws IllegalArgumentException {
@@ -465,6 +471,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException {
         if ((task == null) || (request == null)) {
             throw new IllegalArgumentException();
@@ -502,6 +509,7 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public Result saveResult(String username, Test test, String sessionId, int rightAnswers) {
             ResultPK resPk = new ResultPK();
             resPk.setTestId(test.getTestId());

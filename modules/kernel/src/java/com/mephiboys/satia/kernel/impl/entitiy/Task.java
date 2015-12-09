@@ -19,12 +19,11 @@ public class Task {
     @Column(name = "source_num")
     private byte sourceNum;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.MERGE})
     @JoinColumn(name = "gen_id", referencedColumnName = "gen_id")
     private Generator generator;
 
-    @ManyToMany(mappedBy = "tasks", fetch = FetchType.LAZY,
-            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     private List<Test> tests;
 
     public Long getTaskId() {
