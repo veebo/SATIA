@@ -398,6 +398,7 @@ public class KernelServiceEJB implements KernelService {
 
             test.getTasks().remove(task);
             updateEntity(test);
+            task.getTests().remove(test);
             deleteEntityById(Task.class, task.getTaskId());
 
             Object[] params = {tr.getTranslationId()};
