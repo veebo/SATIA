@@ -334,6 +334,7 @@ public class KernelServiceEJB implements KernelService {
             newTask.setSourceNum(sourceNum);
             newTask.setGenerator(gen);
             newTask.setTests(tests);
+            saveEntity(newTask);
             test.getTasks().add(newTask);
             updateEntity(test);
             return newTask;
