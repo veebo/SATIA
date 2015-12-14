@@ -221,10 +221,12 @@ public class SatiaWebController {
     @RequestMapping(value="/task", method=RequestMethod.POST)
     def ModelAndView passTask(HttpServletRequest request) {
         ModelAndView model = new ModelAndView();
+        model.setViewName("task");
         int cur;
         HttpSession session;
         Test test;
         String username;
+        String fullname;
         try {
             //extract session attributes
             session = request.getSession();
@@ -232,6 +234,7 @@ public class SatiaWebController {
 
             test = session.getAttribute("test");
             username = session.getAttribute("username");
+            fullname = session.getAttribute("fullname");
             String intNext = session.getAttribute("next");
             String intRigthAnswers = session.getAttribute("right_answers");
             if ((StringUtils.isEmpty(intNext)) || (StringUtils.isEmpty(intRigthAnswers)) || (test == null)) {
@@ -242,7 +245,7 @@ public class SatiaWebController {
             cur = next - 1;
             //check answer
             if ( (cur >= 0) && (cur < test.getTasks().size()) ) {
-                Task curTask = tests.getTasks().get(cur);
+                Task curTask = test.getTasks().get(cur);
                 long answer;
                 try {
                     answer = Long.parseLong(request.getParameter("answer"));
@@ -250,13 +253,17 @@ public class SatiaWebController {
                 catch (NumberFormatException nf) {
                     return badRequest("invalid request parameters");
                 }
-                Phrase rightPhrase = ((curTask.getSourceNum() == 1)? curTask.getPhrase2() : curTask.getPhrase1());
+                Phrase rightPhrase = ( (curTask.getSourceNum() == 1) ?
+                    curTask.getTranslation().getPhrase2() : curTask.getTranslation().getPhrase1() );
                 if (answer == rightPhrase.getPhraseId()) {
                     ++rightAnswers;
                     session.setAttribute("right_answers", rightAnswers);
                 }
-            }
-            else if (cur != -1) {
+            } else if (cur == -1) {
+                String fullnameFromReq = request.getParameter("name");
+                fullnameFromReq = (fullnameFromReq == null) ? "" : fullnameFromReq;
+                session.setAttribute("fullname", fullnameFromReq);
+            } else {
                 return badRequest("invalid request parameters");
             }
             //define next task and generate answers
@@ -266,10 +273,10 @@ public class SatiaWebController {
                 session.setAttribute("next", new Integer(next));
                 byte src = nextTask.getSourceNum();
                 byte dst = (src == 1) ? 2 : 1;
-                model.addObject("question", nextTask."${"getPhrase"+src}"().getValue());
+                model.addObject("question", nextTask.getTranslation()."${"getPhrase"+src}"().getValue());
                 //============TEST==============================
                 def answers = [];
-                Phrase answer = nextTask."${"getPhrase"+dst}"();
+                Phrase answer = nextTask.getTranslation()."${"getPhrase"+dst}"();
                 answers << ["id" : answer.getPhraseId(), "value" : answer.getValue()] <<
                            ["id" : answer.getPhraseId()+1, "value" : "aaa"] <<
                            ["id" : answer.getPhraseId()+2, "value" : "bbb"] <<
@@ -281,7 +288,7 @@ public class SatiaWebController {
             }
             //if no tasks left - save result
             catch (IndexOutOfBoundsException iob) {
-                Result result = ks.saveResult(username, test, session.getId(), rightAnswers);
+                Result result = ks.saveResult(fullname, username, new Long(test.getTestId()), session.getId(), rightAnswers);
                 model.addObject("result", result);
                 model.addObject("end", true);
             }

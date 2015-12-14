@@ -55,6 +55,6 @@ public interface KernelService {
 
     void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException;
 
-    Result saveResult(String username, Test test, String sessionId, int rightAnswers);
+    Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
 
 }

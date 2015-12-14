@@ -531,13 +531,13 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Result saveResult(String username, Test test, String sessionId, int rightAnswers) {
-            ResultPK resPk = new ResultPK();
-            resPk.setTestId(test.getTestId());
-            resPk.setStartTime(new Timestamp(new Date().getTime()));
-            resPk.setSessionKey(sessionId);
+    public Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers) {
+            Test test = getEntityById(Test.class, testId);
             Result res = new Result();
-            res.setId(resPk);
+            res.setTest(test);
+            res.setStartTime(new Timestamp(new Date().getTime()));
+            res.setSessionKey(sessionId);
+            res.setFullname(fullname);
             res.setUser(getEntityById(User.class, username));
             res.setValue(new Double( 100 * ((double)rightAnswers / (double)test.getTasks().size()) ));
             saveEntity(res);
