@@ -185,7 +185,7 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
-    public void removeTask(Task task, Test test) {
+    public void removeTask(List<Task> task, Test test) {
         return;
     }
 
@@ -197,6 +197,11 @@ class MockedKernelService implements KernelService {
     @Override
     public void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException {
         throw new IllegalArgumentException();
+    }
+
+    @Override
+    Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers) {
+        return null
     }
 
     @Override
