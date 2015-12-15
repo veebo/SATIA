@@ -181,9 +181,7 @@ public class SatiaWebController {
             ks.updateTask(test, t, phraseValues, genId);
             //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
         }
-        for (Task t : tasksToRemove) {
-            ks.removeTask(t, test);
-        }
+        ks.removeTask(tasksToRemove, test);
 
         model.getModel().put("create", false);
         return model;
