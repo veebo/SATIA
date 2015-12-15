@@ -10,6 +10,7 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -49,7 +50,7 @@ public interface KernelService {
 
     Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException;
 
-    void removeTask(Task task, Test test);
+    void removeTask(List<Task> task, Test test);
 
     void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException;
 

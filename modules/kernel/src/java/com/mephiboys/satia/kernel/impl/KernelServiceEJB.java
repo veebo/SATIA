@@ -22,6 +22,7 @@ import java.util.concurrent.Callable;
 import java.util.Date;
 import java.util.Map;
 import java.sql.Timestamp;
+import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
 
 @Singleton
@@ -389,17 +390,20 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void removeTask(Task task, Test test) {
-            if ((task == null) || (test == null)) {
-                return;
-            }
+    public void removeTask(List<Task> tasks, Test test) {
+        if ((tasks == null) || (tasks.isEmpty()) || (test == null)) {
+            return;
+        }
+
+
+        test.getTasks().removeAll(tasks);
+        updateEntity(test);
+
+        for (Task task : tasks){
             Translation tr = task.getTranslation();
             Phrase p1 = tr.getPhrase1();
             Phrase p2 = tr.getPhrase2();
 
-            test.getTasks().remove(task);
-            updateEntity(test);
-            task.getTests().remove(test);
             deleteEntityById(Task.class, task.getTaskId());
 
             Object[] params = {tr.getTranslationId()};
@@ -408,7 +412,7 @@ public class KernelServiceEJB implements KernelService {
             if (relTasks.isEmpty()) {
                 deleteEntityById(Translation.class, tr.getTranslationId());
             }
-            
+
             params = new Object[] {p1.getPhraseId(), p1.getPhraseId()};
             Collection<Translation> relTranlations1 = getEntitiesByQuery(Translation.class,
                     "SELECT translation_id FROM translations WHERE phrase1_id=? OR phrase2_id=?",
@@ -416,6 +420,7 @@ public class KernelServiceEJB implements KernelService {
             if (relTranlations1.isEmpty()) {
                 deleteEntityById(Phrase.class, p1.getPhraseId());
             }
+
             params = new Object[] {p2.getPhraseId(), p2.getPhraseId()};
             Collection<Translation> relTranlations2 = getEntitiesByQuery(Translation.class,
                     "SELECT translation_id FROM translations WHERE phrase1_id=? OR phrase2_id=?",
@@ -423,6 +428,8 @@ public class KernelServiceEJB implements KernelService {
             if (relTranlations2.isEmpty()) {
                 deleteEntityById(Phrase.class, p2.getPhraseId());
             }
+        }
+
     }
 
     @Override
