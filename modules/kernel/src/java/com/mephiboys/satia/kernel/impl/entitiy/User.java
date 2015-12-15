@@ -18,6 +18,18 @@ public class User {
     @Column(name = "enabled")
     private boolean enabled;
 
+    @Basic
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Basic
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Basic
+    @Column(name = "email")
+    private String email;
+
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "role_id")
     private Role role;
@@ -53,6 +65,30 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override

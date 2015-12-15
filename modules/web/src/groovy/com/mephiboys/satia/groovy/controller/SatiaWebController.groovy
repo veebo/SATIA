@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -294,6 +295,48 @@ public class SatiaWebController {
         catch (IllegalStateException ilgState) {
             return badRequest("invalidated session");
         }
+        return model;
+    }
+
+    @RequestMapping(value="/reg", method=RequestMethod.GET)
+    def ModelAndView userRegistrationPage() {
+        ModelAndView model = new ModelAndView();
+        model.setViewName("reg");
+        return model;
+    }
+
+    @RequestMapping(value="/reg", method=RequestMethod.POST)
+    def ModelAndView registerUser(HttpServletRequest request) {
+        def regParams = ["username" : request.getParameter("username"),
+        "firstName" : request.getParameter("first_name"),
+        "lastName" : request.getParameter("last_name"),
+        "email" : request.getParameter("email"),
+        "password" : request.getParameter("password"),
+        "confirmPassword" : request.getParameter("confirm_password")];
+        try {
+            regParams.each {k, v ->
+                if ( (!k.equals("firstName")) && (!k.equals("lastName")) && (StringUtils.isEmpty(v)) ) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        } catch (IllegalArgumentException ia) {
+            return badRequest("empty request parameters");
+        }
+        if (!regParams["password"].equals(regParams["confirmPassword"])) {
+            return badRequest("password confirmed incorrectly");
+        }
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedPassword = passwordEncoder.encode(regParams["password"]);
+        Role userRole = ks.getEntityByQuery(Role.class, "SELECT role_id FROM roles WHERE role = ?", ["ROLE_USER"]);
+        if (userRole == null) {
+            return badRequest("internal error");
+        }
+        User newUser = new User(username : regParams["username"], password : hashedPassword, enabled : true,
+            role : userRole, firstName : regParams["firstName"], lastName : regParams["lastName"],
+            email : regParams["email"]);
+        ks.saveEntity(newUser);
+        ModelAndView model = new ModelAndView();
+        model.setViewName("login");
         return model;
     }
 
