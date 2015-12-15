@@ -335,9 +335,6 @@ public class KernelServiceEJB implements KernelService {
             newTask.setSourceNum(sourceNum);
             newTask.setGenerator(gen);
             newTask.setTests(tests);
-            saveEntity(newTask);
-            test.getTasks().add(newTask);
-            updateEntity(test);
             return newTask;
     }
 
@@ -551,15 +548,22 @@ public class KernelServiceEJB implements KernelService {
             return res;
     }
 
+    @Override
+    public void createTasks(Test test, List<Task> tasks) {
+        saveEntities(tasks);
+        test.getTasks().addAll(tasks);
+        updateEntity(test);
+    }
+
     private String filterString(String str) throws IllegalArgumentException {
-            if (str == null) {
-                throw new IllegalArgumentException("invalid string: " + str);
-            }
-            String filtered = str.replaceAll("[<>]{1}", "");
-            if (filtered.equals("")) {
-                throw new IllegalArgumentException("invalid string: " + str);
-            }
-            return filtered;
+        if (str == null) {
+            throw new IllegalArgumentException("invalid string: " + str);
+        }
+        String filtered = str.replaceAll("[<>]{1}", "");
+        if (filtered.equals("")) {
+            throw new IllegalArgumentException("invalid string: " + str);
+        }
+        return filtered;
     }
 
 }

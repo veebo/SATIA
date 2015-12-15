@@ -140,6 +140,9 @@ public class SatiaWebController {
             addedTasks = 0;
         }
         String[] values = new String[2];
+
+        def tasksToAdd = []
+
         for (int i=0; i<addedTasks; i++) {
             //extract request parameters
             values[0] = request.getParameter("add_task"+i+"_phrase1");
@@ -151,9 +154,12 @@ public class SatiaWebController {
             }
             catch (NumberFormatException ignored) {}
             //save
-            Task createdTask = ks.newTask(values, newTaskGen, test);
+            tasksToAdd << ks.newTask(values, newTaskGen, test);
             //ks.updateTaskFieldValues(createdTask, request, "add_task"+i);
         }
+
+        ks.createTasks(test, tasksToAdd)
+
 
         //modify and delete existing tasks
         def tasksToRemove = [];

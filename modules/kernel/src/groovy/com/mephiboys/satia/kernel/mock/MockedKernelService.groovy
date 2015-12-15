@@ -205,6 +205,11 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
+    void createTasks(Test test, List<Task> tasks) {
+
+    }
+
+    @Override
     public Result saveResult(String username, Test test, String sessionId, int rightAnswers) {
         return null;
     }
