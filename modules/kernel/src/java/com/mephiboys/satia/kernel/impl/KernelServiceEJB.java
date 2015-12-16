@@ -275,8 +275,25 @@ public class KernelServiceEJB implements KernelService {
         }
     }
 
+    private Phrase findEqualPhrase(String value, Lang lang, Test test) {
+        for (Task t : test.getTasks()) {
+            Phrase p1 = t.getTranslation().getPhrase1();
+            Phrase p2 = t.getTranslation().getPhrase2();
+            if ((p1.getLang().equals(lang)) && (p1.getValue().equals(value))) {
+                return p1;
+            }
+            if ((p2.getLang().equals(lang)) && (p2.getValue().equals(value))) {
+                return p2;
+            }
+        }
+        Object[] params = {value, lang.getLang()};
+        Phrase equalPhrase = getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
+                "WHERE value=? AND lang=?", params);
+        return equalPhrase;
+    }
+
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private Phrase newPhrase(String newValue, Lang lang, boolean filter) throws IllegalArgumentException {
+    private Phrase newPhrase(String newValue, Lang lang, Test test, boolean filter) throws IllegalArgumentException {
         if (lang == null) {
             throw new IllegalArgumentException();
         }
@@ -284,9 +301,7 @@ public class KernelServiceEJB implements KernelService {
             newValue = filterString(newValue);
         }
 
-        Object[] params = {newValue, lang.getLang()};
-        Phrase equalPhrase = getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
-                "WHERE value=? AND lang=?", params);
+        Phrase equalPhrase = findEqualPhrase(newValue, lang, test);
         if (equalPhrase != null) {
             return equalPhrase;
         } else {
@@ -296,6 +311,21 @@ public class KernelServiceEJB implements KernelService {
             saveEntity(newPhrase);
             return newPhrase;
         }
+    }
+
+    private Translation findTranslationWithPhrases(Phrase phrase1, Phrase phrase2, Test test) {
+        for (Task t : test.getTasks()) {
+            Translation tr = t.getTranslation();
+            if ( ( (tr.getPhrase1().equals(phrase1)) && (tr.getPhrase2().equals(phrase2)) ) ||
+                 ( (tr.getPhrase1().equals(phrase2)) && (tr.getPhrase2().equals(phrase1)) ) ) {
+                return tr;
+            }
+        }
+        Object[] params = {phrase1.getPhraseId(), phrase2.getPhraseId(), phrase2.getPhraseId(), phrase1.getPhraseId()};
+        Translation translation = getEntityByQuery(Translation.class,
+            "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
+        params);
+        return translation;
     }
 
     @Override
@@ -311,16 +341,13 @@ public class KernelServiceEJB implements KernelService {
             Phrase p1;
             Phrase p2;
             try {
-                p1 = newPhrase(values[0], test.getSourceLang(), true);
-                p2 = newPhrase(values[1], test.getTargetLang(), true);
-            } catch (IllegalArgumentException ie) {
+                p1 = newPhrase(values[0], test.getSourceLang(), test, true);
+                p2 = newPhrase(values[1], test.getTargetLang(), test, true);
+            } catch (Exception ie) {
                 return null;
             }
 
-            Object[] params = {p1.getPhraseId(), p2.getPhraseId(), p2.getPhraseId(), p1.getPhraseId()};
-            Translation tr = getEntityByQuery(Translation.class,
-                    "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
-                    params);
+            Translation tr = findTranslationWithPhrases(p1, p2, test);
             if (tr == null) {
                 tr = new Translation();
                 tr.setPhrase1(p1);
@@ -338,6 +365,36 @@ public class KernelServiceEJB implements KernelService {
             return newTask;
     }
 
+    private boolean existTasksWithTranslation(Task task, Test test) {
+        for (Task t : test.getTasks()) {
+            if ((!t.equals(task)) && (t.getTranslation().equals(task.getTranslation()))) {
+                return true;
+            }
+        }
+        Object[] params = {task.getTranslation().getTranslationId(), task.getTaskId()};
+        Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+                        "SELECT task_id FROM tasks where translation_id = ? AND task_id <> ?",
+                        params);
+        return (!relTasks.isEmpty());
+    }
+
+    private boolean existTranslationsWithPhrase(Phrase phrase, Translation translation, Test test) {
+        for (Task t : test.getTasks()) {
+            if ( (!t.getTranslation().equals(translation)) && 
+                ( (t.getTranslation().getPhrase1().equals(phrase)) || 
+                  (t.getTranslation().getPhrase2().equals(phrase))    ) ) {
+                return true;
+            }
+        }
+        Long transId = (translation != null) ? translation.getTranslationId() : null;
+        params = new Object[] {phrase.getPhraseId(), phrase.getPhraseId(), transId};
+        Collection<Translation> relTranslations = getEntitiesByQuery(Translation.class,
+                "SELECT translation_id FROM translations " +
+                    "WHERE (phrase1_id = ? OR phrase2_id = ?) AND translation_id <> ?",
+                        params);
+        return (!relTranslations.isEmpty());
+    }
+
     private void updatePhraseInTask(String newValue, int i, Task task, Test test) throws IllegalArgumentException {
             if ((task == null) || (test == null) || (i < 1) || (i > 2)) {
                 throw new IllegalArgumentException();
@@ -346,13 +403,8 @@ public class KernelServiceEJB implements KernelService {
 
             Phrase phraseToUpdate = ((i == 1) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
             if (!newValue.equals(phraseToUpdate.getValue())) {
-                //check if translation is used in other tasks
-                Object[] params = {task.getTranslation().getTranslationId(), task.getTaskId()};
-                Collection<Task> relTasks = getEntitiesByQuery(Task.class,
-                        "SELECT task_id FROM tasks where translation_id = ? AND task_id <> ?",
-                        params);
-                //  if yes - create new translation
-                if (!relTasks.isEmpty()) {
+                //  if translation is used in other tasks - create new translation
+                if (existTasksWithSameTranslation(task, test)) {
                     Translation newTr = new Translation();
                     newTr.setPhrase1(task.getTranslation().getPhrase1());
                     newTr.setPhrase2(task.getTranslation().getPhrase2());
@@ -360,20 +412,14 @@ public class KernelServiceEJB implements KernelService {
                     task.setTranslation(newTr);
                     updateEntity(task);
                 }
-                //check if this phrase is used in other translations
-                params = new Object[] {phraseToUpdate.getPhraseId(), phraseToUpdate.getPhraseId(), task.getTranslation().getTranslationId()};
-                Collection<Translation> relTranslations = getEntitiesByQuery(Translation.class,
-                        "SELECT translation_id FROM translations " +
-                                "WHERE (phrase1_id = ? OR phrase2_id = ?) AND translation_id <> ?",
-                        params);
-                //  if not - replace old value
-                if (relTranslations.isEmpty()) {
+                //  if this phrase is not used in other translations - replace old value
+                if (!existTranslationsWithPhrase(phraseToUpdate, task.getTranslation(), test)) {
                     phraseToUpdate.setValue(newValue);
                     updateEntity(phraseToUpdate);
                 }
                 //  if yes - create new phrase with new value
                 else {
-                    Phrase newPhrase = newPhrase(newValue, phraseToUpdate.getLang(), false);
+                    Phrase newPhrase = newPhrase(newValue, phraseToUpdate.getLang(), test, false);
                     if (i == 1) {
                         task.getTranslation().setPhrase1(newPhrase);
                     }
@@ -440,7 +486,7 @@ public class KernelServiceEJB implements KernelService {
             for (int j = 1; ( (values != null) && (j <= 2) && (values.length >= j) ); j++) {
                 try {
                     updatePhraseInTask(values[j - 1], j, task, test);
-                } catch (IllegalArgumentException ignored) { continue; }
+                } catch (Exception ignored) { continue; }
             }
             boolean changed = false;
             //update sourceNum if needed
