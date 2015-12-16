@@ -387,7 +387,7 @@ public class KernelServiceEJB implements KernelService {
             }
         }
         Long transId = (translation != null) ? translation.getTranslationId() : null;
-        params = new Object[] {phrase.getPhraseId(), phrase.getPhraseId(), transId};
+        Object[] params = new Object[] {phrase.getPhraseId(), phrase.getPhraseId(), transId};
         Collection<Translation> relTranslations = getEntitiesByQuery(Translation.class,
                 "SELECT translation_id FROM translations " +
                     "WHERE (phrase1_id = ? OR phrase2_id = ?) AND translation_id <> ?",
@@ -404,7 +404,7 @@ public class KernelServiceEJB implements KernelService {
             Phrase phraseToUpdate = ((i == 1) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
             if (!newValue.equals(phraseToUpdate.getValue())) {
                 //  if translation is used in other tasks - create new translation
-                if (existTasksWithSameTranslation(task, test)) {
+                if (existTasksWithTranslation(task, test)) {
                     Translation newTr = new Translation();
                     newTr.setPhrase1(task.getTranslation().getPhrase1());
                     newTr.setPhrase2(task.getTranslation().getPhrase2());
