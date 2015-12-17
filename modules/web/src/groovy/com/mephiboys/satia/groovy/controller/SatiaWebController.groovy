@@ -143,18 +143,15 @@ public class SatiaWebController {
 
         def tasksToAdd = []
 
-        for (int i=0; i<addedTasks; i++) {
-            //extract request parameters
+        for (int i = 0; i < addedTasks; i++) {
             values[0] = request.getParameter("add_task"+i+"_phrase1");
             values[1] = request.getParameter("add_task"+i+"_phrase2");
-            Generator newTaskGen = null;
+            Long genId = null;
             try {
-                Long genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
-                newTaskGen = ks.getEntityById(Generator.class, genId);
-            }
-            catch (NumberFormatException ignored) {}
-            //save
-            tasksToAdd << ks.newTask(values, newTaskGen, test);
+                genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
+            } catch (NumberFormatException ignored) {}
+
+            tasksToAdd << ks.newTask(values, genId, test);
             //ks.updateTaskFieldValues(createdTask, request, "add_task"+i);
         }
 
@@ -169,7 +166,7 @@ public class SatiaWebController {
                 tasksToRemove << t;
                 continue;
             }
-            //extract request parameters
+
             String[] phraseValues = new String[2];
             phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
             phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
@@ -184,11 +181,11 @@ public class SatiaWebController {
             }
             catch (NumberFormatException ignored) {}
 
-            //save
             ks.updateTask(test, t, phraseValues, genId);
             //ks.updateTaskFieldValues(t, request, "task"+t.getTaskId());
         }
-        ks.removeTask(tasksToRemove, test);
+        
+        ks.removeTasks(tasksToRemove, test);
 
         model.getModel().put("create", false);
         return model;

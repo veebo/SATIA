@@ -50,7 +50,7 @@ public interface KernelService {
 
     Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException;
 
-    void removeTask(List<Task> task, Test test);
+    void removeTasks(List<Task> task, Test test);
 
     void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException;
 

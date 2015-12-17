@@ -222,6 +222,104 @@ public class KernelServiceEJB implements KernelService {
         return action.call();
     }
 
+//===============================================================================================
+//==========================SELECT HELPERS=======================================================
+//===============================================================================================
+
+    private Phrase findEqualPhrase(String value, Lang lang, Test test) {
+        for (Task t : test.getTasks()) {
+            Phrase p1 = t.getTranslation().getPhrase1();
+            Phrase p2 = t.getTranslation().getPhrase2();
+            if ((p1.getLang().equals(lang)) && (p1.getValue().equals(value))) {
+                return p1;
+            }
+            if ((p2.getLang().equals(lang)) && (p2.getValue().equals(value))) {
+                return p2;
+            }
+        }
+        Object[] params = {value, lang.getLang()};
+        Phrase equalPhrase = getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
+                "WHERE value=? AND lang=?", params);
+        return equalPhrase;
+    }
+
+    private Translation findTranslationWithPhrases(Phrase phrase1, Phrase phrase2, Test test) {
+        for (Task t : test.getTasks()) {
+            Translation tr = t.getTranslation();
+            if ( ( (tr.getPhrase1().equals(phrase1)) && (tr.getPhrase2().equals(phrase2)) ) ||
+                 ( (tr.getPhrase1().equals(phrase2)) && (tr.getPhrase2().equals(phrase1)) ) ) {
+                return tr;
+            }
+        }
+        Object[] params = {phrase1.getPhraseId(), phrase2.getPhraseId(), phrase2.getPhraseId(), phrase1.getPhraseId()};
+        Translation translation = getEntityByQuery(Translation.class,
+            "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
+        params);
+        return translation;
+    }
+
+    private boolean existTasksWithTranslation(Translation trans, Task task, Test test) {
+        for (Task t : test.getTasks()) {
+            if ( (!t.equals(task)) && (t.getTranslation().equals(trans)) ) {
+                return true;
+            }
+        }
+        Collection<Task> relTasks = null;
+        if (task != null) {
+            Object[] params = { trans.getTranslationId(), task.getTaskId() };
+            Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+                        "SELECT task_id FROM tasks where translation_id = ? AND task_id <> ?",
+                        params);
+        } else {
+            Object[] params = { trans.getTranslationId() };
+            Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+                        "SELECT task_id FROM tasks where translation_id = ?",params);
+        }
+        return (!relTasks.isEmpty());
+    }
+
+    private boolean existTranslationsWithPhrase(Phrase phrase, Translation translation, Test test) {
+        for (Task t : test.getTasks()) {
+            if ( (!t.getTranslation().equals(translation)) && 
+                ( (t.getTranslation().getPhrase1().equals(phrase)) || 
+                  (t.getTranslation().getPhrase2().equals(phrase))    ) ) {
+                return true;
+            }
+        }
+        Collection<Translation> relTranslations = null;
+        if (translation != null) {
+            Object[] params = new Object[] {phrase.getPhraseId(), phrase.getPhraseId(), translation.getTranslationId()};
+            relTranslations = getEntitiesByQuery(Translation.class, "SELECT translation_id FROM translations " +
+                    "WHERE (phrase1_id = ? OR phrase2_id = ?) AND translation_id <> ?",
+            params);
+        } else {
+            Object[] params = new Object[] {phrase.getPhraseId(), phrase.getPhraseId()};
+            relTranslations = getEntitiesByQuery(Translation.class, "SELECT translation_id FROM translations " +
+                    "WHERE (phrase1_id = ? OR phrase2_id = ?)",
+            params);
+        }
+        return (!relTranslations.isEmpty());
+    }
+
+    private Generator findGenerator(Long genId, Test test) {
+        if (genId == null) {
+            return null;
+        }
+        if (genId.equals(test.getGenerator().getGenId())) {
+            return test.getGenerator();
+        }
+        for (Task t : test.getTasks()) {
+            if (t.getGenerator().getGenId().equals(genId)) {
+                return t.getGenerator();
+            }
+        }
+        return getEntityById(Generatro.class, genId);
+    }
+
+//===============================================================================================
+//==================================UPDATERS=====================================================
+//===============================================================================================
+
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException {
@@ -275,23 +373,6 @@ public class KernelServiceEJB implements KernelService {
         }
     }
 
-    private Phrase findEqualPhrase(String value, Lang lang, Test test) {
-        for (Task t : test.getTasks()) {
-            Phrase p1 = t.getTranslation().getPhrase1();
-            Phrase p2 = t.getTranslation().getPhrase2();
-            if ((p1.getLang().equals(lang)) && (p1.getValue().equals(value))) {
-                return p1;
-            }
-            if ((p2.getLang().equals(lang)) && (p2.getValue().equals(value))) {
-                return p2;
-            }
-        }
-        Object[] params = {value, lang.getLang()};
-        Phrase equalPhrase = getEntityByQuery(Phrase.class, "SELECT phrase_id FROM phrases " +
-                "WHERE value=? AND lang=?", params);
-        return equalPhrase;
-    }
-
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     private Phrase newPhrase(String newValue, Lang lang, Test test, boolean filter) throws IllegalArgumentException {
         if (lang == null) {
@@ -313,24 +394,9 @@ public class KernelServiceEJB implements KernelService {
         }
     }
 
-    private Translation findTranslationWithPhrases(Phrase phrase1, Phrase phrase2, Test test) {
-        for (Task t : test.getTasks()) {
-            Translation tr = t.getTranslation();
-            if ( ( (tr.getPhrase1().equals(phrase1)) && (tr.getPhrase2().equals(phrase2)) ) ||
-                 ( (tr.getPhrase1().equals(phrase2)) && (tr.getPhrase2().equals(phrase1)) ) ) {
-                return tr;
-            }
-        }
-        Object[] params = {phrase1.getPhraseId(), phrase2.getPhraseId(), phrase2.getPhraseId(), phrase1.getPhraseId()};
-        Translation translation = getEntityByQuery(Translation.class,
-            "SELECT translation_id FROM translations WHERE (phrase1_id=? AND phrase2_id=?) OR (phrase1_id=? AND phrase2_id=?)",
-        params);
-        return translation;
-    }
-
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Task newTask(String[] values, Generator gen, Test test) {
+    public Task newTask(String[] values, Long genId, Test test) {
             if (test == null) {
                 return null;
             }
@@ -338,6 +404,7 @@ public class KernelServiceEJB implements KernelService {
                 return null;
             }
 
+            Generator gen = findGenerator(genId, test);
             Phrase p1;
             Phrase p2;
             try {
@@ -365,34 +432,11 @@ public class KernelServiceEJB implements KernelService {
             return newTask;
     }
 
-    private boolean existTasksWithTranslation(Task task, Test test) {
-        for (Task t : test.getTasks()) {
-            if ((!t.equals(task)) && (t.getTranslation().equals(task.getTranslation()))) {
-                return true;
-            }
-        }
-        Object[] params = {task.getTranslation().getTranslationId(), task.getTaskId()};
-        Collection<Task> relTasks = getEntitiesByQuery(Task.class,
-                        "SELECT task_id FROM tasks where translation_id = ? AND task_id <> ?",
-                        params);
-        return (!relTasks.isEmpty());
-    }
-
-    private boolean existTranslationsWithPhrase(Phrase phrase, Translation translation, Test test) {
-        for (Task t : test.getTasks()) {
-            if ( (!t.getTranslation().equals(translation)) && 
-                ( (t.getTranslation().getPhrase1().equals(phrase)) || 
-                  (t.getTranslation().getPhrase2().equals(phrase))    ) ) {
-                return true;
-            }
-        }
-        Long transId = (translation != null) ? translation.getTranslationId() : null;
-        Object[] params = new Object[] {phrase.getPhraseId(), phrase.getPhraseId(), transId};
-        Collection<Translation> relTranslations = getEntitiesByQuery(Translation.class,
-                "SELECT translation_id FROM translations " +
-                    "WHERE (phrase1_id = ? OR phrase2_id = ?) AND translation_id <> ?",
-                        params);
-        return (!relTranslations.isEmpty());
+    @Override
+    public void createTasks(Test test, List<Task> tasks) {
+        saveEntities(tasks);
+        test.getTasks().addAll(tasks);
+        updateEntity(test);
     }
 
     private void updatePhraseInTask(String newValue, int i, Task task, Test test) throws IllegalArgumentException {
@@ -404,7 +448,7 @@ public class KernelServiceEJB implements KernelService {
             Phrase phraseToUpdate = ((i == 1) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
             if (!newValue.equals(phraseToUpdate.getValue())) {
                 //  if translation is used in other tasks - create new translation
-                if (existTasksWithTranslation(task, test)) {
+                if (existTasksWithTranslation(task.getTranslation(), task, test)) {
                     Translation newTr = new Translation();
                     newTr.setPhrase1(task.getTranslation().getPhrase1());
                     newTr.setPhrase2(task.getTranslation().getPhrase2());
@@ -433,11 +477,10 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void removeTask(List<Task> tasks, Test test) {
+    public void removeTasks(List<Task> tasks, Test test) {
         if ((tasks == null) || (tasks.isEmpty()) || (test == null)) {
             return;
         }
-
 
         test.getTasks().removeAll(tasks);
         updateEntity(test);
@@ -446,30 +489,15 @@ public class KernelServiceEJB implements KernelService {
             Translation tr = task.getTranslation();
             Phrase p1 = tr.getPhrase1();
             Phrase p2 = tr.getPhrase2();
-
             deleteEntityById(Task.class, task.getTaskId());
-
-            Object[] params = {tr.getTranslationId()};
-            Collection<Task> relTasks = getEntitiesByQuery(Task.class,
-                    "SELECT task_id FROM tasks WHERE translation_id=?", params);
-            if (relTasks.isEmpty()) {
+            if (!existTasksWithTranslation(tr, null, test)) {
                 deleteEntityById(Translation.class, tr.getTranslationId());
-            }
-
-            params = new Object[] {p1.getPhraseId(), p1.getPhraseId()};
-            Collection<Translation> relTranlations1 = getEntitiesByQuery(Translation.class,
-                    "SELECT translation_id FROM translations WHERE phrase1_id=? OR phrase2_id=?",
-                    params);
-            if (relTranlations1.isEmpty()) {
-                deleteEntityById(Phrase.class, p1.getPhraseId());
-            }
-
-            params = new Object[] {p2.getPhraseId(), p2.getPhraseId()};
-            Collection<Translation> relTranlations2 = getEntitiesByQuery(Translation.class,
-                    "SELECT translation_id FROM translations WHERE phrase1_id=? OR phrase2_id=?",
-                    params);
-            if (relTranlations2.isEmpty()) {
-                deleteEntityById(Phrase.class, p2.getPhraseId());
+                if (!existTranslationsWithPhrase(p1, null, test)) {
+                    deleteEntityById(Phrase.class, p1.getPhraseId());
+                }
+                if (!existTranslationsWithPhrase(p2, null, test)) {
+                    deleteEntityById(Phrase.class, p2.getPhraseId());
+                }
             }
         }
 
@@ -514,31 +542,6 @@ public class KernelServiceEJB implements KernelService {
             if (changed) {
                 updateEntity(task);
             }
-    }
-
-    private void validateFieldValue(Field field, String value) throws IllegalArgumentException {
-        if (field == null) {
-            throw new IllegalArgumentException();
-        }
-        value = filterString(value);
-        switch (field.getType()) {
-        case 1:
-            try {
-                Integer.parseInt(value, 10);
-            }
-            catch (NumberFormatException nf) {
-                throw new IllegalArgumentException(field.getName() + " must be integer");
-            }
-            break;
-        case 2:
-            try {
-                Double.parseDouble(value);
-            }
-            catch (NumberFormatException nf) {
-                throw new IllegalArgumentException(field.getName() + " must be real number");
-            }
-            break;
-        }
     }
 
     @Override
@@ -594,12 +597,9 @@ public class KernelServiceEJB implements KernelService {
             return res;
     }
 
-    @Override
-    public void createTasks(Test test, List<Task> tasks) {
-        saveEntities(tasks);
-        test.getTasks().addAll(tasks);
-        updateEntity(test);
-    }
+//===============================================================================================
+//==============================VALIDATORS=======================================================
+//===============================================================================================
 
     private String filterString(String str) throws IllegalArgumentException {
         if (str == null) {
@@ -610,6 +610,31 @@ public class KernelServiceEJB implements KernelService {
             throw new IllegalArgumentException("invalid string: " + str);
         }
         return filtered;
+    }
+
+    private void validateFieldValue(Field field, String value) throws IllegalArgumentException {
+        if (field == null) {
+            throw new IllegalArgumentException();
+        }
+        value = filterString(value);
+        switch (field.getType()) {
+        case 1:
+            try {
+                Integer.parseInt(value, 10);
+            }
+            catch (NumberFormatException nf) {
+                throw new IllegalArgumentException();
+            }
+            break;
+        case 2:
+            try {
+                Double.parseDouble(value);
+            }
+            catch (NumberFormatException nf) {
+                throw new IllegalArgumentException();
+            }
+            break;
+        }
     }
 
 }

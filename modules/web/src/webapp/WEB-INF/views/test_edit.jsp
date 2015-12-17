@@ -94,11 +94,19 @@
 
 	                    	<c:forEach var="g" items="${generators}">
 
-                            <option value="${g.genId}">${g.impl}</option>
+                            <c:choose>
+                              <c:when test="${(task.generator != null) && (task.generator.genId == g.genId)}">
+                                <option value="${g.genId}" selected >${g.impl}</option>
+                         	  </c:when>
+                         	  <c:otherwise>
+                         	    <option value="${g.genId}">${g.impl}</option>
+                         	  </c:otherwise>
+                        	</c:choose>
 
 	                    	</c:forEach>
 
 	                    </select>
+
 	                </div>
 	                <div class="cell">
 	                    <div class="remove">&times;</div>
