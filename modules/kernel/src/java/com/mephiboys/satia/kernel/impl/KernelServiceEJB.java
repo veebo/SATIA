@@ -267,12 +267,12 @@ public class KernelServiceEJB implements KernelService {
         Collection<Task> relTasks = null;
         if (task != null) {
             Object[] params = { trans.getTranslationId(), task.getTaskId() };
-            Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+            relTasks = getEntitiesByQuery(Task.class,
                         "SELECT task_id FROM tasks where translation_id = ? AND task_id <> ?",
                         params);
         } else {
             Object[] params = { trans.getTranslationId() };
-            Collection<Task> relTasks = getEntitiesByQuery(Task.class,
+            relTasks = getEntitiesByQuery(Task.class,
                         "SELECT task_id FROM tasks where translation_id = ?",params);
         }
         return (!relTasks.isEmpty());
@@ -313,7 +313,7 @@ public class KernelServiceEJB implements KernelService {
                 return t.getGenerator();
             }
         }
-        return getEntityById(Generatro.class, genId);
+        return getEntityById(Generator.class, genId);
     }
 
 //===============================================================================================

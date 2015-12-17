@@ -48,7 +48,7 @@ public interface KernelService {
 
     void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException;
 
-    Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException;
+    Task newTask(String[] values, Long genId, Test test)  throws IllegalArgumentException;
 
     void removeTasks(List<Task> task, Test test);
 
