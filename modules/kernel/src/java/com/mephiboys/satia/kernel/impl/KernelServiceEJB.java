@@ -273,7 +273,7 @@ public class KernelServiceEJB implements KernelService {
         } else {
             Object[] params = { trans.getTranslationId() };
             relTasks = getEntitiesByQuery(Task.class,
-                        "SELECT task_id FROM tasks where translation_id = ?",params);
+                        "SELECT task_id FROM tasks where translation_id = ?", params);
         }
         return (!relTasks.isEmpty());
     }
@@ -316,6 +316,16 @@ public class KernelServiceEJB implements KernelService {
         return getEntityById(Generator.class, genId);
     }
 
+    private Lang findLang(String langId, Test test) {
+        if (test.getSourceLang().getLang().equals(langId)) {
+            return test.getSourceLang();
+        }
+        if (test.getTargetLang().getLang().equals(langId)) {
+            return test.getTargetLang();
+        }
+        return getEntityById(Lang.class, langId);
+    }
+
 //===============================================================================================
 //==================================UPDATERS=====================================================
 //===============================================================================================
@@ -334,14 +344,14 @@ public class KernelServiceEJB implements KernelService {
                 Generator newGen;
                 try {
                     genId = Long.parseLong(v);
-                    newGen = getEntityById(Generator.class, genId);
+                    newGen = findGenerator(genId, test);
                     if (newGen != null) {
                         test.setGenerator(newGen);
                     }
                 } catch (NumberFormatException ignored) {}
             }
             else if ( (k.equals("SourceLang")) || (k.equals("TargetLang")) ) {
-                Lang newLang = getEntityById(Lang.class, v);
+                Lang newLang = findLang(v, test);
                 if (newLang != null) {
                     if (k.equals("SourceLang")) {
                         test.setSourceLang(newLang);
@@ -446,8 +456,33 @@ public class KernelServiceEJB implements KernelService {
             newValue = filterString(newValue);
 
             Phrase phraseToUpdate = ((i == 1) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
+            Phrase otherPhrase = ((i == 2) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
+            
             if (!newValue.equals(phraseToUpdate.getValue())) {
-                //  if translation is used in other tasks - create new translation
+
+                Phrase existingPhrase = findEqualPhrase(newValue, phraseToUpdate.getLang(), test);
+                Translation existingTrans = null;
+                if (existingPhrase != null) {
+                    existingTrans = findTranslationWithPhrases(otherPhrase, existingPhrase, test);
+                }
+                // if phrase with the same value exists
+                //and translations with this phrase and other phrase in task exists
+                //then replace translation, remove old translation if it's not related with any task
+                //and remove old phrase if it's not related with any translation
+                if (existingTrans != null) {
+                    Translation oldTrans = task.getTranslation();
+                    task.setTranslation(existingTrans);
+                    updateEntity(task);
+                    if (!existTasksWithTranslation(oldTrans, task, test)) {
+                        deleteEntityById(Translation.class, oldTrans.getTranslationId());
+                        if (!existTranslationsWithPhrase(phraseToUpdate, oldTrans, test)) {
+                            deleteEntityById(Phrase.class, phraseToUpdate.getPhraseId());
+                        }
+                    }
+                    return;
+                }
+
+                //if translation is used in other tasks - create new translation and set it to task
                 if (existTasksWithTranslation(task.getTranslation(), task, test)) {
                     Translation newTr = new Translation();
                     newTr.setPhrase1(task.getTranslation().getPhrase1());
@@ -456,18 +491,29 @@ public class KernelServiceEJB implements KernelService {
                     task.setTranslation(newTr);
                     updateEntity(task);
                 }
-                //  if this phrase is not used in other translations - replace old value
+                //if this phrase is not used in other translations
                 if (!existTranslationsWithPhrase(phraseToUpdate, task.getTranslation(), test)) {
-                    phraseToUpdate.setValue(newValue);
-                    updateEntity(phraseToUpdate);
+                    //if phrase with the same value doesn't exist - replace value
+                    //else - replace old phrase with existing phrase and remove old phrase
+                    if (existingPhrase == null) {
+                        phraseToUpdate.setValue(newValue);
+                        updateEntity(phraseToUpdate);
+                    } else {
+                        if (i == 1) {
+                            task.getTranslation().setPhrase1(existingPhrase);
+                        } else {
+                            task.getTranslation().setPhrase2(existingPhrase);
+                        }
+                        updateEntity(task.getTranslation());
+                        deleteEntityById(Phrase.class, phraseToUpdate.getPhraseId());
+                    }
                 }
-                //  if yes - create new phrase with new value
+                //if yes - create new phrase with new value or find existing phrase with the same value
                 else {
                     Phrase newPhrase = newPhrase(newValue, phraseToUpdate.getLang(), test, false);
                     if (i == 1) {
                         task.getTranslation().setPhrase1(newPhrase);
-                    }
-                    else {
+                    } else {
                         task.getTranslation().setPhrase2(newPhrase);
                     }
                     updateEntity(task.getTranslation());
@@ -531,7 +577,7 @@ public class KernelServiceEJB implements KernelService {
                     task.setGenerator(null);
                     changed = true;
                 } else {
-                    Generator taskGen = getEntityById(Generator.class, genId);
+                    Generator taskGen = findGenerator(genId, test);
                     if (taskGen != null) {
                         task.setGenerator(taskGen);
                         changed = true;
