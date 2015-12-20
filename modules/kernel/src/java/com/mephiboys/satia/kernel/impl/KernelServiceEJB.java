@@ -577,9 +577,9 @@ public class KernelServiceEJB implements KernelService {
                     task.setGenerator(null);
                     changed = true;
                 } else {
-                    Generator taskGen = findGenerator(genId, test);
-                    if (taskGen != null) {
-                        task.setGenerator(taskGen);
+                    Generator newGen = findGenerator(genId, test);
+                    if (newGen != null) {
+                        task.setGenerator(newGen);
                         changed = true;
                     }
                 }
@@ -591,41 +591,37 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException {
-        if ((task == null) || (request == null)) {
-            throw new IllegalArgumentException();
+    public List<FieldValue> addFieldValues(Field field, Task task, String[] values) {
+        List<FieldValue> savedValues = new ArrayList<FieldValue>();
+        if ((values == null) || (values.length < 1)) {
+            return savedValues;
         }
-
-        Generator gen = task.getGenerator();
-        Object[] params = {gen.getGenId()};
-        Collection<Field> genFields = getEntitiesByQuery(Field.class,
-                "SELECT field_id FROM fields WHERE gen_id = ?", params);
-        List<FieldValue> fieldValuesToSave = new ArrayList<FieldValue>();
-        //validate values
-        for (Field f : genFields) {
-            String[] values = request.getParameterValues(paramPrefix + "_" + f.getName());
-            if ((values == null) || (values.length < 1)) {
-                continue;
+        int savedValuesCount = 0;
+        for (String v : values) {
+            if ((!field.isMultiple()) && (savedValuesCount > 0)) {
+                break;
             }
-            int addedValues = 0;
-            for (String v : values) {
-                if ((!f.isMultiple()) || (addedValues > 0)) {
-                    break;
-                }
-                validateFieldValue(f, v);
+            try {
+                String validValue = validateFieldValue(field, v);
                 FieldValue newFieldValue = new FieldValue();
-                newFieldValue.setField(f);
+                newFieldValue.setField(field);
                 newFieldValue.setTask(task);
-                newFieldValue.setValue(v);
-                fieldValuesToSave.add(newFieldValue);
-                ++addedValues;
-            }
+                newFieldValue.setValue(validValue);
+                saveEntity(newFieldValue);
+                savedValues.add(newFieldValue);
+                ++savedValuesCount;
+            } catch (Exception ignored) {}
         }
-        //save values
-        for (FieldValue fv : fieldValuesToSave) {
-            saveEntity(fv);
-        }
+        return savedValues;
+    }
+
+    @Override
+    public void updateFieldValue(FieldValue fValue, String newValue) {
+        try {
+            String validValue = validateFieldValue(fValue.getField(), newValue);
+            fValue.setValue(validValue);
+            updateEntity(fValue);
+        } catch (Exception ignored) {}
     }
 
     @Override
@@ -658,12 +654,14 @@ public class KernelServiceEJB implements KernelService {
         return filtered;
     }
 
-    private void validateFieldValue(Field field, String value) throws IllegalArgumentException {
+    private String validateFieldValue(Field field, String value) throws IllegalArgumentException {
         if (field == null) {
             throw new IllegalArgumentException();
         }
-        value = filterString(value);
         switch (field.getType()) {
+        case 0:
+            value = filterString(value);
+            break;
         case 1:
             try {
                 Integer.parseInt(value, 10);
@@ -681,6 +679,7 @@ public class KernelServiceEJB implements KernelService {
             }
             break;
         }
+        return value;
     }
 
 }

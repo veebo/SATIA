@@ -8,11 +8,12 @@
 	<link rel="stylesheet" href="/resources/css/test_edit_style.css" />
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 	<script type="text/javascript" src="/resources/js/add_del_task.js"></script>
+	<script type="text/javascript" src="/resources/js/add_del_field_value.js"></script>
 	<script type="text/javascript" src="/resources/js/unchanged_inputs.js"></script>
 </head>
 <body>
 	<style>
-	#added_tasks_input, #add_task_row_to_clone {
+	#added_tasks_input, #add_task_row_to_clone, #gen_fields_to_clone, #field_value_inputs_to_clone, .field_type, .field_id {
 		display : none;
 	}
 	</style>
@@ -108,6 +109,63 @@
 	                    </select>
 
 	                </div>
+
+	                <c:set var="task_gen_id" value="${test.generator.genId}"></c:set>
+	                <c:if test="${task.generator != null}">
+	                	<c:set var="task_gen_id" value="${task.generator.genId}"></c:set>
+	            	</c:if>
+	                <div class="cell gen_fields">
+	                	<c:forEach var="f" items="${gen_fields[task_gen_id]}">
+	                	  <div class="field section">
+	                	  	<div class="field_type">${f.type}</div>
+	                	  	<div class="field_id">${f.fieldId}</div>
+	                	  	<div class="hint">${f.name}:</div>
+	                		<c:set var="fvalues_count" value="${0}" ></c:set>
+	                		<c:forEach var="fv" items="${tasks_fields_values[task.taskId][f.fieldId]}">
+	                			<div class="field_value">
+	                				<div class="del_field_value">&times;</div>
+	                				<c:choose>
+	                					<c:when test="${f.type == 0}">
+	                						<textarea name="field_value_${fv.fieldValueId}" class="${f.type} field_value_input">
+	                							${fv.value}
+	                						</textarea>
+	                					</c:when>
+	                					<c:when test="${f.type == 1}">
+	                						<input type="text" name="field_value_${fv.fieldValueId}" class="${f.type} field_value_input" value="${fv.value}"/>
+	                					</c:when>
+	                					<c:when test="${f.type == 2}">
+	                						<input type="text" name="field_value_${fv.fieldValueId}" class="${f.type} field_value_input" value="${fv.value}"/>
+	                					</c:when>
+	                				</c:choose>
+	                				<c:set var="fvalues_count" value="${fvalues_count + 1}" ></c:set>
+	                			</div>
+	                		</c:forEach>
+	                		<c:if test="${(!f.multiple) && (fvalues_count <= 0)}">
+	                			<div class="field_value">
+	                				<div class="del_field_value">&times;</div>
+	                				<c:choose>
+	                					<c:when test="${f.type == 0}">
+	                						<textarea name="task${task.taskId}_field${f.fieldId}" class="${f.type} field_value_input"></textarea>
+	                					</c:when>
+	                					<c:when test="${f.type == 1}">
+	                						<input type="text" name="task${task.taskId}_field${f.fieldId}" class="${f.type} field_value_input"/>
+	                					</c:when>
+	                					<c:when test="${f.type == 2}">
+	                						<input type="text" name="task${task.taskId}_field${f.fieldId}" class="${f.type} field_value_input"/>
+	                					</c:when>
+	                				</c:choose>
+	                				<c:set var="fvalues_count" value="${fvalues_count + 1}" ></c:set>
+	                			</div>
+	                		</c:if>
+	                		<c:if test="${(f.multiple)}">
+	                			<c:if test="${f.multiple}">
+	                				<div class="button add_field_value">+</div>
+	                			</c:if>
+	                		</c:if>
+	                	  </div>
+	                	</c:forEach>
+	                </div>
+
 	                <div class="cell">
 	                    <div class="remove">&times;</div>
 	                </div>
@@ -136,6 +194,50 @@
 	                <div class="cell">
 	                    <div class="remove">&times;</div>
 	                </div>
+	            </div>
+
+	            <div class="row" id="gen_fields_to_clone">
+	            	<c:forEach var="g" items="${generators}" >
+	            		<div class="cell gen_fields ${g.genId}">
+	            			<c:forEach var="f" items="${gen_fields[g.genId]}">
+	            			  <div class="field">
+	            			  	<div class="field_type">${f.type}</div>
+	                	  		<div class="field_id">${f.fieldId}</div>
+	            				<div class="field_value">
+	            				<c:choose>
+	                				<c:when test="${f.type == 0}">
+	                					<textarea name="${f.fieldId}" class="${f.type} field_value_input"></textarea>
+	                				</c:when>
+	                				<c:when test="${f.type == 1}">
+	                					<input type="text" name="${f.fieldId}" class="${f.type} field_value_input" />
+	                				</c:when>
+	                				<c:when test="${f.type == 2}">
+	                					<input type="text" name="${f.fieldId}" class="${f.type} field_value_input" />
+	                				</c:when>
+	                			</c:choose>
+	                			</div>
+	                			<c:if test="${f.multiple}">
+	                				<div class="button add_field_value">+</div>
+	                			</c:if>
+	                		  </div>
+	            			</c:forEach>
+	            		</div>
+	            	</c:forEach>
+	            </div>
+
+	            <div class="row" id="field_value_inputs_to_clone">
+	            	<div class="field_value">
+	            		<div class="del_field_value">&times;</div>
+	            		<textarea name="" class="0 field_value_input"></textarea>
+	            	</div>
+	            	<div class="field_value">
+	            		<div class="del_field_value">&times;</div>
+	            		<input type="text" name="" class="1 field_value_input" />
+	            	</div>
+	            	<div class="field_value">
+	            		<div class="del_field_value">&times;</div>
+	            		<input type="text" name="" class="2 field_value_input" />
+	            	</div>
 	            </div>
 
 	        </div>

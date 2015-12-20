@@ -1,10 +1,6 @@
 package com.mephiboys.satia.kernel.api;
 
-import com.mephiboys.satia.kernel.impl.entitiy.Generator;
-import com.mephiboys.satia.kernel.impl.entitiy.Result;
-import com.mephiboys.satia.kernel.impl.entitiy.Task;
-import com.mephiboys.satia.kernel.impl.entitiy.Test;
-
+import com.mephiboys.satia.kernel.impl.entitiy.*;
 import javax.ejb.Local;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
@@ -54,7 +50,9 @@ public interface KernelService {
 
     void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException;
 
-    void updateTaskFieldValues(Task task, HttpServletRequest request, String paramPrefix) throws IllegalArgumentException;
+    List<FieldValue> addFieldValues(Field field, Task task, String[] values);
+
+    void updateFieldValue(FieldValue fValue, String newValue);
 
     Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
 
