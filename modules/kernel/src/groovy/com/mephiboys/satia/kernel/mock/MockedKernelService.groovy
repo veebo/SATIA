@@ -180,6 +180,16 @@ class MockedKernelService implements KernelService {
     }
 
     @Override
+    Task newTask(String[] values, Long genId, Test test) throws IllegalArgumentException {
+        return null
+    }
+
+    @Override
+    void removeTasks(List<Task> task, Test test) {
+
+    }
+
+    @Override
     public Task newTask(String[] values, Generator gen, Test test)  throws IllegalArgumentException {
         throw new IllegalArgumentException();
     }
@@ -192,6 +202,16 @@ class MockedKernelService implements KernelService {
     @Override
     public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
         throw new IllegalArgumentException();
+    }
+
+    @Override
+    List<FieldValue> addFieldValues(Field field, Task task, String[] values) throws IllegalArgumentException {
+        return null
+    }
+
+    @Override
+    void updateFieldValue(FieldValue fValue, String newValue) throws IllegalArgumentException {
+
     }
 
     @Override
