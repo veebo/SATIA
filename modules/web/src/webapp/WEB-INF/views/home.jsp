@@ -57,6 +57,9 @@
         </div>
 
         </c:forEach>
+        <div class="center">
+            <div class="button"><a href="<c:url value='/edit/create' />">create new test</a></div>
+        </div>
 
     </div>
 
