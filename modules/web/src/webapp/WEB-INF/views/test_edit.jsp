@@ -1,9 +1,9 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@page session="true"%>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html" charset="utf-16" >
+	<%--<meta http-equiv="Content-Type" content="text/html" charset="utf-16" >--%>
 	<link rel="stylesheet" href="/resources/css/style.css" />
 	<link rel="stylesheet" href="/resources/css/test_edit_style.css" />
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
@@ -25,7 +25,7 @@
 	<form action="<c:url value='/edit/create?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
     </c:if>
     <c:if test="${!create}">
-    <form action="<c:url value='/edit/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
+    <form accept-charset="UTF-8" action="<c:url value='/edit/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
     </c:if>
 	    <div class="section">
 	    	<div class="hint">Title:</div> <input type="text" name="test_title" value="${test.title}"/><br><br>
