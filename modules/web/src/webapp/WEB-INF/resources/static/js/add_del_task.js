@@ -12,6 +12,7 @@ $(document).ready(function() {
 		table.append(newRow);
 		addedTasksInput.attr("value", lastAddedTaskIndx+1);
 		++lastAddedTaskIndx;
+		newRow.find(".gen select").trigger("change");
 	});
 
 	$("#tasks").on( "click", ".remove", function() {

@@ -305,7 +305,7 @@ public class KernelServiceEJB implements KernelService {
         if (genId == null) {
             return null;
         }
-        if (genId.equals(test.getGenerator().getGenId())) {
+        if ( (test.getGenerator() != null) && (genId.equals(test.getGenerator().getGenId())) ) {
             return test.getGenerator();
         }
         for (Task t : test.getTasks()) {
@@ -317,10 +317,10 @@ public class KernelServiceEJB implements KernelService {
     }
 
     private Lang findLang(String langId, Test test) {
-        if (test.getSourceLang().getLang().equals(langId)) {
+        if ( (test.getSourceLang() != null) && (test.getSourceLang().getLang().equals(langId)) ) {
             return test.getSourceLang();
         }
-        if (test.getTargetLang().getLang().equals(langId)) {
+        if ( (test.getTargetLang() != null) && (test.getTargetLang().getLang().equals(langId)) ) {
             return test.getTargetLang();
         }
         return getEntityById(Lang.class, langId);
@@ -372,6 +372,12 @@ public class KernelServiceEJB implements KernelService {
                 catch (IllegalArgumentException ignored) { }
             }
         }
+        if (test.getGenerator() == null) {
+            throw new IllegalArgumentException("no generator set in test");
+        }
+        if ((test.getSourceLang() == null) || (test.getTargetLang() == null)) {
+            throw new IllegalArgumentException("no languages set in test");
+        }
         if (test.getSourceLang().equals(test.getTargetLang())) {
             throw new IllegalArgumentException("target and source languages are the same");
         }
@@ -406,23 +412,16 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Task newTask(String[] values, Long genId, Test test) {
-            if (test == null) {
-                return null;
-            }
-            if ((values == null) || (values.length < 2)) {
-                return null;
+    public Task newTask(String[] values, Long genId, Test test) throws IllegalArgumentException {
+            if ((test == null) || (values == null) || (values.length < 2)) {
+                throw new IllegalArgumentException("null");
             }
 
             Generator gen = findGenerator(genId, test);
             Phrase p1;
             Phrase p2;
-            try {
-                p1 = newPhrase(values[0], test.getSourceLang(), test, true);
-                p2 = newPhrase(values[1], test.getTargetLang(), test, true);
-            } catch (Exception ie) {
-                return null;
-            }
+            p1 = newPhrase(values[0], test.getSourceLang(), test, true);
+            p2 = newPhrase(values[1], test.getTargetLang(), test, true);
 
             Translation tr = findTranslationWithPhrases(p1, p2, test);
             if (tr == null) {
@@ -510,7 +509,7 @@ public class KernelServiceEJB implements KernelService {
                 }
                 //if yes - create new phrase with new value or find existing phrase with the same value
                 else {
-                    Phrase newPhrase = newPhrase(newValue, phraseToUpdate.getLang(), test, false);
+                    Phrase newPhrase = (existingPhrase == null) ? newPhrase(newValue, phraseToUpdate.getLang(), test, false) : existingPhrase;
                     if (i == 1) {
                         task.getTranslation().setPhrase1(newPhrase);
                     } else {
@@ -551,16 +550,16 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void updateTask(Test test, Task task, String[] values, Long genId) {
+    public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
             if ((test == null) || (task == null)) {
-                return;
+                throw new IllegalArgumentException("null");
             }
 
             //update phrases and translation
             for (int j = 1; ( (values != null) && (j <= 2) && (values.length >= j) ); j++) {
-                try {
+                if (values[j - 1] != null) {
                     updatePhraseInTask(values[j - 1], j, task, test);
-                } catch (Exception ignored) { continue; }
+                }
             }
             boolean changed = false;
             //update sourceNum if needed
@@ -591,7 +590,10 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    public List<FieldValue> addFieldValues(Field field, Task task, String[] values) {
+    public List<FieldValue> addFieldValues(Field field, Task task, String[] values) throws IllegalArgumentException {
+        if ((field == null) || (task == null)) {
+            throw new IllegalArgumentException("null");
+        }
         List<FieldValue> savedValues = new ArrayList<FieldValue>();
         if ((values == null) || (values.length < 1)) {
             return savedValues;
@@ -601,27 +603,32 @@ public class KernelServiceEJB implements KernelService {
             if ((!field.isMultiple()) && (savedValuesCount > 0)) {
                 break;
             }
-            try {
-                String validValue = validateFieldValue(field, v);
-                FieldValue newFieldValue = new FieldValue();
-                newFieldValue.setField(field);
-                newFieldValue.setTask(task);
-                newFieldValue.setValue(validValue);
-                saveEntity(newFieldValue);
-                savedValues.add(newFieldValue);
-                ++savedValuesCount;
-            } catch (Exception ignored) {}
+            if (v == null) {
+                continue;
+            }
+            String validValue = validateFieldValue(field, v);
+            FieldValue newFieldValue = new FieldValue();
+            newFieldValue.setField(field);
+            newFieldValue.setTask(task);
+            newFieldValue.setValue(validValue);
+            saveEntity(newFieldValue);
+            savedValues.add(newFieldValue);
+            ++savedValuesCount;
         }
         return savedValues;
     }
 
     @Override
-    public void updateFieldValue(FieldValue fValue, String newValue) {
-        try {
-            String validValue = validateFieldValue(fValue.getField(), newValue);
-            fValue.setValue(validValue);
-            updateEntity(fValue);
-        } catch (Exception ignored) {}
+    public void updateFieldValue(FieldValue fValue, String newValue)  throws IllegalArgumentException {
+        if (fValue == null) {
+            throw new IllegalArgumentException();
+        }
+        if (newValue == null) {
+            return;
+        }
+        String validValue = validateFieldValue(fValue.getField(), newValue);
+        fValue.setValue(validValue);
+        updateEntity(fValue);
     }
 
     @Override
@@ -667,7 +674,7 @@ public class KernelServiceEJB implements KernelService {
                 Integer.parseInt(value, 10);
             }
             catch (NumberFormatException nf) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("value of field " + field.getName() + " must be intger");
             }
             break;
         case 2:
@@ -675,7 +682,7 @@ public class KernelServiceEJB implements KernelService {
                 Double.parseDouble(value);
             }
             catch (NumberFormatException nf) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("value of field " + field.getName() + " must be real");
             }
             break;
         }

@@ -50,9 +50,9 @@ public interface KernelService {
 
     void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException;
 
-    List<FieldValue> addFieldValues(Field field, Task task, String[] values);
+    List<FieldValue> addFieldValues(Field field, Task task, String[] values)  throws IllegalArgumentException;
 
-    void updateFieldValue(FieldValue fValue, String newValue);
+    void updateFieldValue(FieldValue fValue, String newValue)  throws IllegalArgumentException;
 
     Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
 

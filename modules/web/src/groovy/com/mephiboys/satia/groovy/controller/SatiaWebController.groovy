@@ -110,7 +110,8 @@ public class SatiaWebController {
                 Collection<FieldValue> fvalues = ks.getEntitiesByQuery(FieldValue.class,
                     "SELECT field_value_id FROM field_values WHERE field_id = ? AND task_id = ?",
                     f.fieldId, t.taskId);
-                fieldValues[f.fieldId] = fvalues;
+                List<FieldValue> fvaluesCopy = new ArrayList<FieldValue>(fvalues);
+                fieldValues[f.fieldId] = fvaluesCopy;
             }
             tasksFieldsValues[t.taskId] = fieldValues;
         }
@@ -154,6 +155,10 @@ public class SatiaWebController {
         boolean createTest = model.getModel().get("create");
         def genFields = model.getModel().get("gen_fields");
         def tasksFieldsValues = model.getModel().get("tasks_fields_values");
+        if (tasksFieldsValues == null) {
+            tasksFieldsValues = [:];
+            model.addObject("tasks_fields_values", tasksFieldsValues);
+        }
 
         //validate and modify test fields if needed and save tet entity
         try {
@@ -162,9 +167,10 @@ public class SatiaWebController {
                                        "Generator" : request.getParameter("test_generator"),
                                        "SourceLang" : request.getParameter("test_sourcelang"),
                                        "TargetLang" : request.getParameter("test_targetlang")]);
-        } catch (Exception ia) {
-            return badRequest(ia.getMessage());
+        } catch (Exception ex) {
+            return badRequest(ex.getMessage());
         }
+        model.addObject("create", false);
 
         //add new tasks
         int addedTasks;
@@ -183,17 +189,25 @@ public class SatiaWebController {
                 genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
             } catch (NumberFormatException ignored) {}
 
-            tasksToAdd << ks.newTask(values, genId, test);
+            try {
+                tasksToAdd << ks.newTask(values, genId, test);
+            } catch (Exception exc) {
+                return badRequest(exc.getMessage());
+            }
         }
         ks.createTasks(test, tasksToAdd);
         //add field values for new tasks
         for (int i = 0; i < addedTasks; i++) {
-            Task t = createdTasks.get(i);
+            Task t = tasksToAdd.get(i);
             Generator taskGen = (t.generator != null) ? t.generator : test.generator;
             def fieldsValues = [:];
             for (Field f : genFields[taskGen.genId]) {
                 String[] fValues = request.getParameterValues("add_task" + i + "_field" + f.fieldId);
-                fieldsValues[f.fieldId] = ks.addFieldValues(f, t, fValues);
+                try {
+                    fieldsValues[f.fieldId] = ks.addFieldValues(f, t, fValues);
+                } catch (Exception exc) {
+                    return badRequest(exc.getMessage());
+                }
             }
             tasksFieldsValues[t.taskId] = fieldsValues;
         }
@@ -224,7 +238,11 @@ public class SatiaWebController {
 
             Generator oldGen = t.generator;
 
-            ks.updateTask(test, t, phraseValues, genId);
+            try {
+                ks.updateTask(test, t, phraseValues, genId);
+            } catch (Exception exc) {
+                return badRequest(exc.getMessage());
+            }
 
             Generator newGen = t.generator;
             //if generator is updated - remove field values
@@ -235,10 +253,15 @@ public class SatiaWebController {
             Generator taskGen = (t.generator != null) ? t.generator : test.generator;
             for (Field f : genFields[taskGen.genId]) {
                 //update and delete existing values for one field
-                for (FieldValue fv : tasksFieldsValues[t.taskId][f.fieldId]) {
+                List<FieldValue> fieldValues = tasksFieldsValues[t.taskId][f.fieldId];
+                if (fieldValues == null) {
+                    continue;
+                }
+                for (Iterator<FieldValue> iter = fieldValues.listIterator(); iter.hasNext(); ) {
+                    FieldValue fv = iter.next();
                     String del = request.getParameter("del_field_value_" + fv.fieldValueId);
                     if (del != null) {
-                        tasksFieldsValues[t.taskId][f.fieldId].remove(fv);
+                        iter.remove();
                         ks.deleteEntityById(FieldValue.class, fv.fieldValueId);
                         continue;
                     }
@@ -248,16 +271,19 @@ public class SatiaWebController {
                     }
                 }
                 //add new values
-                String[] valuesToAdd = request.getParameterValues("task" + t.taskId + "_field" + f.fieldId);
-                List<FieldValue> addedValues = ks.addFieldValues(f, t, valuesToAdd);
-                for (FieldValue addedValue : addedValues) {
-                    tasksFieldsValues[t.taskId][f.fieldId].add(addedValue);
+                try {
+                    String[] valuesToAdd = request.getParameterValues("task" + t.taskId + "_field" + f.fieldId);
+                    List<FieldValue> addedValues = ks.addFieldValues(f, t, valuesToAdd);
+                    for (FieldValue addedValue : addedValues) {
+                        tasksFieldsValues[t.taskId][f.fieldId].add(addedValue);
+                    }
+                } catch (Exception exc) {
+                    return badRequest(exc.getMessage());
                 }
             };
         }
         ks.removeTasks(tasksToRemove, test);
 
-        model.getModel().put("create", false);
         return model;
     }
 
