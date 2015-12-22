@@ -45,7 +45,7 @@ public class Role {
 
     @Override
     public int hashCode() {
-        int result = roleId;
+        int result = (int)roleId.longValue();
         result = 31 * result + (role != null ? role.hashCode() : 0);
         return result;
     }

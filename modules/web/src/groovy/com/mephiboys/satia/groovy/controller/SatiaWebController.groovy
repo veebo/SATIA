@@ -89,14 +89,17 @@ public class SatiaWebController {
             testId = new Long(Long.parseLong(testIdStr,10));
         }
         catch (NumberFormatException nf) {
-            return notFound();
+            model.setViewName("404");
+            return model;
         }
         Test test = ks.getEntityById(Test.class, testId);
         if (test == null) {
-            return notFound();
+            model.setViewName("404");
+            return model;
         }
         if ( (user == null) || (!user.getUsername().equals(test.getUser().getUsername())) ) {
-            return accessDenied();
+            model.setViewName("403");
+            return model;
         }
         model.addObject("test", test);
         model.addObject("create", false);
@@ -169,15 +172,13 @@ public class SatiaWebController {
         }
 
         //validate and modify test fields if needed and save tet entity
-        try {
-            ks.updateTest(test, createTest, ["Title" : request.getParameter("test_title"),
+        test = ks.updateTest(test, createTest, ["Title" : request.getParameter("test_title"),
                                        "Description" : request.getParameter("test_description"),
                                        "Generator" : request.getParameter("test_generator"),
                                        "SourceLang" : request.getParameter("test_sourcelang"),
                                        "TargetLang" : request.getParameter("test_targetlang")]);
-        } catch (Exception exc) {
-            model.addObject("error_message", getRootMessage(exc));
-            return model;
+        if (test == null) {
+            return badRequest();
         }
         model.addObject("create", false);
 
@@ -197,28 +198,21 @@ public class SatiaWebController {
             try {
                 genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
             } catch (NumberFormatException ignored) {}
-
-            try {
-                tasksToAdd << ks.newTask(values, genId, test);
-            } catch (Exception exc) {
-                model.addObject("error_message", getRootMessage(exc));
-                return model;
-            }
+            Task createdTask = ks.newTask(values, genId, test);
+            tasksToAdd << createdTask;
         }
         ks.createTasks(test, tasksToAdd);
         //add field values for new tasks
         for (int i = 0; i < addedTasks; i++) {
             Task t = tasksToAdd.get(i);
+            if (t == null) {
+                continue;
+            }
             Generator taskGen = (t.generator != null) ? t.generator : test.generator;
             def fieldsValues = [:];
             for (Field f : genFields[taskGen.genId]) {
                 String[] fValues = request.getParameterValues("add_task" + i + "_field" + f.fieldId);
-                try {
-                    fieldsValues[f.fieldId] = ks.addFieldValues(f, t, fValues);
-                } catch (Exception exc) {
-                    model.addObject("error_message", getRootMessage(exc));
-                    return model;
-                }
+                fieldsValues[f.fieldId] = ks.addFieldValues(f, t, fValues);
             }
             tasksFieldsValues[t.taskId] = fieldsValues;
         }
@@ -248,14 +242,7 @@ public class SatiaWebController {
             catch (NumberFormatException ignored) {}
 
             Generator oldGen = t.generator;
-
-            try {
-                ks.updateTask(test, t, phraseValues, genId);
-            } catch (Exception exc) {
-                model.addObject("error_message", getRootMessage(exc));
-                return model;
-            }
-
+            ks.updateTask(test, t, phraseValues, genId);
             Generator newGen = t.generator;
             //if generator is updated - remove field values
             if ( ((oldGen == null) && (newGen != null)) || ((oldGen != null) && (!oldGen.equals(newGen))) ) {
@@ -279,24 +266,14 @@ public class SatiaWebController {
                     }
                     String newFValue = request.getParameter("field_value_" + fv.fieldValueId);
                     if  (newFValue != null) {
-                        try {
-                            ks.updateFieldValue(fv, newFValue);
-                        } catch (Exception exc) {
-                            model.addObject("error_message", getRootMessage(exc));
-                            return model;
-                        }
+                        ks.updateFieldValue(fv, newFValue);
                     }
                 }
                 //add new values
-                try {
-                    String[] valuesToAdd = request.getParameterValues("task" + t.taskId + "_field" + f.fieldId);
-                    List<FieldValue> addedValues = ks.addFieldValues(f, t, valuesToAdd);
-                    for (FieldValue addedValue : addedValues) {
-                        tasksFieldsValues[t.taskId][f.fieldId].add(addedValue);
-                    }
-                } catch (Exception exc) {
-                    model.addObject("error_message", getRootMessage(exc));
-                    return model;
+                String[] valuesToAdd = request.getParameterValues("task" + t.taskId + "_field" + f.fieldId);
+                List<FieldValue> addedValues = ks.addFieldValues(f, t, valuesToAdd);
+                for (FieldValue addedValue : addedValues) {
+                    tasksFieldsValues[t.taskId][f.fieldId].add(addedValue);
                 }
             };
         }
@@ -429,14 +406,14 @@ public class SatiaWebController {
 
         def paramNames = ["username", "first_name", "last_name", "email", "password", "confirm_password"];
         def regParams = [:];
-        try {
-            paramNames.each {param ->
-                regParams[param] = ks.filterString(request.getParameter(param));
-            };
-        } catch (Exception exc) {
-            model.addObject("error_message", getRootMessage(exc));
-            return model;
-        }
+        for (String param : paramNames) {
+            String filteredParam = ks.filterString(request.getParameter(param));
+            if (filteredParam == null) {
+                model.addObject("error_message", "Illegal input");
+                return model;
+            }
+            regParams[param] = filteredParam;
+        };
 
         if (!regParams["password"].equals(regParams["confirm_password"])) {
             model.addObject("error_message", "password confirmed incorrectly");

@@ -42,21 +42,21 @@ public interface KernelService {
 
     <T> T doInTransaction(Callable<T> action) throws Exception;
 
-    void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException;
+    Test updateTest(Test test, boolean createTest, Map<String, String> testReqParams);
 
-    Task newTask(String[] values, Long genId, Test test)  throws IllegalArgumentException;
+    Task newTask(String[] values, Long genId, Test test);
 
     void removeTasks(List<Task> task, Test test);
 
-    void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException;
+    void updateTask(Test test, Task task, String[] values, Long genId);
 
-    List<FieldValue> addFieldValues(Field field, Task task, String[] values)  throws IllegalArgumentException;
+    List<FieldValue> addFieldValues(Field field, Task task, String[] values);
 
-    void updateFieldValue(FieldValue fValue, String newValue)  throws IllegalArgumentException;
+    void updateFieldValue(FieldValue fValue, String newValue);
 
     Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
 
     void createTasks(Test test, List<Task> tasks);
 
-    String filterString(String str) throws IllegalArgumentException;
+    String filterString(String str);
 }

@@ -183,6 +183,9 @@ public class KernelServiceEJB implements KernelService {
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void saveEntities(Collection entities) {
         for (Object e : entities){
+            if (e == null) {
+                continue;
+            }
             entityManager.persist(e);
         }
     }
@@ -332,7 +335,7 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    public void updateTest(Test test, boolean createTest, Map<String, String> testReqParams) throws IllegalArgumentException {
+    public Test updateTest(Test test, boolean createTest, Map<String, String> testReqParams) {
         for (Map.Entry<String, String> entry : testReqParams.entrySet()) {
             String k = entry.getKey();
             String v = entry.getValue();
@@ -369,33 +372,26 @@ public class KernelServiceEJB implements KernelService {
                         test.setDescription(v);
                     }
                 }
-                catch (IllegalArgumentException ignored) { }
+                catch (Exception ignored) {}
             }
         }
-        if (test.getGenerator() == null) {
-            throw new IllegalArgumentException("No generator set in test");
-        }
-        if ((test.getSourceLang() == null) || (test.getTargetLang() == null)) {
-            throw new IllegalArgumentException("No languages set in test");
-        }
-        if (test.getSourceLang().equals(test.getTargetLang())) {
-            throw new IllegalArgumentException("Target and source languages are the same");
+        if ( (test.getGenerator() == null) || 
+            (test.getSourceLang() == null) || (test.getTargetLang() == null) ||
+            (test.getSourceLang().equals(test.getTargetLang())) ) {
+            return null;
         }
         if (createTest) {
             saveEntity(test);
-        }
-        else {
+        } else {
             updateEntity(test);
         }
+        return test;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    private Phrase newPhrase(String newValue, Lang lang, Test test, boolean filter) throws IllegalArgumentException {
+    private Phrase newPhrase(String newValue, Lang lang, Test test) {
         if (lang == null) {
-            throw new IllegalArgumentException();
-        }
-        if (filter) {
-            newValue = filterString(newValue);
+            return null;
         }
 
         Phrase equalPhrase = findEqualPhrase(newValue, lang, test);
@@ -412,17 +408,19 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Task newTask(String[] values, Long genId, Test test) throws IllegalArgumentException {
+    public Task newTask(String[] values, Long genId, Test test) {
             if ((test == null) || (values == null) || (values.length < 2)) {
-                throw new IllegalArgumentException("null");
+                return null;
             }
+            String val1 = filterString(values[0]);
+            String val2 = filterString(values[1]);
 
+            if ((val1 == null) || (val2 == null)) {
+                return null;
+            }
+            Phrase p1 = newPhrase(values[0], test.getSourceLang(), test);
+            Phrase p2 = newPhrase(values[1], test.getTargetLang(), test);
             Generator gen = findGenerator(genId, test);
-            Phrase p1;
-            Phrase p2;
-            p1 = newPhrase(values[0], test.getSourceLang(), test, true);
-            p2 = newPhrase(values[1], test.getTargetLang(), test, true);
-
             Translation tr = findTranslationWithPhrases(p1, p2, test);
             if (tr == null) {
                 tr = new Translation();
@@ -444,15 +442,22 @@ public class KernelServiceEJB implements KernelService {
     @Override
     public void createTasks(Test test, List<Task> tasks) {
         saveEntities(tasks);
-        test.getTasks().addAll(tasks);
+        for (Task t : tasks) {
+            if (t != null) {
+                test.getTasks().add(t);
+            }
+        }
         updateEntity(test);
     }
 
-    private void updatePhraseInTask(String newValue, int i, Task task, Test test) throws IllegalArgumentException {
+    private void updatePhraseInTask(String newValue, int i, Task task, Test test) {
             if ((task == null) || (test == null) || (i < 1) || (i > 2)) {
-                throw new IllegalArgumentException();
+                return;
             }
             newValue = filterString(newValue);
+            if (newValue == null) {
+                return;
+            }
 
             Phrase phraseToUpdate = ((i == 1) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
             Phrase otherPhrase = ((i == 2) ? task.getTranslation().getPhrase1() : task.getTranslation().getPhrase2());
@@ -509,7 +514,7 @@ public class KernelServiceEJB implements KernelService {
                 }
                 //if yes - create new phrase with new value or find existing phrase with the same value
                 else {
-                    Phrase newPhrase = (existingPhrase == null) ? newPhrase(newValue, phraseToUpdate.getLang(), test, false) : existingPhrase;
+                    Phrase newPhrase = (existingPhrase == null) ? newPhrase(newValue, phraseToUpdate.getLang(), test) : existingPhrase;
                     if (i == 1) {
                         task.getTranslation().setPhrase1(newPhrase);
                     } else {
@@ -550,9 +555,9 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void updateTask(Test test, Task task, String[] values, Long genId) throws IllegalArgumentException {
+    public void updateTask(Test test, Task task, String[] values, Long genId) {
             if ((test == null) || (task == null)) {
-                throw new IllegalArgumentException("null");
+                return;
             }
 
             //update phrases and translation
@@ -590,12 +595,9 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    public List<FieldValue> addFieldValues(Field field, Task task, String[] values) throws IllegalArgumentException {
-        if ((field == null) || (task == null)) {
-            throw new IllegalArgumentException("null");
-        }
+    public List<FieldValue> addFieldValues(Field field, Task task, String[] values) {
         List<FieldValue> savedValues = new ArrayList<FieldValue>();
-        if ((values == null) || (values.length < 1)) {
+        if ((field == null) || (task == null) || (values == null) || (values.length < 1)) {
             return savedValues;
         }
         int savedValuesCount = 0;
@@ -607,6 +609,9 @@ public class KernelServiceEJB implements KernelService {
                 continue;
             }
             String validValue = validateFieldValue(field, v);
+            if (validValue == null) {
+                continue;
+            }
             FieldValue newFieldValue = new FieldValue();
             newFieldValue.setField(field);
             newFieldValue.setTask(task);
@@ -619,11 +624,14 @@ public class KernelServiceEJB implements KernelService {
     }
 
     @Override
-    public void updateFieldValue(FieldValue fValue, String newValue)  throws IllegalArgumentException {
+    public void updateFieldValue(FieldValue fValue, String newValue) {
         if ((fValue == null) || (newValue == null)) {
-            throw new IllegalArgumentException("Null");
+            return;
         }
         String validValue = validateFieldValue(fValue.getField(), newValue);
+        if (validValue == null) {
+            return;
+        }
         fValue.setValue(validValue);
         updateEntity(fValue);
     }
@@ -647,20 +655,20 @@ public class KernelServiceEJB implements KernelService {
 //==============================VALIDATORS=======================================================
 //===============================================================================================
 
-    public String filterString(String str) throws IllegalArgumentException {
-        if ((str == null) || (str.equals(""))) {
-            throw new IllegalArgumentException("Empty input is not allowed");
-        }
-        String filtered = str.replaceAll("[<>]{1}", "");
-        if (filtered.equals("")) {
-            throw new IllegalArgumentException("Illegal input: " + str);
+    public String filterString(String str) {
+        String filtered = str;
+        if (str != null) {
+            filtered = str.replaceAll("[<>]{1}", "");
+            if (filtered.equals("")) {
+                filtered = null;
+            }
         }
         return filtered;
     }
 
-    private String validateFieldValue(Field field, String value) throws IllegalArgumentException {
+    private String validateFieldValue(Field field, String value) {
         if (field == null) {
-            throw new IllegalArgumentException();
+            return null;
         }
         switch (field.getType()) {
         case 0:
@@ -671,7 +679,7 @@ public class KernelServiceEJB implements KernelService {
                 Integer.parseInt(value, 10);
             }
             catch (NumberFormatException nf) {
-                throw new IllegalArgumentException(field.getName() + " must be intger");
+                return null;
             }
             break;
         case 2:
@@ -679,7 +687,7 @@ public class KernelServiceEJB implements KernelService {
                 Double.parseDouble(value);
             }
             catch (NumberFormatException nf) {
-                throw new IllegalArgumentException(field.getName() + " must be real number");
+                return null;
             }
             break;
         }
