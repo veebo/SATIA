@@ -9,6 +9,9 @@ CREATE TABLE users (
   password varchar(60) NOT NULL,
   role_id bigint NOT NULL,
   enabled boolean NOT NULL DEFAULT true,
+  first_name varchar(60),
+  last_name varchar(60),
+  email varchar(100) NOT NULL,
   PRIMARY KEY (username),
   FOREIGN KEY (role_id) REFERENCES roles (role_id)
 );
