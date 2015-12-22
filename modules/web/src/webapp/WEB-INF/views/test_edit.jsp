@@ -3,7 +3,6 @@
 <%@page session="true"%>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html" charset="utf-16" >
 	<link rel="stylesheet" href="/resources/css/style.css" />
 	<link rel="stylesheet" href="/resources/css/test_edit_style.css" />
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
@@ -22,9 +21,6 @@
 		font-weight: bold;
 		cursor : pointer;
 	}
-	#error_message {
-		color : #dd0000;
-	}
 	</style>
 	<div class="header">
         SATIA
@@ -35,9 +31,11 @@
 	<form action="<c:url value='/edit/create?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
     </c:if>
     <c:if test="${!create}">
-    <form id="test_form" action="<c:url value='/edit/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST'>
+    <form id="test_form" action="<c:url value='/edit/${test.testId}?${_csrf.parameterName}=${_csrf.token}' />" method='POST' accept-charset="UTF-8" >
     </c:if>
-    	<div id="error_message"></div>
+    	<a href="/">View all tests</a>
+    	<br>
+    	<div id="error_message">${error_message}</div>
 	    <div class="section">
 	    	<div class="hint">Title:</div> <input class="${ create ? 'ignore_unchanged' : '' }" type="text" name="test_title" value="${test.title}"/><br><br>
 	    	<div class="hint">Description:</div> <textarea class="${ create ? 'ignore_unchanged' : '' }" name="test_description">${test.description}</textarea><br><br>

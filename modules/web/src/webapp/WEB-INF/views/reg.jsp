@@ -12,6 +12,7 @@
 	<div class="container">
 		<div class="title center">Registration</div>
 		<form action="/reg?${_csrf.parameterName}=${_csrf.token}" method="POST">
+			<div id="error_message" class="center">${error_message}</div>
 			<div class="table center section">
 				<div class="row"><br></div>
 				<div class="row">

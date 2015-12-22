@@ -129,6 +129,14 @@ public class SatiaWebController {
         return model;
     }
 
+    private String getRootMessage(Throwable throwable) {
+        Throwable root;
+        for (Throwable t = throwable; t != null; t = throwable.getCause()) {
+            root = t;
+        }
+        return root.getMessage();
+    }
+
     private def deleteFieldValues(tasksFieldsValues, taskId) {
         tasksFieldsValues[taskId].each { fId, fValues ->
             for (FieldValue fValue : fValues) {
@@ -167,8 +175,9 @@ public class SatiaWebController {
                                        "Generator" : request.getParameter("test_generator"),
                                        "SourceLang" : request.getParameter("test_sourcelang"),
                                        "TargetLang" : request.getParameter("test_targetlang")]);
-        } catch (Exception ex) {
-            return badRequest(ex.getMessage());
+        } catch (Exception exc) {
+            model.addObject("error_message", getRootMessage(exc));
+            return model;
         }
         model.addObject("create", false);
 
@@ -182,8 +191,8 @@ public class SatiaWebController {
         String[] values = new String[2];
         def tasksToAdd = []
         for (int i = 0; i < addedTasks; i++) {
-            values[0] = request.getParameter("add_task"+i+"_phrase1");
-            values[1] = request.getParameter("add_task"+i+"_phrase2");
+            values[0] = request.getParameter("add_task" + i + "_phrase1");
+            values[1] = request.getParameter("add_task" + i + "_phrase2");
             Long genId = null;
             try {
                 genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
@@ -192,7 +201,8 @@ public class SatiaWebController {
             try {
                 tasksToAdd << ks.newTask(values, genId, test);
             } catch (Exception exc) {
-                return badRequest(exc.getMessage());
+                model.addObject("error_message", getRootMessage(exc));
+                return model;
             }
         }
         ks.createTasks(test, tasksToAdd);
@@ -206,7 +216,8 @@ public class SatiaWebController {
                 try {
                     fieldsValues[f.fieldId] = ks.addFieldValues(f, t, fValues);
                 } catch (Exception exc) {
-                    return badRequest(exc.getMessage());
+                    model.addObject("error_message", getRootMessage(exc));
+                    return model;
                 }
             }
             tasksFieldsValues[t.taskId] = fieldsValues;
@@ -241,7 +252,8 @@ public class SatiaWebController {
             try {
                 ks.updateTask(test, t, phraseValues, genId);
             } catch (Exception exc) {
-                return badRequest(exc.getMessage());
+                model.addObject("error_message", getRootMessage(exc));
+                return model;
             }
 
             Generator newGen = t.generator;
@@ -267,7 +279,12 @@ public class SatiaWebController {
                     }
                     String newFValue = request.getParameter("field_value_" + fv.fieldValueId);
                     if  (newFValue != null) {
-                        ks.updateFieldValue(fv, newFValue);
+                        try {
+                            ks.updateFieldValue(fv, newFValue);
+                        } catch (Exception exc) {
+                            model.addObject("error_message", getRootMessage(exc));
+                            return model;
+                        }
                     }
                 }
                 //add new values
@@ -278,7 +295,8 @@ public class SatiaWebController {
                         tasksFieldsValues[t.taskId][f.fieldId].add(addedValue);
                     }
                 } catch (Exception exc) {
-                    return badRequest(exc.getMessage());
+                    model.addObject("error_message", getRootMessage(exc));
+                    return model;
                 }
             };
         }
@@ -326,15 +344,13 @@ public class SatiaWebController {
         String username;
         String fullname;
         try {
-            //extract session attributes
             session = request.getSession();
 
 
             test = session.getAttribute("test");
-            username = session.getAttribute("username");
-            fullname = session.getAttribute("fullname");
             String intNext = session.getAttribute("next");
             String intRigthAnswers = session.getAttribute("right_answers");
+
             if ((StringUtils.isEmpty(intNext)) || (StringUtils.isEmpty(intRigthAnswers)) || (test == null)) {
                 return badRequest("invalidated session");
             }
@@ -362,7 +378,7 @@ public class SatiaWebController {
                 fullnameFromReq = (fullnameFromReq == null) ? "" : fullnameFromReq;
                 session.setAttribute("fullname", fullnameFromReq);
             } else {
-                return badRequest("invalid request parameters");
+                return badRequest("invalidated session");
             }
             //define next task and generate answers
             try {
@@ -381,11 +397,13 @@ public class SatiaWebController {
                            ["id" : answer.getPhraseId()+3, "value" : "ccc"] <<
                            ["id" : answer.getPhraseId()+4, "value" : "ddd"];
                 model.addObject("answers", answers);
-                //==========================================
+                //===============================================
                 model.addObject("end", false);
             }
             //if no tasks left - save result
             catch (IndexOutOfBoundsException iob) {
+                username = session.getAttribute("username");
+                fullname = session.getAttribute("fullname");
                 Result result = ks.saveResult(fullname, username, new Long(test.getTestId()), session.getId(), rightAnswers);
                 model.addObject("result", result);
                 model.addObject("end", true);
@@ -406,35 +424,48 @@ public class SatiaWebController {
 
     @RequestMapping(value="/reg", method=RequestMethod.POST)
     def ModelAndView registerUser(HttpServletRequest request) {
-        def regParams = ["username" : request.getParameter("username"),
-        "firstName" : request.getParameter("first_name"),
-        "lastName" : request.getParameter("last_name"),
-        "email" : request.getParameter("email"),
-        "password" : request.getParameter("password"),
-        "confirmPassword" : request.getParameter("confirm_password")];
+        ModelAndView model = new ModelAndView();
+        model.setViewName("reg");
+
+        def paramNames = ["username", "first_name", "last_name", "email", "password", "confirm_password"];
+        def regParams = [:];
         try {
-            regParams.each {k, v ->
-                if ( (!k.equals("firstName")) && (!k.equals("lastName")) && (StringUtils.isEmpty(v)) ) {
-                    throw new IllegalArgumentException();
-                }
-            }
-        } catch (IllegalArgumentException ia) {
-            return badRequest("empty request parameters");
+            paramNames.each {param ->
+                regParams[param] = ks.filterString(request.getParameter(param));
+            };
+        } catch (Exception exc) {
+            model.addObject("error_message", getRootMessage(exc));
+            return model;
         }
-        if (!regParams["password"].equals(regParams["confirmPassword"])) {
-            return badRequest("password confirmed incorrectly");
+
+        if (!regParams["password"].equals(regParams["confirm_password"])) {
+            model.addObject("error_message", "password confirmed incorrectly");
+            return model;
         }
+
+        User existingUser = ks.getEntityById(User.class, regParams["username"]);
+        if (existingUser != null) {
+            model.addObject("error_message", "User with the same name already exists");
+            return model;
+        }
+        existingUser = ks.getEntityByQuery(User.class,
+            "SELECT username FROM users WHERE email = ?", regParams["email"]);
+        if (existingUser != null) {
+            model.addObject("error_message", "User with the same email already exists");
+            return model;
+        }
+
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String hashedPassword = passwordEncoder.encode(regParams["password"]);
-        Role userRole = ks.getEntityByQuery(Role.class, "SELECT role_id FROM roles WHERE role = ?", ["ROLE_USER"]);
+        Role userRole = ks.getEntityByQuery(Role.class, "SELECT role_id FROM roles WHERE role = 'ROLE_USER'", null);
         if (userRole == null) {
             return badRequest("internal error");
         }
         User newUser = new User(username : regParams["username"], password : hashedPassword, enabled : true,
-            role : userRole, firstName : regParams["firstName"], lastName : regParams["lastName"],
+            role : userRole, firstName : regParams["first_name"], lastName : regParams["last_name"],
             email : regParams["email"]);
         ks.saveEntity(newUser);
-        ModelAndView model = new ModelAndView();
+
         model.setViewName("login");
         return model;
     }

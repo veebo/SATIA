@@ -37,6 +37,7 @@
     	    <div class="table center">
                 <div class="hint row">
                     <div class="cell">user</div>
+                    <div class="cell">full name</div>
                     <div class="cell">grade</div>
                     <div class="cell">start time</div>
                 </div>
@@ -45,6 +46,7 @@
 
                 <div class="row">
                     <div class="cell">${r.user.username}</div>
+                    <div class="cell">${r.fullname}</div>
                     <div class="cell">${r.value}</div>
                     <div class="cell">${r.startTime}</div>
                 </div>
@@ -58,7 +60,7 @@
 
         </c:forEach>
         <div class="center">
-            <div class="button"><a href="<c:url value='/edit/create' />">create new test</a></div>
+            <a href="<c:url value='/edit/create' />"><div class="button">create new test</div></a>
         </div>
 
     </div>

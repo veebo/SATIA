@@ -373,13 +373,13 @@ public class KernelServiceEJB implements KernelService {
             }
         }
         if (test.getGenerator() == null) {
-            throw new IllegalArgumentException("no generator set in test");
+            throw new IllegalArgumentException("No generator set in test");
         }
         if ((test.getSourceLang() == null) || (test.getTargetLang() == null)) {
-            throw new IllegalArgumentException("no languages set in test");
+            throw new IllegalArgumentException("No languages set in test");
         }
         if (test.getSourceLang().equals(test.getTargetLang())) {
-            throw new IllegalArgumentException("target and source languages are the same");
+            throw new IllegalArgumentException("Target and source languages are the same");
         }
         if (createTest) {
             saveEntity(test);
@@ -620,11 +620,8 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     public void updateFieldValue(FieldValue fValue, String newValue)  throws IllegalArgumentException {
-        if (fValue == null) {
-            throw new IllegalArgumentException();
-        }
-        if (newValue == null) {
-            return;
+        if ((fValue == null) || (newValue == null)) {
+            throw new IllegalArgumentException("Null");
         }
         String validValue = validateFieldValue(fValue.getField(), newValue);
         fValue.setValue(validValue);
@@ -650,13 +647,13 @@ public class KernelServiceEJB implements KernelService {
 //==============================VALIDATORS=======================================================
 //===============================================================================================
 
-    private String filterString(String str) throws IllegalArgumentException {
-        if (str == null) {
-            throw new IllegalArgumentException("invalid string: " + str);
+    public String filterString(String str) throws IllegalArgumentException {
+        if ((str == null) || (str.equals(""))) {
+            throw new IllegalArgumentException("Empty input is not allowed");
         }
         String filtered = str.replaceAll("[<>]{1}", "");
         if (filtered.equals("")) {
-            throw new IllegalArgumentException("invalid string: " + str);
+            throw new IllegalArgumentException("Illegal input: " + str);
         }
         return filtered;
     }
@@ -674,7 +671,7 @@ public class KernelServiceEJB implements KernelService {
                 Integer.parseInt(value, 10);
             }
             catch (NumberFormatException nf) {
-                throw new IllegalArgumentException("value of field " + field.getName() + " must be intger");
+                throw new IllegalArgumentException(field.getName() + " must be intger");
             }
             break;
         case 2:
@@ -682,7 +679,7 @@ public class KernelServiceEJB implements KernelService {
                 Double.parseDouble(value);
             }
             catch (NumberFormatException nf) {
-                throw new IllegalArgumentException("value of field " + field.getName() + " must be real");
+                throw new IllegalArgumentException(field.getName() + " must be real number");
             }
             break;
         }

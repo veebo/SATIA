@@ -13,10 +13,12 @@
 		<div class="title center">${test.title}</div>
 		<div class="center">${test.description}</div>
 		<div class = "hint">Enter your name and start passing the test:</div>
-		<form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST">
-			<input type="text" name="name" />
-			<input type="submit" value="start" />
-		</form>
+		<div class="center">
+			<form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST">
+				<input type="text" name="name" />
+				<input type="submit" value="start" />
+			</form>
+		</div>
 	</div>
 </body>
 </html>

@@ -57,4 +57,6 @@ public interface KernelService {
     Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
 
     void createTasks(Test test, List<Task> tasks);
+
+    String filterString(String str) throws IllegalArgumentException;
 }

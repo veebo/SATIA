@@ -82,6 +82,9 @@ body {
 	cursor: pointer;
 	display: inline;
 }
+#error_message {
+	color : #dd0000;
+}
 
 /*==================MEDIA====================*/
 
