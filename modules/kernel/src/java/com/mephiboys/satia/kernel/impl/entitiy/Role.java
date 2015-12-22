@@ -8,17 +8,17 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    private int roleId;
+    private Long roleId;
 
     @Basic
     @Column(name = "role")
     private String role;
 
-    public int getRoleId() {
+    public Long getRoleId() {
         return roleId;
     }
 
-    public void setRoleId(int roleId) {
+    public void setRoleId(Long roleId) {
         this.roleId = roleId;
     }
 

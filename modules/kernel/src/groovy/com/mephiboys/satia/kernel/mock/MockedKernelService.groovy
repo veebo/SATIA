@@ -1,4 +1,4 @@
-package com.mephiboys.satia.kernel.mock
+﻿package com.mephiboys.satia.kernel.mock
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
 
