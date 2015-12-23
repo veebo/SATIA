@@ -9,3 +9,9 @@
 	padding-top: 0.5em;
 	padding-bottom: 0.5em;
 }
+.remove_test {
+	position: relative;
+	right : 0px;
+	font-weight: bold;
+	color : #dd0000;
+}

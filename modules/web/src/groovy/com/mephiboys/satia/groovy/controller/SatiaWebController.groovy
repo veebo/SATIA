@@ -132,14 +132,6 @@ public class SatiaWebController {
         return model;
     }
 
-    private String getRootMessage(Throwable throwable) {
-        Throwable root;
-        for (Throwable t = throwable; t != null; t = throwable.getCause()) {
-            root = t;
-        }
-        return root.getMessage();
-    }
-
     private def deleteFieldValues(tasksFieldsValues, taskId) {
         tasksFieldsValues[taskId].each { fId, fValues ->
             for (FieldValue fValue : fValues) {

@@ -44,6 +44,8 @@ public interface KernelService {
 
     Test updateTest(Test test, boolean createTest, Map<String, String> testReqParams);
 
+    void removeTest(Test test);
+
     Task newTask(String[] values, Long genId, Test test);
 
     void removeTasks(List<Task> task, Test test);

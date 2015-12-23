@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Map;
 import java.sql.Timestamp;
 import java.util.function.Predicate;
+import java.util.ListIterator;
 import javax.servlet.http.HttpServletRequest;
 
 @Singleton
@@ -386,6 +387,33 @@ public class KernelServiceEJB implements KernelService {
             updateEntity(test);
         }
         return test;
+    }
+
+    public void removeTest(Test test) {
+        if (test == null) {
+            return;
+        }
+
+        List<Translation> transToRm = new ArrayList<Translation>();
+        List<Phrase> phrasesToRm = new ArrayList<Phrase>();
+
+        for (Task t : test.getTasks()) {
+            transToRm.add(t.getTranslation());
+        }
+        removeTasks(test.getTasks(), test);
+
+        ListIterator<Translation> trIter = transToRm.listIterator();
+        while (trIter.hasNext()) {
+            Translation curTr = trIter.next();
+            phrasesToRm.add(curTr.getPhrase1());
+            phrasesToRm.add(curTr.getPhrase2());
+            deleteEntityById(Translation.class, curTr.getTranslationId());
+        }
+
+        ListIterator<Phrase> phIter = phrasesToRm.listIterator();
+        while (phIter.hasNext()) {
+            deleteEntityById(Phrase.class, phIter.next().getPhraseId());
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
