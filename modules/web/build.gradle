@@ -59,6 +59,5 @@ sourceSets {
 
 war {
     archiveName 'satia-web.war' // name
-    webInf { from 'src/webapp/WEB-INF' } // adds a file-set to the WEB-INF dir.
-    metaInf { from 'src/webapp/META-INF' } // adds a file-set to the WEB-INF dir.
+    from 'src/webapp'
 }
