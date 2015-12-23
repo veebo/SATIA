@@ -8,7 +8,10 @@
 <link rel="stylesheet" href="/resources/css/style.css" />
 <style>
 #loginForm {
-	visibility: ${vis};
+	display: ${display_login_form};
+}
+#logoutLink {
+	display: ${display_logout_form};
 }
 </style>
 </head>
@@ -32,8 +35,7 @@
 			<div class="msg">${msg}</div>
 		</c:if>
 
-		<form name='loginForm' id="loginForm"
-		  action="<c:url value='/login' />" method='POST'>
+		<form name='loginForm' id="loginForm" action="<c:url value='/login' />" method='POST'>
 
 		<table>
 			<tr>
@@ -50,10 +52,11 @@
 			</tr>
 		  </table>
 
-		  <input type="hidden" name="${_csrf.parameterName}"
-			value="${_csrf.token}" />
+		  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 
 		</form>
+
+		<a id='logoutLink' href="<c:url value="/logout" />">Logout</a>
 	</div>
 
 </body>
