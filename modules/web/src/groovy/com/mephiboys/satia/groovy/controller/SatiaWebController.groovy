@@ -185,8 +185,8 @@ public class SatiaWebController {
         String[] values = new String[2];
         def tasksToAdd = []
         for (int i = 0; i < addedTasks; i++) {
-            values[0] = decode(request.getParameter("add_task" + i + "_phrase1"));
-            values[1] = decode(request.getParameter("add_task" + i + "_phrase2"));
+            values[0] = request.getParameter("add_task" + i + "_phrase1");
+            values[1] = request.getParameter("add_task" + i + "_phrase2");
             Long genId = null;
             try {
                 genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
@@ -221,8 +221,8 @@ public class SatiaWebController {
             }
 
             String[] phraseValues = new String[2];
-            phraseValues[0] = decode(request.getParameter("task"+t.getTaskId()+"_phrase1"));
-            phraseValues[1] = decode(request.getParameter("task"+t.getTaskId()+"_phrase2"));
+            phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
+            phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
             Long genId = null;
             try {
                 String genIdParam = request.getParameter("task"+t.getTaskId()+"_gen");
@@ -275,25 +275,29 @@ public class SatiaWebController {
         return model;
     }
 
-    def private decode(String s) {
-        if (s == null)
-            return null;
-        def defaultBytes = s.getBytes();
-        def utf8Bytes = s.getBytes(Charset.forName("UTF-8"));
-        def utf16Bytes = s.getBytes(Charset.forName("UTF-16"));
-        def utf16BEBytes = s.getBytes(Charset.forName("UTF-16BE"));
-        def utf16LEBytes = s.getBytes(Charset.forName("UTF-16LE"));
-
-        def resp = String.format("Encoded string: %s\nDecoded string:\ndefault - %s\nUTF-8 - %s\nUTF-16 - %s\nUTF-16BE - %s\nUTF-16LE - %s",
-                s,
-                Arrays.toString(defaultBytes),
-                Arrays.toString(utf8Bytes),
-                Arrays.toString(utf16Bytes),
-                Arrays.toString(utf16BEBytes),
-                Arrays.toString(utf16LEBytes)
-        )
-
-        throw new RuntimeException(resp);
+    @RequestMapping(value="/remove/{testIdStr}", method=RequestMethod.GET)
+    def removeTestPage(@PathVariable("testIdStr") String testIdStr) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String authUserName = auth.getName();
+        User user = ks.getEntityById(User.class, authUserName);
+        ModelAndView model = getTestModel(user, testIdStr);
+        if (!"test_edit".equals(model.getViewName())) {
+            return model;
+        }
+        boolean create = model.getModel().get("create");
+        if (create) {
+            return notFound();
+        }
+        def tasksFieldsValues = model.getModel().get("tasks_fields_values");
+        tasksFieldsValues.each { taskId, fieldsValues ->
+            fieldsValues.each {fieldId, fvalues ->
+                for (FieldValue fv : fvalues) {
+                    ks.deleteEntityById(FieldValue.class, fv.getFieldValueId());
+                }
+            };
+        };
+        ks.removeTest(model.getModel().get("test"));
+        return defaultPage();
     }
 
     @RequestMapping(value="start_test/{testIdStr}", method=RequestMethod.GET)

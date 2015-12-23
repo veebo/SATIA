@@ -26,7 +26,7 @@
     	<c:forEach var="t" items="${tests_results}">
 
         <div class="item">
-            <div class="remove_test" onclick="window.location.href = '<c:url value="/remove/${t["test"].testId}" />' ">&times;</div>
+            <a href='<c:url value="/remove/${t['test'].testId}" />'><div class="remove_test">&times;</div></a>
 
             <div class="subtitle">${t["test"].title}</div>
             <div class="hint">${t["test"].description}</div>

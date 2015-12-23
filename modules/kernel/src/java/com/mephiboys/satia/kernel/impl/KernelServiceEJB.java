@@ -393,27 +393,15 @@ public class KernelServiceEJB implements KernelService {
         if (test == null) {
             return;
         }
-
-        List<Translation> transToRm = new ArrayList<Translation>();
-        List<Phrase> phrasesToRm = new ArrayList<Phrase>();
-
-        for (Task t : test.getTasks()) {
-            transToRm.add(t.getTranslation());
+        //remove results
+        Collection<Result> relResults = getEntitiesByQuery(Result.class,
+            "SELECT username,test_id,start_time,session_key FROM results WHERE test_id=?", test.getTestId());
+        for (Result r : relResults) {
+            deleteEntityById(Result.class, r.getId());
         }
-        removeTasks(test.getTasks(), test);
-
-        ListIterator<Translation> trIter = transToRm.listIterator();
-        while (trIter.hasNext()) {
-            Translation curTr = trIter.next();
-            phrasesToRm.add(curTr.getPhrase1());
-            phrasesToRm.add(curTr.getPhrase2());
-            deleteEntityById(Translation.class, curTr.getTranslationId());
-        }
-
-        ListIterator<Phrase> phIter = phrasesToRm.listIterator();
-        while (phIter.hasNext()) {
-            deleteEntityById(Phrase.class, phIter.next().getPhraseId());
-        }
+        //remove tasks
+        removeTasks(new ArrayList<Task>(test.getTasks()), test);
+        deleteEntityById(Test.class, test.getTestId());
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
