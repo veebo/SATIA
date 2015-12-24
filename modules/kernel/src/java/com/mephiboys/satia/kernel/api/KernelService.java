@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.Date;
 
 
 @Local
@@ -56,7 +57,7 @@ public interface KernelService {
 
     void updateFieldValue(FieldValue fValue, String newValue);
 
-    Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
+    Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers, Date startTime);
 
     void createTasks(Test test, List<Task> tasks);
 
