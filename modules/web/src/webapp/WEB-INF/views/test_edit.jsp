@@ -208,6 +208,7 @@
 	            			  <div class="field">
 	            			  	<div class="field_type">${f.type}</div>
 	                	  		<div class="field_id">${f.fieldId}</div>
+	                	  		<div class="hint">${f.name}:</div>
 	            				<div class="field_value">
 	            				<c:choose>
 	                				<c:when test="${f.type == 0}">

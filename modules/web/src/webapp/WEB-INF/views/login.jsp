@@ -47,10 +47,16 @@
 				<td><input type='password' name='password' /></td>
 			</tr>
 			<tr>
-				<td colspan='2'><input name="submit" type="submit" value="Log in" /></td>
-				<td colspan='2'><button type="submit" formaction="/reg">Register</button></td>
+				<td colspan='2' class="center"></td>
+			</tr>
+			<tr>
+				<td colspan='2' class="center"></td>
 			</tr>
 		  </table>
+		  <div class="center">
+		  	<input name="submit" type="submit" value="Log in" class="button"/>
+		  	<button type="submit" formaction="/reg" class="button">Register</button>
+		  </div>
 
 		  <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
 

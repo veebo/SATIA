@@ -1,10 +1,20 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
 <%@page pageEncoding="UTF-8"%>
 <%@page session="true"%>
 <html>
 <head>
 	<link rel="stylesheet" href="/resources/css/style.css" />
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$('form').submit(function (e) {
+				if ($('input[type="radio"]:checked').length <= 0) {
+					e.preventDefault();
+					alert("Please, choose an answer");
+				}
+			});
+		});
+	</script>
 </head>
 <body>
 	<div class="header">
@@ -17,9 +27,9 @@
 		    <c:when test="${end}">
 		        Thank you for passing the test. Your grade is ${result.value} of 100<br>
 		        <br>
-		        <sec:authorize access="hasRole('ROLE_USER')">
+		        <c:if test="${auth_user != null}">
 		        	<a href="<c:url value='/' />">back to main page</a>
-		    	</sec:authorize>
+		    	</c:if>
 		    </c:when>
 		    <c:otherwise>
 		        <form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST" class="large">

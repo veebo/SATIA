@@ -24,13 +24,19 @@ textarea {
 	display : none;
 }
 .field_value {
-	margin : 1em;
+	margin-top : 0.5em;
+	margin-bottom : 0.5em;
 }
 .del_field_value {
 	color : #dd0000;
 	font-weight: bold;
 	cursor : pointer;
 	font-size: 2em;
-	position: absolute;
-	right: 0em;
+	position: relative;
+	left: 80%;
+}
+.add_field_value {
+	position: relative;
+	left: 75%;
+	padding: 0.5em;
 }

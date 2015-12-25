@@ -432,6 +432,8 @@ public class SatiaWebController {
 
                     model.addObject("result", result);
                     model.addObject("end", true);
+                    User user = ks.getEntityById(User.class, username);
+                    model.addObject("auth_user", user);
 
                     return model;
                 }
