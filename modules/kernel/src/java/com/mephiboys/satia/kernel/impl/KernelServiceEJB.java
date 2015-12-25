@@ -19,7 +19,6 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 @Singleton
 @TransactionManagement(TransactionManagementType.CONTAINER)
@@ -335,8 +334,9 @@ public class KernelServiceEJB implements KernelService {
             return test.getGenerator();
         }
         for (Task t : test.getTasks()) {
-            if (t.getGenerator().getGenId().equals(genId)) {
-                return t.getGenerator();
+            Generator gen = t.getGenerator();
+            if (gen != null && genId.equals(gen.getGenId())) {
+                return gen;
             }
         }
         return getEntityById(Generator.class, genId);
