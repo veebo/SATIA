@@ -672,15 +672,19 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers) {
+    public Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers, Date startTime) {
             Test test = getEntityById(Test.class, testId);
             Result res = new Result();
             res.setTest(test);
-            res.setStartTime(new Timestamp(new Date().getTime()));
+            res.setStartTime(new Timestamp(startTime.getTime()));
             res.setSessionKey(sessionId);
             res.setFullname(fullname);
             res.setUser(getEntityById(User.class, username));
-            res.setValue(new Double( 100 * ((double)rightAnswers / (double)test.getTasks().size()) ));
+            if (test.getTasks().size() > 0) {
+                res.setValue(new Double( 100 * ((double)rightAnswers / (double)test.getTasks().size()) ));
+            } else {
+                res.setValue(new Double(0.00));
+            }
             saveEntity(res);
             return res;
     }
