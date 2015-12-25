@@ -26,7 +26,7 @@ public class Task {
     @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     private List<Test> tests;
 
-    @OneToMany(mappedBy = "field_values")
+    @OneToMany(mappedBy = "task")
     private List<FieldValue> fieldValues;
 
     public Long getTaskId() {
