@@ -18,7 +18,7 @@
 		        Thank you for passing the test. Your grade is ${result.value} of 100<br>
 		        <br>
 		        <sec:authorize access="hasRole('ROLE_USER')">
-		        	<a href="<c:url value='/' />">Back to main page</a>
+		        	<a href="<c:url value='/' />">back to main page</a>
 		    	</sec:authorize>
 		    </c:when>
 		    <c:otherwise>
