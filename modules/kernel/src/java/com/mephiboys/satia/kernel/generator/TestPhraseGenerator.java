@@ -26,6 +26,7 @@ public class TestPhraseGenerator extends AbstractAnswerGenerator{
                 test.getTargetLang().getLang(),
                 test.getTestId()
         );
-        return randomizeAnswers(phrases.stream().map(p -> p.getValue()).collect(Collectors.toList()));
+        phrases.remove(translation);
+        return randomizeAnswers(phrases.stream().map(p -> p.getValue()).filter(v -> !v.equals(translation)).collect(Collectors.toList()));
     }
 }
