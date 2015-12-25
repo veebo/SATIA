@@ -12,16 +12,6 @@
 	<script type="text/javascript" src="/resources/js/validate_test.js"></script>
 </head>
 <body>
-	<style>
-	#added_tasks_input, #add_task_row_to_clone, #gen_fields_to_clone, #field_value_inputs_to_clone, .field_type, .field_id {
-		display : none;
-	}
-	.del_field_value {
-		color : #dd0000;
-		font-weight: bold;
-		cursor : pointer;
-	}
-	</style>
 	<div class="header">
         SATIA
     </div>
@@ -257,7 +247,7 @@
 
 	        </div>
 	    </div>
-	    <div id="add_task" class="button">+</div><br>
+	    <div id="add_task" class="button">+ Add task</div><br>
 	    <input id="added_tasks_input" class="ignore_unchanged" type="text" value="0" name="added_tasks_num" />
 	    <div class="center">
 	    	<input type="button" value="save changes" class="button" id="submit_test_form"></input>

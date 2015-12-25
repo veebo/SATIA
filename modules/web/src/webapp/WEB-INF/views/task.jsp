@@ -1,4 +1,5 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
 <%@page pageEncoding="UTF-8"%>
 <%@page session="true"%>
 <html>
@@ -10,9 +11,15 @@
 		SATIA
 	</div>
 	<div class="container">
+		<div class="center">
+
 		<c:choose>
 		    <c:when test="${end}">
-		        <div class="center">Thank you for passing the test. Your grade is ${result.value} of 100</div>
+		        Thank you for passing the test. Your grade is ${result.value} of 100<br>
+		        <br>
+		        <sec:authorize access="hasRole('ROLE_USER')">
+		        	<a href="<c:url value='/' />">Back to main page</a>
+		    	</sec:authorize>
 		    </c:when>
 		    <c:otherwise>
 		        <form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST">
@@ -25,6 +32,8 @@
 		        </form>
 		    </c:otherwise>
 		</c:choose>
+
+		</div>
 	</div>
 </body>
 </html>

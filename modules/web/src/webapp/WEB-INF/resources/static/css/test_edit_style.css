@@ -20,3 +20,17 @@ textarea {
 	color: rgb(181,9,4);
 	cursor: pointer;
 }
+#added_tasks_input, #add_task_row_to_clone, #gen_fields_to_clone, #field_value_inputs_to_clone, .field_type, .field_id {
+	display : none;
+}
+.field_value {
+	margin : 1em;
+}
+.del_field_value {
+	color : #dd0000;
+	font-weight: bold;
+	cursor : pointer;
+	font-size: 2em;
+	position: absolute;
+	right: 0em;
+}
