@@ -226,7 +226,11 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     public List<String> generateAnswers(String source, String translation, Task task) {
-        final String generatorClass = task.getGenerator().getImpl();
+        Generator generator = task.getGenerator();
+        if (generator == null){
+            generator = task.getTests().get(0).getGenerator();
+        }
+        final String generatorClass = generator.getImpl();
         AnswerGenerator gen = generators.computeIfAbsent(generatorClass, genClass -> {
             try {
                 return (AnswerGenerator)Class.forName(genClass).newInstance();
