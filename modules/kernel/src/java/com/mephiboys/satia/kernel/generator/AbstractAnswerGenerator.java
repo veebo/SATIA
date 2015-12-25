@@ -19,12 +19,12 @@ abstract public class AbstractAnswerGenerator implements AnswerGenerator {
             String name = f.getInternalName();
             Object param = params.get(name);
             if (param == null){
-                params.put(name, f.isMultiple() ? new ArrayList<>(Arrays.asList(param)) : param);
+                params.put(name, f.isMultiple() ? new ArrayList<>(Arrays.asList(v.getValue())) : v.getValue());
             } else {
                 if (f.isMultiple()){
-                    ((List)params.get(name)).add(param);
+                    ((List)params.get(name)).add(v.getValue());
                 } else {
-                    params.put(name, param);
+                    params.put(name, v.getValue());
                 }
             }
         }

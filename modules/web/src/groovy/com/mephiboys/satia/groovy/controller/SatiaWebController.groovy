@@ -441,19 +441,17 @@ public class SatiaWebController {
 
 
                 model.addObject("question", sourcePhrase.getValue());
-                //============TEST==============================
                 def answers = [];
 
                 def i = 1
                 for (String a : wrongAnswers){
-                    answers.add(["id" : translatedPhrase.getPhraseId()+(i++), "value" : a])
+                    answers << ["id" : translatedPhrase.getPhraseId()+(i++), "value" : a];
                 }
 
                 answers.add((int)(wrongAnswers.size()*Math.random()),
-                        ["id" : translatedPhrase.getPhraseId(), "value" : translatedPhrase.getValue()])
+                        ["id" : translatedPhrase.getPhraseId(), "value" : translatedPhrase.getValue()]);
 
                 model.addObject("answers", answers);
-                //===============================================
                 model.addObject("end", false); ;
             }
             else if (cur >= test.getTasks().size()) {
