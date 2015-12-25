@@ -1,14 +1,15 @@
 package com.mephiboys.satia.kernel.api;
 
 import com.mephiboys.satia.kernel.impl.entitiy.*;
+
 import javax.ejb.Local;
 import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.Date;
 
 
 @Local
@@ -44,6 +45,8 @@ public interface KernelService {
 
     Test updateTest(Test test, boolean createTest, Map<String, String> testReqParams);
 
+    void removeTest(Test test);
+
     Task newTask(String[] values, Long genId, Test test);
 
     void removeTasks(List<Task> task, Test test);
@@ -54,9 +57,11 @@ public interface KernelService {
 
     void updateFieldValue(FieldValue fValue, String newValue);
 
-    Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers);
+    Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers, Date startTime);
 
     void createTasks(Test test, List<Task> tasks);
 
     String filterString(String str);
+
+    List<String> generateAnswers(String source, String translation, Task task);
 }

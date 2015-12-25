@@ -2,6 +2,7 @@ package com.mephiboys.satia.kernel.impl;
 
 
 import com.mephiboys.satia.kernel.api.KernelService;
+import com.mephiboys.satia.kernel.generator.AnswerGenerator;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,22 +15,20 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.Date;
-import java.util.Map;
 import java.sql.Timestamp;
-import java.util.function.Predicate;
-import javax.servlet.http.HttpServletRequest;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 @Singleton
 @TransactionManagement(TransactionManagementType.CONTAINER)
 public class KernelServiceEJB implements KernelService {
 
     private static Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
+
+    private static final Map<String, AnswerGenerator> generators =
+            new ConcurrentHashMap<String, AnswerGenerator>();
 
     @PersistenceContext (unitName = "PostgresPU")
     private EntityManager entityManager;
@@ -225,6 +224,30 @@ public class KernelServiceEJB implements KernelService {
         return action.call();
     }
 
+    @Override
+    public List<String> generateAnswers(String source, String translation, Task task) {
+        Generator generator = task.getGenerator();
+        if (generator == null){
+            generator = task.getTests().get(0).getGenerator();
+        }
+        final String generatorClass = generator.getImpl();
+        AnswerGenerator gen = generators.computeIfAbsent(generatorClass, genClass -> {
+            try {
+                return (AnswerGenerator)Class.forName(genClass).newInstance();
+            } catch (Exception e) {
+                new RuntimeException("Exception while class instantiation: " + genClass, e);
+                return null;
+            }
+        });
+
+        if (gen == null){
+            throw new RuntimeException("Exception while class instantiation: " + generatorClass);
+        }
+
+        return gen.generate(source, translation, task);
+    }
+
+
 //===============================================================================================
 //==========================SELECT HELPERS=======================================================
 //===============================================================================================
@@ -386,6 +409,21 @@ public class KernelServiceEJB implements KernelService {
             updateEntity(test);
         }
         return test;
+    }
+
+    public void removeTest(Test test) {
+        if (test == null) {
+            return;
+        }
+        //remove results
+        Collection<Result> relResults = getEntitiesByQuery(Result.class,
+            "SELECT username,test_id,start_time,session_key FROM results WHERE test_id=?", test.getTestId());
+        for (Result r : relResults) {
+            deleteEntityById(Result.class, r.getId());
+        }
+        //remove tasks
+        removeTasks(new ArrayList<Task>(test.getTasks()), test);
+        deleteEntityById(Test.class, test.getTestId());
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -638,18 +676,23 @@ public class KernelServiceEJB implements KernelService {
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers) {
+    public Result saveResult(String fullname, String username, Long testId, String sessionId, int rightAnswers, Date startTime) {
             Test test = getEntityById(Test.class, testId);
             Result res = new Result();
             res.setTest(test);
-            res.setStartTime(new Timestamp(new Date().getTime()));
+            res.setStartTime(new Timestamp(startTime.getTime()));
             res.setSessionKey(sessionId);
             res.setFullname(fullname);
             res.setUser(getEntityById(User.class, username));
-            res.setValue(new Double( 100 * ((double)rightAnswers / (double)test.getTasks().size()) ));
+            if (test.getTasks().size() > 0) {
+                res.setValue(new Double( 100 * ((double)rightAnswers / (double)test.getTasks().size()) ));
+            } else {
+                res.setValue(new Double(0.00));
+            }
             saveEntity(res);
             return res;
     }
+
 
 //===============================================================================================
 //==============================VALIDATORS=======================================================

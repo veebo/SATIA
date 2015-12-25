@@ -26,6 +26,9 @@ public class Task {
     @ManyToMany(mappedBy = "tasks", fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
     private List<Test> tests;
 
+    @OneToMany(mappedBy = "task", fetch = FetchType.EAGER)
+    private List<FieldValue> fieldValues;
+
     public Long getTaskId() {
         return taskId;
     }
@@ -69,6 +72,13 @@ public class Task {
         this.tests = tests;
     }
 
+    public List<FieldValue> getFieldValues() {
+        return fieldValues;
+    }
+
+    public void setFieldValues(List<FieldValue> fieldValues) {
+        this.fieldValues = fieldValues;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -86,6 +96,7 @@ public class Task {
         int result = (int) (taskId ^ (taskId >>> 32));
         return result;
     }
-    
+
+
 
 }

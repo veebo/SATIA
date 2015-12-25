@@ -27,7 +27,7 @@ class DbAction {
             }
 
             Generator g1 = new Generator(
-                    impl: "com.mephiboys.satia.generator.SimpleGenerator"
+                    impl: "com.mephiboys.satia.kernel.generator.SimpleGenerator"
             )
             generators << g1;
             for (o in generators){
@@ -35,13 +35,13 @@ class DbAction {
             }
 
             Phrase apple = new Phrase(value: "Apple", lang: eng)
-            Phrase yabloko = new Phrase(value: "Яблоко", lang: rus)
+            Phrase yabloko = new Phrase(value: "пїЅпїЅпїЅпїЅпїЅпїЅ", lang: rus)
             Phrase orange = new Phrase(value: "Orange", lang: eng)
-            Phrase apelsin = new Phrase(value: "Апельсин", lang: rus)
+            Phrase apelsin = new Phrase(value: "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", lang: rus)
             Phrase banana = new Phrase(value: "Banana", lang: eng)
-            Phrase banan = new Phrase(value: "Банан", lang: rus)
+            Phrase banan = new Phrase(value: "пїЅпїЅпїЅпїЅпїЅ", lang: rus)
             Phrase lemon = new Phrase(value: "Lemon", lang: eng)
-            Phrase limon = new Phrase(value: "Лимон", lang: rus)
+            Phrase limon = new Phrase(value: "пїЅпїЅпїЅпїЅпїЅ", lang: rus)
             phrases << apple << orange << banana << lemon << yabloko << apelsin << banan << limon;
             for (o in phrases){
                 ks.saveEntity(o)
@@ -65,7 +65,7 @@ class DbAction {
                 ks.saveEntity(o)
             }
 
-            Field f1 = new Field(generator : g1, name : "answers", showOrder: 1, multiple : true)
+            Field f1 = new Field(generator : g1, name : "answers", internalName: "answers", showOrder: 1, multiple : true)
             fields << f1;
             for (o in fields){
                 ks.saveEntity(o)

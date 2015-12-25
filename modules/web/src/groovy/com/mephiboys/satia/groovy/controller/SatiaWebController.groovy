@@ -1,12 +1,11 @@
 package com.mephiboys.satia.groovy.controller
-
 import com.mephiboys.satia.kernel.api.KernelHelper
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
-import org.apache.commons.lang.StringUtils
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.stereotype.Controller
 import org.springframework.ui.ModelMap
@@ -15,12 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
-import java.nio.charset.Charset
 
 @Controller
 public class SatiaWebController {
@@ -133,14 +130,6 @@ public class SatiaWebController {
         return model;
     }
 
-    private String getRootMessage(Throwable throwable) {
-        Throwable root;
-        for (Throwable t = throwable; t != null; t = throwable.getCause()) {
-            root = t;
-        }
-        return root.getMessage();
-    }
-
     private def deleteFieldValues(tasksFieldsValues, taskId) {
         tasksFieldsValues[taskId].each { fId, fValues ->
             for (FieldValue fValue : fValues) {
@@ -193,8 +182,8 @@ public class SatiaWebController {
         String[] values = new String[2];
         def tasksToAdd = []
         for (int i = 0; i < addedTasks; i++) {
-            values[0] = decode(request.getParameter("add_task" + i + "_phrase1"));
-            values[1] = decode(request.getParameter("add_task" + i + "_phrase2"));
+            values[0] = request.getParameter("add_task" + i + "_phrase1");
+            values[1] = request.getParameter("add_task" + i + "_phrase2");
             Long genId = null;
             try {
                 genId = Long.parseLong(request.getParameter("add_task"+i+"_gen"));
@@ -229,8 +218,8 @@ public class SatiaWebController {
             }
 
             String[] phraseValues = new String[2];
-            phraseValues[0] = decode(request.getParameter("task"+t.getTaskId()+"_phrase1"));
-            phraseValues[1] = decode(request.getParameter("task"+t.getTaskId()+"_phrase2"));
+            phraseValues[0] = request.getParameter("task"+t.getTaskId()+"_phrase1");
+            phraseValues[1] = request.getParameter("task"+t.getTaskId()+"_phrase2");
             Long genId = null;
             try {
                 String genIdParam = request.getParameter("task"+t.getTaskId()+"_gen");
@@ -283,25 +272,29 @@ public class SatiaWebController {
         return model;
     }
 
-    def private decode(String s) {
-        if (s == null)
-            return null;
-        def defaultBytes = s.getBytes();
-        def utf8Bytes = s.getBytes(Charset.forName("UTF-8"));
-        def utf16Bytes = s.getBytes(Charset.forName("UTF-16"));
-        def utf16BEBytes = s.getBytes(Charset.forName("UTF-16BE"));
-        def utf16LEBytes = s.getBytes(Charset.forName("UTF-16LE"));
-
-        def resp = String.format("Encoded string: %s\nDecoded string:\ndefault - %s\nUTF-8 - %s\nUTF-16 - %s\nUTF-16BE - %s\nUTF-16LE - %s",
-                s,
-                Arrays.toString(defaultBytes),
-                Arrays.toString(utf8Bytes),
-                Arrays.toString(utf16Bytes),
-                Arrays.toString(utf16BEBytes),
-                Arrays.toString(utf16LEBytes)
-        )
-
-        throw new RuntimeException(resp);
+    @RequestMapping(value="/remove/{testIdStr}", method=RequestMethod.GET)
+    def removeTestPage(@PathVariable("testIdStr") String testIdStr) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String authUserName = auth.getName();
+        User user = ks.getEntityById(User.class, authUserName);
+        ModelAndView model = getTestModel(user, testIdStr);
+        if (!"test_edit".equals(model.getViewName())) {
+            return model;
+        }
+        boolean create = model.getModel().get("create");
+        if (create) {
+            return notFound();
+        }
+        def tasksFieldsValues = model.getModel().get("tasks_fields_values");
+        tasksFieldsValues.each { taskId, fieldsValues ->
+            fieldsValues.each {fieldId, fvalues ->
+                for (FieldValue fv : fvalues) {
+                    ks.deleteEntityById(FieldValue.class, fv.getFieldValueId());
+                }
+            };
+        };
+        ks.removeTest(model.getModel().get("test"));
+        return defaultPage();
     }
 
     @RequestMapping(value="start_test/{testIdStr}", method=RequestMethod.GET)
@@ -342,70 +335,135 @@ public class SatiaWebController {
         Test test;
         String username;
         String fullname;
+        int next;
+        int rightAnswers;
         try {
             session = request.getSession();
-
+            String sessionId = session.getId();
+            if (sessionId == null) {
+                return badRequest("invalid session id");
+            }
 
             test = session.getAttribute("test");
-            String intNext = session.getAttribute("next");
-            String intRigthAnswers = session.getAttribute("right_answers");
+            if (!(test instanceof Test)) {
+                return badRequest("invalid session attribute: test");
+            }
 
-            if ((StringUtils.isEmpty(intNext)) || (StringUtils.isEmpty(intRigthAnswers)) || (test == null)) {
-                return badRequest("invalidated session");
-            }
-            int next = Integer.parseInt(intNext)
-            int rightAnswers = Integer.parseInt(intRigthAnswers)
-            cur = next - 1;
-            //check answer
-            if ( (cur >= 0) && (cur < test.getTasks().size()) ) {
-                Task curTask = test.getTasks().get(cur);
-                long answer;
-                try {
-                    answer = Long.parseLong(request.getParameter("answer"));
-                }
-                catch (NumberFormatException nf) {
-                    return badRequest("invalid request parameters");
-                }
-                Phrase rightPhrase = ( (curTask.getSourceNum() == 1) ?
-                    curTask.getTranslation().getPhrase2() : curTask.getTranslation().getPhrase1() );
-                if (answer == rightPhrase.getPhraseId()) {
-                    ++rightAnswers;
-                    session.setAttribute("right_answers", rightAnswers);
-                }
-            } else if (cur == -1) {
-                String fullnameFromReq = request.getParameter("name");
-                fullnameFromReq = (fullnameFromReq == null) ? "" : fullnameFromReq;
-                session.setAttribute("fullname", fullnameFromReq);
-            } else {
-                return badRequest("invalidated session");
-            }
-            //define next task and generate answers
+            String nextFromSess = session.getAttribute("next");
+            String rightAnswersFromSess = session.getAttribute("right_answers");
             try {
+                if (nextFromSess != null) {
+                    next = Integer.parseInt(nextFromSess);
+                } else {
+                    session.setAttribute("next", new Integer(0));
+                    next = 0;
+                }
+                if (rightAnswersFromSess == null) {
+                    session.setAttribute("right_answers", new Integer(0));
+                    rightAnswers = 0;
+                } else {
+                    rightAnswers = Integer.parseInt(rightAnswersFromSess);
+                }
+            } catch (NumberFormatException nf) {
+                return badRequest("invalid session attributes : " + nextFromSess + " " + rightAnswersFromSess);
+            }
+            cur = next - 1;
+            long answer;
+            String answerFromReq = request.getParameter("answer");
+
+
+            if ((next > 0) && (next < test.getTasks().size()) && (answerFromReq == null)) {
+                next = cur;
+                cur = cur - 1;
+            }
+            
+
+            if ( (cur >= -1) && (cur < test.getTasks().size()) ) {
+                try {
+                    if (answerFromReq != null) {
+                        answer = Long.parseLong(answerFromReq);
+                        Task curTask = test.getTasks().get(cur);
+                        Phrase rightPhrase = ( (curTask.getSourceNum() == 1) ?
+                            curTask.getTranslation().getPhrase2() : curTask.getTranslation().getPhrase1() );
+                        if (answer == rightPhrase.getPhraseId()) {
+                            ++rightAnswers;
+                            session.setAttribute("right_answers", new Integer(rightAnswers));
+                        }
+                    }
+                } catch (NumberFormatException nf) {
+                    return badRequest("invalid request parameter : answer");
+                }
+
+                if (cur == test.getTasks().size() - 1) {
+                    username = session.getAttribute("username");
+                    fullname = session.getAttribute("fullname");
+                    Date startTime = session.getAttribute("start_time");
+                    if (startTime == null) {
+                        return badRequest("invalid session attribute : start_time");
+                    }
+                    Result result = ks.saveResult(fullname, username, new Long(test.getTestId()), sessionId, rightAnswers, startTime);
+                    session.setAttribute("result", result);
+                    ++next;
+                    session.setAttribute("next", new Integer(next));
+
+                    model.addObject("result", result);
+                    model.addObject("end", true);
+
+                    return model;
+                }
+                else if (cur == -1) {
+                    String fullnameFromReq = request.getParameter("name");
+                    if (fullnameFromReq != null) {
+                        session.setAttribute("fullname", fullnameFromReq);
+                    }
+                    session.setAttribute("start_time", new Date());
+                }
+
                 Task nextTask = test.getTasks().get(next);
                 ++next;
                 session.setAttribute("next", new Integer(next));
-                byte src = nextTask.getSourceNum();
-                byte dst = (src == 1) ? 2 : 1;
-                model.addObject("question", nextTask.getTranslation()."${"getPhrase"+src}"().getValue());
-                //============TEST==============================
+
+
+                Translation translation = nextTask.getTranslation();
+
+                Phrase sourcePhrase = (nextTask.getSourceNum() == 1
+                        ? translation.getPhrase1()
+                        : translation.getPhrase2()
+                );
+
+                Phrase translatedPhrase = (nextTask.getSourceNum() == 1
+                        ? translation.getPhrase2()
+                        : translation.getPhrase1()
+                );
+
+                List<String> wrongAnswers = ks.generateAnswers(sourcePhrase.getValue(),
+                        translatedPhrase.getValue(), nextTask);
+
+
+                model.addObject("question", sourcePhrase.getValue());
                 def answers = [];
-                Phrase answer = nextTask.getTranslation()."${"getPhrase"+dst}"();
-                answers << ["id" : answer.getPhraseId(), "value" : answer.getValue()] <<
-                           ["id" : answer.getPhraseId()+1, "value" : "aaa"] <<
-                           ["id" : answer.getPhraseId()+2, "value" : "bbb"] <<
-                           ["id" : answer.getPhraseId()+3, "value" : "ccc"] <<
-                           ["id" : answer.getPhraseId()+4, "value" : "ddd"];
+
+                def i = 1
+                for (String a : wrongAnswers){
+                    answers << ["id" : translatedPhrase.getPhraseId()+(i++), "value" : a];
+                }
+
+                answers.add((int)(wrongAnswers.size()*Math.random()),
+                        ["id" : translatedPhrase.getPhraseId(), "value" : translatedPhrase.getValue()]);
+
                 model.addObject("answers", answers);
-                //===============================================
-                model.addObject("end", false);
+                model.addObject("end", false); ;
             }
-            //if no tasks left - save result
-            catch (IndexOutOfBoundsException iob) {
-                username = session.getAttribute("username");
-                fullname = session.getAttribute("fullname");
-                Result result = ks.saveResult(fullname, username, new Long(test.getTestId()), session.getId(), rightAnswers);
-                model.addObject("result", result);
+            else if (cur >= test.getTasks().size()) {
                 model.addObject("end", true);
+                Result result = session.getAttribute("result");
+                if (result == null) {
+                    return badRequest("invalid session attribute : result");
+                }
+                model.addObject("result", result);
+            }
+            else {
+                return badRequest("invalid session attribute : next = " + next);
             }
         }
         catch (IllegalStateException ilgState) {
