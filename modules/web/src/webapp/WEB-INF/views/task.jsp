@@ -22,12 +22,16 @@
 		    	</sec:authorize>
 		    </c:when>
 		    <c:otherwise>
-		        <form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST">
+		        <form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST" class="large">
 		        	<div class="hint">Choose the correct translation</div>
 		        	<b>${question}</b><br>
-		        	<c:forEach var="a" items="${answers}">
-		        	    <input type="radio" name="answer" value='${a["id"]}' /> ${a["value"]}<br>
-		            </c:forEach>
+		        	<br>
+		        	<div id="answers" class="left">
+		        		<c:forEach var="a" items="${answers}">
+		        	    	<input type="radio" name="answer" value='${a["id"]}' /> ${a["value"]}<br>
+		            	</c:forEach>
+		        	</div>
+		        	<br>
 		            <input type="submit" value="next" class="button" />
 		        </form>
 		    </c:otherwise>

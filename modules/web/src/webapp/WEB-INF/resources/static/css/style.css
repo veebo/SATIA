@@ -95,6 +95,9 @@ body {
 .center {
 	text-align: center;
 }
+.left {
+	text-align: left;
+}
 .title {
 	font-size: 1.5em;
 	font-weight: bold;
@@ -113,6 +116,9 @@ body {
 }
 #error_message {
 	color : #dd0000;
+}
+.large {
+	font-size: 1.7em;
 }
 
 /*==================MEDIA====================*/
