@@ -133,13 +133,18 @@ public class SatiaWebController {
         return model;
     }
 
-    private def deleteFieldValues(tasksFieldsValues, taskId) {
-        tasksFieldsValues[taskId].each { fId, fValues ->
+    private def deleteFieldValues(tasksFieldsValues, task, test, genFields) {
+        tasksFieldsValues[task.taskId].each { fId, fValues ->
+            ListIterator<FieldValue> iter = fValues.listIterator();
             for (FieldValue fValue : fValues) {
                 ks.deleteEntityById(FieldValue.class, fValue.fieldValueId);
             }
         }
-        tasksFieldsValues[taskId] = [:];
+        Generator taskGen = (task.generator == null) ? test.generator : task.generator;
+        tasksFieldsValues[task.taskId] = [:];
+        for (Field f : genFields[taskGen.genId]) {
+            tasksFieldsValues[task.taskId][f.fieldId] = [];
+        }
     }
 
     private class TaskIdComparator implements Comparator<Task> {
@@ -229,7 +234,7 @@ public class SatiaWebController {
             //delete if needed
             if (request.getParameter("del_task"+t.getTaskId()) != null) {
                 tasksToRemove << t;
-                deleteFieldValues(tasksFieldsValues, t.taskId);
+                deleteFieldValues(tasksFieldsValues, t, test, genFields);
                 continue;
             }
 
@@ -252,7 +257,7 @@ public class SatiaWebController {
             Generator newGen = t.generator;
             //if generator is updated - remove field values
             if ( ((oldGen == null) && (newGen != null)) || ((oldGen != null) && (!oldGen.equals(newGen))) ) {
-                deleteFieldValues(tasksFieldsValues, t.taskId);
+                deleteFieldValues(tasksFieldsValues, t, test, genFields);
             }
             //update field values for current task
             Generator taskGen = (t.generator != null) ? t.generator : test.generator;

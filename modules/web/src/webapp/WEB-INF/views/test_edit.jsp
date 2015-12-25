@@ -37,12 +37,22 @@
     	<br>
     	<div id="error_message">${error_message}</div>
 	    <div class="section">
+	    	<c:if test="${!create}">
+	    		<a href="<c:url value='/start_test/${test.testId}' />" >Pass test</a><br>
+	    	</c:if>
 	    	<div class="hint">Title:</div> <input class="${ create ? 'ignore_unchanged' : '' }" type="text" name="test_title" value="${test.title}"/><br><br>
 	    	<div class="hint">Description:</div> <textarea class="${ create ? 'ignore_unchanged' : '' }" name="test_description">${test.description}</textarea><br><br>
 	    	<div class="hint">Generator:</div>
 	    	<select name="test_generator" class="${ create ? 'ignore_unchanged' : '' }">
 	            <c:forEach var="g" items="${generators}">
-                <option value="${g.genId}">${g.impl}</option>
+	            	<c:choose>
+                		<c:when test="${g.genId == test.generator.genId}">
+                			<option value="${g.genId}" selected>${g.impl}</option>
+                		</c:when>
+                		<c:otherwise>
+                			<option value="${g.genId}">${g.impl}</option>
+                		</c:otherwise>
+                	</c:choose>
 	            </c:forEach>
 	        </select>
 	        <br><br>

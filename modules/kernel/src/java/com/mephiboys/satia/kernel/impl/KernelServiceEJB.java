@@ -243,7 +243,11 @@ public class KernelServiceEJB implements KernelService {
             throw new RuntimeException("Exception while class instantiation: " + generatorClass);
         }
 
-        return gen.generate(source, translation, task);
+        Object[] params = {task.getTaskId()};
+        Collection<FieldValue> fieldValues = getEntitiesByQuery(FieldValue.class,
+            "SELECT field_value_id FROM field_values WHERE task_id = ?", params);
+
+        return gen.generate(source, translation, task, fieldValues);
     }
 
 

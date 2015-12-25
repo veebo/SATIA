@@ -12,9 +12,9 @@ abstract public class AbstractAnswerGenerator implements AnswerGenerator {
     public static final int ANSWER_COUNT = 4;
 
     @Override
-    public List<String> generate(String source, String translation, Task task) {
+    public List<String> generate(String source, String translation, Task task, Collection<FieldValue> fieldValues) {
         Map<String, Object> params = new HashMap<>();
-        for (FieldValue v : task.getFieldValues()){
+        for (FieldValue v : fieldValues){
             Field f = v.getField();
             String name = f.getInternalName();
             Object param = params.get(name);
