@@ -127,6 +127,9 @@ public class SatiaWebController {
         String authUserName = auth.getName();
         User user = ks.getEntityById(User.class, authUserName);
         ModelAndView model = getTestModel(user, testIdStr);
+        
+        Test test = model.getModel().get("test");
+        Collections.sort(test.getTasks(), new TaskIdComparator());
         return model;
     }
 
@@ -137,6 +140,19 @@ public class SatiaWebController {
             }
         }
         tasksFieldsValues[taskId] = [:];
+    }
+
+    private class TaskIdComparator implements Comparator<Task> {
+        @Override
+        public int compare(Task t1, Task t2) {
+            if (t1.getTaskId().longValue() > t2.getTaskId().longValue()) {
+                return 1;
+            } else if (t1.getTaskId().longValue() == t2.getTaskId().longValue()) {
+                return 0;
+            } else {
+                return -1;
+            }
+        }
     }
 
     @RequestMapping(value="/edit/{testIdStr}", method=RequestMethod.POST)
@@ -269,6 +285,8 @@ public class SatiaWebController {
         }
         ks.removeTasks(tasksToRemove, test);
 
+        Collections.sort(test.getTasks(), new TaskIdComparator());
+
         return model;
     }
 
@@ -312,6 +330,7 @@ public class SatiaWebController {
         if (test == null) {
             return notFound();
         }
+        Collections.sort(test.getTasks(), new TaskIdComparator());
         try {
             HttpSession session = request.getSession();
             session.setAttribute("test", test);
