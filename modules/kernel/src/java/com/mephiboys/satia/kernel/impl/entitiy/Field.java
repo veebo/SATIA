@@ -20,6 +20,10 @@ public class Field {
     private String name;
 
     @Basic
+    @Column(name = "internal_name")
+    private String internalName;
+
+    @Basic
     @Column(name = "type")
     private int type;
 
@@ -53,6 +57,14 @@ public class Field {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getInternalName() {
+        return internalName;
+    }
+
+    public void setInternalName(String internalName) {
+        this.internalName = internalName;
     }
 
     public int getType() {
@@ -101,4 +113,5 @@ public class Field {
         int result = (int) (fieldId ^ (fieldId >>> 32));
         return result;
     }
+
 }

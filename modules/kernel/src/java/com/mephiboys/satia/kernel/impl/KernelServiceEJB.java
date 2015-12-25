@@ -2,6 +2,7 @@ package com.mephiboys.satia.kernel.impl;
 
 
 import com.mephiboys.satia.kernel.api.KernelService;
+import com.mephiboys.satia.kernel.generator.AnswerGenerator;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,23 +15,20 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.Date;
-import java.util.Map;
 import java.sql.Timestamp;
-import java.util.function.Predicate;
-import java.util.ListIterator;
-import javax.servlet.http.HttpServletRequest;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 @Singleton
 @TransactionManagement(TransactionManagementType.CONTAINER)
 public class KernelServiceEJB implements KernelService {
 
     private static Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
+
+    private static final Map<String, AnswerGenerator> generators =
+            new ConcurrentHashMap<String, AnswerGenerator>();
 
     @PersistenceContext (unitName = "PostgresPU")
     private EntityManager entityManager;
@@ -225,6 +223,26 @@ public class KernelServiceEJB implements KernelService {
     public <T> T doInTransaction(Callable<T> action) throws Exception {
         return action.call();
     }
+
+    @Override
+    public List<String> generateAnswers(String source, String translation, Task task) {
+        final String generatorClass = task.getGenerator().getImpl();
+        AnswerGenerator gen = generators.computeIfAbsent(generatorClass, genClass -> {
+            try {
+                return (AnswerGenerator)Class.forName(genClass).newInstance();
+            } catch (Exception e) {
+                new RuntimeException("Exception while class instantiation: " + genClass, e);
+                return null;
+            }
+        });
+
+        if (gen == null){
+            throw new RuntimeException("Exception while class instantiation: " + generatorClass);
+        }
+
+        return gen.generate(source, translation, task);
+    }
+
 
 //===============================================================================================
 //==========================SELECT HELPERS=======================================================
@@ -666,6 +684,7 @@ public class KernelServiceEJB implements KernelService {
             saveEntity(res);
             return res;
     }
+
 
 //===============================================================================================
 //==============================VALIDATORS=======================================================

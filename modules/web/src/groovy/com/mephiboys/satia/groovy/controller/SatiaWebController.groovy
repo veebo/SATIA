@@ -1,5 +1,4 @@
 package com.mephiboys.satia.groovy.controller
-
 import com.mephiboys.satia.kernel.api.KernelHelper
 import com.mephiboys.satia.kernel.api.KernelService
 import com.mephiboys.satia.kernel.impl.entitiy.*
@@ -7,6 +6,7 @@ import org.apache.commons.lang.StringUtils
 import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.stereotype.Controller
 import org.springframework.ui.ModelMap
@@ -15,12 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.ModelAndView
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
-import java.nio.charset.Charset
 
 @Controller
 public class SatiaWebController {
@@ -380,17 +378,36 @@ public class SatiaWebController {
                 Task nextTask = test.getTasks().get(next);
                 ++next;
                 session.setAttribute("next", new Integer(next));
-                byte src = nextTask.getSourceNum();
-                byte dst = (src == 1) ? 2 : 1;
-                model.addObject("question", nextTask.getTranslation()."${"getPhrase"+src}"().getValue());
+
+
+                Translation translation = nextTask.getTranslation();
+
+                Phrase sourcePhrase = (nextTask.getSourceNum() == 1
+                        ? translation.getPhrase1()
+                        : translation.getPhrase2()
+                );
+
+                Phrase translatedPhrase = (nextTask.getSourceNum() == 1
+                        ? translation.getPhrase2()
+                        : translation.getPhrase1()
+                );
+
+                List<String> wrongAnswers = ks.generateAnswers(sourcePhrase.getValue(),
+                        translatedPhrase.getValue(), nextTask);
+
+
+                model.addObject("question", sourcePhrase.getValue());
                 //============TEST==============================
                 def answers = [];
-                Phrase answer = nextTask.getTranslation()."${"getPhrase"+dst}"();
-                answers << ["id" : answer.getPhraseId(), "value" : answer.getValue()] <<
-                           ["id" : answer.getPhraseId()+1, "value" : "aaa"] <<
-                           ["id" : answer.getPhraseId()+2, "value" : "bbb"] <<
-                           ["id" : answer.getPhraseId()+3, "value" : "ccc"] <<
-                           ["id" : answer.getPhraseId()+4, "value" : "ddd"];
+
+                def i = 1
+                for (String a : wrongAnswers){
+                    answers.add(["id" : translatedPhrase.getPhraseId()+(i++), "value" : a])
+                }
+
+                answers.add((int)(wrongAnswers.size()*Math.random()),
+                        ["id" : translatedPhrase.getPhraseId(), "value" : translatedPhrase.getValue()])
+
                 model.addObject("answers", answers);
                 //===============================================
                 model.addObject("end", false);

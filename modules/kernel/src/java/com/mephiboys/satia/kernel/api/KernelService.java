@@ -1,9 +1,9 @@
 package com.mephiboys.satia.kernel.api;
 
 import com.mephiboys.satia.kernel.impl.entitiy.*;
+
 import javax.ejb.Local;
 import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
 import java.util.Collection;
 import java.util.List;
@@ -61,4 +61,6 @@ public interface KernelService {
     void createTasks(Test test, List<Task> tasks);
 
     String filterString(String str);
+
+    List<String> generateAnswers(String source, String translation, Task task);
 }
