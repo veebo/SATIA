@@ -549,8 +549,7 @@ public class SatiaWebController {
             email : regParams["email"]);
         ks.saveEntity(newUser);
 
-        model.setViewName("home");
-        return model;
+        return login();
     }
 
     @RequestMapping(value="/404")
