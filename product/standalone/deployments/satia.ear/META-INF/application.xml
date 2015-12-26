@@ -1,0 +1,16 @@
+<application>
+  <display-name>SATIA</display-name>
+  <module>
+    <web>
+      <web-uri>satia-web.war</web-uri>
+      <context-root>/</context-root>
+    </web>
+  </module>
+
+  <module>
+    <ejb>satia-kernel.jar</ejb>
+  </module>
+  
+  <library-directory>lib</library-directory>
+
+</application>
