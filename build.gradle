@@ -64,3 +64,10 @@ task deploy {
         }
     }
 }
+
+task distr {
+    copy {
+        from 'modules/web/build/libs/satia-web.war' into 'product/satia.ear'
+        from 'modules/kernel/build/libs/satia-kernel.jar' into 'product/satia.ear'
+    }
+}
