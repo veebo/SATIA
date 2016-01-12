@@ -1,4 +1,4 @@
-package com.mephiboys.satia.kernel.generator;
+package com.mephiboys.satia.kernel.api;
 
 import com.mephiboys.satia.kernel.impl.entitiy.Task;
 import com.mephiboys.satia.kernel.impl.entitiy.FieldValue;

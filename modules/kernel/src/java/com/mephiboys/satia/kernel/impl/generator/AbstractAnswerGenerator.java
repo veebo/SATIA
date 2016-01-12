@@ -1,6 +1,7 @@
-package com.mephiboys.satia.kernel.generator;
+package com.mephiboys.satia.kernel.impl.generator;
 
 
+import com.mephiboys.satia.kernel.api.AnswerGenerator;
 import com.mephiboys.satia.kernel.impl.entitiy.Field;
 import com.mephiboys.satia.kernel.impl.entitiy.FieldValue;
 import com.mephiboys.satia.kernel.impl.entitiy.Task;

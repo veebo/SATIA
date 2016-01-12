@@ -1,4 +1,4 @@
-package com.mephiboys.satia.kernel.generator;
+package com.mephiboys.satia.kernel.impl.generator;
 
 
 import com.mephiboys.satia.kernel.impl.entitiy.Task;

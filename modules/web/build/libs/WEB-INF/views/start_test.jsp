@@ -1,0 +1,24 @@
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@page pageEncoding="UTF-8"%>
+<%@page session="true"%>
+<html>
+<head>
+	<link rel="stylesheet" href="/resources/css/style.css" />
+</head>
+<body>
+	<div class="header">
+		SATIA
+	</div>
+	<div class="container">
+		<div class="title center">${test.title}</div>
+		<div class="center">${test.description}</div>
+		<div class = "hint">Enter your name and start passing the test:</div>
+		<div class="center">
+			<form action="/task?${_csrf.parameterName}=${_csrf.token}" method="POST">
+				<input type="text" name="name" />
+				<input type="submit" value="start" />
+			</form>
+		</div>
+	</div>
+</body>
+</html>

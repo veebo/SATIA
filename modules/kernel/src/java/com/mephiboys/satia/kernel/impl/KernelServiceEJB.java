@@ -2,7 +2,7 @@ package com.mephiboys.satia.kernel.impl;
 
 
 import com.mephiboys.satia.kernel.api.KernelService;
-import com.mephiboys.satia.kernel.generator.AnswerGenerator;
+import com.mephiboys.satia.kernel.api.AnswerGenerator;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;

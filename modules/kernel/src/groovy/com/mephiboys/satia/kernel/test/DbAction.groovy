@@ -27,7 +27,7 @@ class DbAction {
             }
 
             Generator g1 = new Generator(
-                    impl: "com.mephiboys.satia.kernel.generator.SimpleGenerator"
+                    impl: "com.mephiboys.satia.kernel.impl.generator.SimpleGenerator"
             )
             generators << g1;
             for (o in generators){
