@@ -5,7 +5,6 @@ import edu.berkeley.nlp.PCFGLA.*;
 import edu.berkeley.nlp.io.PTBLineLexer;
 import edu.berkeley.nlp.syntax.Tree;
 import edu.berkeley.nlp.ui.TreeJPanel;
-import org.springframework.util.StringUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -61,7 +60,7 @@ public class ParserContainer {
         List<Tree<String>> parsedTrees = null;
 
         try {
-            if (StringUtils.isEmpty(line)){
+            if (/*StringUtils.isEmpty(line)*/line == null && line.isEmpty()){
                 return null;
             }
             PTBLineLexer tokenizer = null;

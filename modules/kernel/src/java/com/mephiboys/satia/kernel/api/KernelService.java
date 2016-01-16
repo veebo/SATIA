@@ -1,15 +1,17 @@
 package com.mephiboys.satia.kernel.api;
 
+import com.mephiboys.satia.kernel.impl.berkley.ParserHolder;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
 
 import javax.ejb.Local;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.Date;
+
 
 
 @Local
@@ -64,4 +66,6 @@ public interface KernelService {
     String filterString(String str);
 
     List<String> generateAnswers(String source, String translation, Task task);
+
+    ParserHolder getParserHolder();
 }

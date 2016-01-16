@@ -1,8 +1,10 @@
 package com.mephiboys.satia.kernel.impl;
 
 
-import com.mephiboys.satia.kernel.api.KernelService;
 import com.mephiboys.satia.kernel.api.AnswerGenerator;
+import com.mephiboys.satia.kernel.api.KernelService;
+import com.mephiboys.satia.kernel.impl.berkley.BerkeleyParserFactory;
+import com.mephiboys.satia.kernel.impl.berkley.ParserHolder;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,7 +26,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @TransactionManagement(TransactionManagementType.CONTAINER)
 public class KernelServiceEJB implements KernelService {
 
-    private static Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
+    private static final Logger log = org.apache.log4j.Logger.getLogger(KernelServiceEJB.class);
+
+    private static final ParserHolder PARSER_HOLDER = initializeParserHolder();
+
+    private static ParserHolder initializeParserHolder(){
+        ParserHolder holder = ParserHolder.INSTANCE;
+        holder.register("eng", BerkeleyParserFactory.create(new String[]{"-gr", "eng_sm6.gr"}));
+        return holder;
+    }
 
     private static final Map<String, AnswerGenerator> generators =
             new ConcurrentHashMap<String, AnswerGenerator>();
@@ -248,6 +258,11 @@ public class KernelServiceEJB implements KernelService {
             "SELECT field_value_id FROM field_values WHERE task_id = ?", params);
 
         return gen.generate(source, translation, task, fieldValues);
+    }
+
+    @Override
+    public ParserHolder getParserHolder() {
+        return PARSER_HOLDER;
     }
 
 
