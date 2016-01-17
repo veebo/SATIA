@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 public class TestPhraseGenerator extends AbstractAnswerGenerator{
 
-    private final KernelService ks = KernelHelper.getKernelService();
+    protected final KernelService ks = KernelHelper.getKernelService();
 
     public List<String> generate(String source, String translation, Task task, Map<String, Object> params) {
         Test test = task.getTests().get(0);
@@ -27,6 +27,6 @@ public class TestPhraseGenerator extends AbstractAnswerGenerator{
                 test.getTestId()
         );
         phrases.remove(translation);
-        return randomizeAnswers(phrases.stream().map(p -> p.getValue()).filter(v -> !v.equals(translation)).collect(Collectors.toList()));
+        return phrases.stream().map(p -> p.getValue()).filter(v -> !v.equals(translation)).collect(Collectors.toList());
     }
 }

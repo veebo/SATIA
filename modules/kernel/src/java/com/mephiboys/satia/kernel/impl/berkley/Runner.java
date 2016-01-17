@@ -12,17 +12,12 @@ public class Runner {
         ParserHolder.INSTANCE.register("eng", BerkeleyParserFactory.create(new String[]{"-gr", "eng_sm6.gr"}));
         List<Tree<String>> tree = ParserHolder.INSTANCE.parse("eng",
                 "Natural language processing is a field of computer science");
-        System.out.println("Tree: " + tree);
-
-        System.out.println("getLeafs:");
-        passTree(tree, t -> { if (t.isLeaf()) System.out.println(t);} );
-
-        System.out.println("getPreTerminals:");
-        passTree(tree, t -> {
-            if (t.isPreTerminal()) {
-                System.out.println("Label: " + t.getLabel() +", word: " + t.getChild(0));
-            };
-        });
+        StringBuilder builder = new StringBuilder();
+        tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
+                node -> {
+                    if (node.isLeaf()) builder.append(node.getLabel()+" ");}
+        ));
+        System.out.println(builder.toString());
 
     }
 

@@ -29,7 +29,7 @@ abstract public class AbstractAnswerGenerator implements AnswerGenerator {
                 }
             }
         }
-        return generate(source, translation, task, params);
+        return randomizeAnswers(generate(source, translation, task, params));
     }
 
     protected List<String> randomizeAnswers(List<String> answers){

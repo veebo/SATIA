@@ -15,7 +15,7 @@ public class SimpleGenerator extends AbstractAnswerGenerator {
         } else {
         	answersList = (List)answers;
         }
-        return randomizeAnswers(answersList);
+        return answersList;
     }
 
 }
