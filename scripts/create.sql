@@ -114,6 +114,12 @@ CREATE TABLE results (
   FOREIGN KEY (test_id) REFERENCES tests (test_id)
 );
 
+CREATE TABLE words (
+  word_id bigint NOT NULL,
+  value varchar(100) NOT NULL,
+  part_of_speech varchar(10) NOT NULL
+);
+
 
 INSERT INTO roles (role_id, role)
 VALUES (1, 'ROLE_USER');
