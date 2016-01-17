@@ -1,7 +1,7 @@
 package com.mephiboys.satia.kernel.impl.generator;
 
-import com.mephiboys.satia.kernel.api.KernelHelper;
-import com.mephiboys.satia.kernel.api.KernelService;
+import com.mephiboys.satia.kernel.impl.berkley.BerkeleyParserFactory;
+import com.mephiboys.satia.kernel.impl.berkley.ParserHolder;
 import com.mephiboys.satia.kernel.impl.entitiy.Task;
 import edu.berkeley.nlp.syntax.Tree;
 import simplenlg.features.Feature;
@@ -24,17 +24,23 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     protected static final String ADVERB = "adv";
     protected static final String PREPOSITION = "prp";
 	
-	protected final KernelService ks = KernelHelper.getKernelService();
+//	protected final KernelService ks = KernelHelper.getKernelService();
     protected Map<String, Object> params;
     protected Lexicon lexicon = Lexicon.getDefaultLexicon();
     protected NLGFactory nlgFactory = new NLGFactory(lexicon);
     protected Realiser realiser = new Realiser(lexicon);
 
+
+    {
+        ParserHolder.INSTANCE.register("eng", BerkeleyParserFactory.create(new String[]{"-gr", "eng_sm6.gr"}));
+    }
+
     @Override
     protected List<String> generate(String source, String translation, Task task, Map<String, Object> params) {
         this.params = params;
-    	List<Tree<String>> tree = ks.getParserHolder().parse(
-                task.getSourceNum() == 1
+    	List<Tree<String>> tree = /*ks.getParserHolder()*/
+                ParserHolder.INSTANCE.parse(
+                task.getSourceNum() == 2
                         ? task.getTranslation().getPhrase1().getLang().getLang()
                         : task.getTranslation().getPhrase2().getLang().getLang(),
                 translation
@@ -42,7 +48,7 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
         return handleTree(tree);
     }
 
-    private void passTree(List<Tree<String>> tree, Consumer<Tree<String>> action){
+    protected void passTree(List<Tree<String>> tree, Consumer<Tree<String>> action){
         tree.forEach(t -> {
             passTree(t.getChildren(), action);
             action.accept(t);
