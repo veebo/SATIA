@@ -15,9 +15,9 @@ public class Word {
     @Column(name = "value")
     private String value;
 
-    @Basic
-    @Column(name = "part_of_speech")
-    private String partOfSpeech;
+    @ManyToOne(cascade = {CascadeType.MERGE})
+    @JoinColumn(name = "part_of_speech_id", referencedColumnName = "id")
+    private PartOfSpeech partOfSpeech;
 
     public Long getWordId() {
     	return wordId;
@@ -35,11 +35,11 @@ public class Word {
     	this.value = value;
     }
 
-    public String getPartOfSpeech() {
+    public PartOfSpeech getPartOfSpeech() {
     	return partOfSpeech;
     }
 
-    public void setPartOfSpeech(String partOfSpeech) {
+    public void setPartOfSpeech(PartOfSpeech partOfSpeech) {
     	this.partOfSpeech = partOfSpeech;
     }
 
@@ -50,7 +50,8 @@ public class Word {
     	if ( (o == null) || (o.getClass() != getClass()) ) return false;
 
     	Word w = (Word)o;
-    	if ((w.getWordId().equals(wordId)) && (w.getValue().equals(value)) && (w.getPartOfSpeech().equals(partOfSpeech))) {
+    	if ((w.getWordId().equals(wordId)) && (w.getValue().equals(value)) && 
+            (w.getPartOfSpeech().equals(partOfSpeech)) {
     		return true;
     	}
 
