@@ -114,10 +114,17 @@ CREATE TABLE results (
   FOREIGN KEY (test_id) REFERENCES tests (test_id)
 );
 
+CREATE TABLE parts_of_speech (
+  id varchar(10) NOT NULL,
+  PRIMARY KEY (id)
+);
+
 CREATE TABLE words (
   word_id bigint NOT NULL,
   value varchar(100) NOT NULL,
-  part_of_speech varchar(10) NOT NULL
+  part_of_speech_id varchar(10) NOT NULL,
+  PRIMARY KEY (word_id),
+  FOREIGN KEY (part_of_speech_id) REFERENCES parts_of_speech(id)
 );
 
 

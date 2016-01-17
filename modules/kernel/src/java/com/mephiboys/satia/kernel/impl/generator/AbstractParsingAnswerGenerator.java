@@ -98,7 +98,7 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 			return;
 		}
 		
-		if (label.equals("VB")) {
+		if (label.equals("VB") || label.equals("VBP")) {
 			p.setFeature(Feature.FORM, Form.BARE_INFINITIVE);
 			newVerbModified = realiser.realiseSentence(p);
 		}
@@ -113,11 +113,6 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		else if (label.equals("VBN")) {
 			p.setFeature(Feature.FORM, Form.PAST_PARTICIPLE);
 			newVerbModified = realiser.realiseSentence(p);
-		}
-		else if (label.equals("VBP")) {
-			p.setSubject("You");
-			p.setFeature(Feature.TENSE, Tense.PRESENT);
-			newVerbModified = realiser.realiseSentence(p).split(" ")[1];
 		}
 		else if (label.equals("VBZ")) {
 			p.setSubject("he");
