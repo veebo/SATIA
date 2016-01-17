@@ -51,7 +51,7 @@ public class Word {
 
     	Word w = (Word)o;
     	if ((w.getWordId().equals(wordId)) && (w.getValue().equals(value)) && 
-            (w.getPartOfSpeech().equals(partOfSpeech)) {
+            (w.getPartOfSpeech().equals(partOfSpeech))) {
     		return true;
     	}
 

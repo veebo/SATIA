@@ -13,8 +13,10 @@ import simplenlg.phrasespec.SPhraseSpec;
 import simplenlg.realiser.english.Realiser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGenerator{
@@ -23,9 +25,20 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     protected static final String NOUN = "n";
     protected static final String ADVERB = "adv";
     protected static final String PREPOSITION = "prp";
+    protected static final String PUNCTUATION_SIGNS = ".,:;?!";
+    protected static final Map<String, String> PARTS_OF_SPEECH = new HashMap<>();
+
+    static {
+        PARTS_OF_SPEECH.put("VB", "vb");
+        PARTS_OF_SPEECH.put("VBD", "vb");
+        PARTS_OF_SPEECH.put("VBG", "vb");
+        PARTS_OF_SPEECH.put("VBN", "vb");
+        PARTS_OF_SPEECH.put("VBP", "vb");
+        PARTS_OF_SPEECH.put("VBZ", "vb");
+        //etc
+    }
 	
 //	protected final KernelService ks = KernelHelper.getKernelService();
-    protected Map<String, Object> params;
     protected Lexicon lexicon = Lexicon.getDefaultLexicon();
     protected NLGFactory nlgFactory = new NLGFactory(lexicon);
     protected Realiser realiser = new Realiser(lexicon);
@@ -37,7 +50,6 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 
     @Override
     protected List<String> generate(String source, String translation, Task task, Map<String, Object> params) {
-        this.params = params;
     	List<Tree<String>> tree = /*ks.getParserHolder()*/
                 ParserHolder.INSTANCE.parse(
                 task.getSourceNum() == 2
@@ -45,20 +57,21 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
                         : task.getTranslation().getPhrase2().getLang().getLang(),
                 translation
         );
-        return handleTree(tree);
+        return handleTree(tree, params);
     }
 
-    protected void passTree(List<Tree<String>> tree, Consumer<Tree<String>> action){
+    protected void passTree(List<Tree<String>> tree, Map<String, Object> params,
+                            BiConsumer<Tree<String>, Map<String, Object>> action){
         tree.forEach(t -> {
-            passTree(t.getChildren(), action);
-            action.accept(t);
+            passTree(t.getChildren(), params, action);
+            action.accept(t, params);
         });
     }
 
-    protected List<String> handleTree(List<Tree<String>> tree){
+    protected List<String> handleTree(List<Tree<String>> tree, Map<String, Object> params){
         List<String> answersList = new ArrayList<>();
         for (int i = 0; i < ANSWER_COUNT; ++i) {
-            passTree(tree, this::handleTreeNode);
+            passTree(tree, params, this::handleTreeNode);
             StringBuilder builder = new StringBuilder();
             tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
                     node -> {if (node.isLeaf()) builder.append(node.getLabel()).append(" ");}
@@ -68,7 +81,7 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
         return answersList;
     }
 
-    abstract protected void handleTreeNode(Tree<String> node);
+    abstract protected void handleTreeNode(Tree<String> node, Map<String, Object> params);
     
     protected String getWord(String partOfSpeech) {
 		if (partOfSpeech.equals(VERB)) {
@@ -149,4 +162,18 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     protected void handlePreposition(Tree<String> node) {
 		//...
 	}
+
+    protected void handleAllowPunctuation(Tree<String> node, Consumer<Tree<String>> action){
+        Tree<String> leaf = node.getChild(0);
+        String label = leaf.getLabel().trim();
+        String ending = label.substring(label.length() - 1);
+        if (PUNCTUATION_SIGNS.contains(ending)){
+            leaf.setLabel(label.substring(0, label.length() - 1));
+            action.accept(node);
+            leaf.setLabel(leaf.getLabel()+ending);
+        } else {
+            action.accept(node);
+        }
+    }
+
 }

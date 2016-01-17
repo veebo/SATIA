@@ -1,23 +1,44 @@
 package com.mephiboys.satia.kernel.impl.berkley;
 
 
+import com.mephiboys.satia.kernel.api.AnswerGenerator;
+import com.mephiboys.satia.kernel.impl.entitiy.*;
+import com.mephiboys.satia.kernel.impl.generator.WordOrderReplaceGenerator;
 import edu.berkeley.nlp.syntax.Tree;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class Runner {
 
     public static void main(String[] args) {
-        ParserHolder.INSTANCE.register("eng", BerkeleyParserFactory.create(new String[]{"-gr", "eng_sm6.gr"}));
-        List<Tree<String>> tree = ParserHolder.INSTANCE.parse("eng",
-                "Natural language processing is a field of computer science");
-        StringBuilder builder = new StringBuilder();
-        tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
-                node -> {
-                    if (node.isLeaf()) builder.append(node.getLabel()+" ");}
-        ));
-        System.out.println(builder.toString());
+
+        Lang rus = new Lang(); rus.setLang("rus");
+        Lang eng = new Lang(); eng.setLang("eng");
+
+        Translation translation = new Translation();
+        Phrase p1 = new Phrase(); p1.setLang(rus); p1.setValue("Попроси медведя принести водку");
+        Phrase p2 = new Phrase(); p2.setLang(eng); p2.setValue("Ask the bear to bring some vodka");
+
+        translation.setPhrase1(p1);
+        translation.setPhrase2(p2);
+
+        Task task = new Task();
+        task.setTranslation(translation);
+        task.setSourceNum((byte)1);
+
+        Field pos = new Field();
+        pos.setName("pos");
+        pos.setInternalName("pos");
+
+        FieldValue val = new FieldValue();
+        val.setField(pos);
+        val.setValue("5");
+
+        AnswerGenerator generator = new WordOrderReplaceGenerator();
+        List<String> generated = generator.generate(p1.getValue(), p2.getValue(), task, Arrays.asList(val));
+        System.out.println(generated);
 
     }
 
