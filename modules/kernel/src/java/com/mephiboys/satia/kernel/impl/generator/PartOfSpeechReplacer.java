@@ -3,6 +3,7 @@ package com.mephiboys.satia.kernel.impl.generator;
 import edu.berkeley.nlp.syntax.Tree;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class PartOfSpeechReplacer extends AbstractParsingAnswerGenerator {
 	
@@ -13,17 +14,22 @@ public class PartOfSpeechReplacer extends AbstractParsingAnswerGenerator {
 			return;
 		}
 		
+		Consumer<Tree<String>> action = null;
 		if (partOfSpeech.equals(VERB)) {
-			handleVerb(node);
+			action = this::handleVerb;
 		} else if (partOfSpeech.equals(ADJECTIVE)) {
-			handleAdjective(node);
+			action = this::handleAdjective;
 		} else if (partOfSpeech.equals(NOUN)) {
-			handleNoun(node);
+			action = this::handleNoun;
 		} else if (partOfSpeech.equals(ADVERB)) {
-			handleAdverb(node);
+			action = this::handleAdverb;
 		}  else if (partOfSpeech.equals(PREPOSITION)) {
-			handlePreposition(node);
+			action = this::handlePreposition;
+		} else {
+			return;
 		}
+		
+		handleAllowPunctuation(node, action);
 	}
 	
 }

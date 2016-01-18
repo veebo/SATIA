@@ -7,9 +7,10 @@ import edu.berkeley.nlp.syntax.Tree;
 import simplenlg.features.Feature;
 import simplenlg.features.Form;
 import simplenlg.features.Tense;
+import simplenlg.features.NumberAgreement;
 import simplenlg.framework.NLGFactory;
 import simplenlg.lexicon.Lexicon;
-import simplenlg.phrasespec.SPhraseSpec;
+import simplenlg.phrasespec.*;
 import simplenlg.realiser.english.Realiser;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.Random;
 
 abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGenerator{
 	protected static final String VERB = "vb";
@@ -27,6 +29,13 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     protected static final String PREPOSITION = "prp";
     protected static final String PUNCTUATION_SIGNS = ".,:;?!";
     protected static final Map<String, String> PARTS_OF_SPEECH = new HashMap<>();
+    
+    //words for substitution
+    protected static final String[] VERBS = {"fly", "run", "swim", "think"};
+    protected static final String[] ADJECTIVES = {"green", "blue", "big", "small"};
+    protected static final String[] NOUNS = {"orange", "chair", "tree", "lighter"};
+    protected static final String[] ADVERBS = {"fast", "deeply", "simply"};
+    protected static final String[] PREPOSITIONS = {"on", "in", "at", "of"};
 
     static {
         PARTS_OF_SPEECH.put("VB", "vb");
@@ -84,20 +93,29 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     abstract protected void handleTreeNode(Tree<String> node, Map<String, Object> params);
     
     protected String getWord(String partOfSpeech) {
+    	Random random = new Random();
 		if (partOfSpeech.equals(VERB)) {
-			return "fly";
+			return VERBS[random.nextInt(VERBS.length)];
 		} else if (partOfSpeech.equals(ADJECTIVE)) {
-			return "green";
+			return ADJECTIVES[random.nextInt(ADJECTIVES.length)];
 		} else if (partOfSpeech.equals(NOUN)) {
-			return "weed";
+			return NOUNS[random.nextInt(NOUNS.length)];
 		} else if (partOfSpeech.equals(ADVERB)) {
-			return "clearly";
+			return ADVERBS[random.nextInt(ADVERBS.length)];
 		} else if (partOfSpeech.equals(PREPOSITION)) {
-			return "on";
+			return PREPOSITIONS[random.nextInt(PREPOSITIONS.length)];
 		} else {
 			return "";
 		}
 	}
+    
+    private String postHandle(String phrase, Tree<String> node, boolean isProper) {
+    	phrase = phrase.split("\\.")[0];
+		if ( (!isProper) && (Character.isLowerCase(node.getChild(0).getLabel().charAt(0))) ) {
+			phrase = phrase.toLowerCase();
+		}
+		return phrase;
+    }
 	
     protected void handleVerb(Tree<String> node) {
 		String label = node.getLabel();
@@ -107,7 +125,7 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		
 		SPhraseSpec p = nlgFactory.createClause();
 		p.setVerb(getWord(VERB));
-		String newVerbModified = "";
+		String newVerb = "";
 		
 		SPhraseSpec sourceVerbPhrase = nlgFactory.createClause();
 		sourceVerbPhrase.setVerb(node.getChild(0).getLabel());
@@ -119,48 +137,110 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		
 		if (label.equals("VB") || label.equals("VBP")) {
 			p.setFeature(Feature.FORM, Form.BARE_INFINITIVE);
-			newVerbModified = realiser.realiseSentence(p);
+			newVerb = realiser.realiseSentence(p);
 		}
 		else if (label.equals("VBD")) {
 			p.setFeature(Feature.TENSE, Tense.PAST);
-			newVerbModified = realiser.realiseSentence(p);
+			newVerb = realiser.realiseSentence(p);
 		}
 		else if (label.equals("VBG")) {
 			p.setFeature(Feature.FORM, Form.GERUND);
-			newVerbModified = realiser.realiseSentence(p);
+			newVerb = realiser.realiseSentence(p);
 		}
 		else if (label.equals("VBN")) {
 			p.setFeature(Feature.FORM, Form.PAST_PARTICIPLE);
-			newVerbModified = realiser.realiseSentence(p);
+			newVerb = realiser.realiseSentence(p);
 		}
 		else if (label.equals("VBZ")) {
 			p.setSubject("he");
 			p.setFeature(Feature.TENSE, Tense.PRESENT);
-			newVerbModified = realiser.realiseSentence(p).split(" ")[1];
+			newVerb = realiser.realiseSentence(p).split(" ")[1];
 		}
 		
-		newVerbModified = newVerbModified.split("\\.")[0];
-		if (Character.isLowerCase(node.getChild(0).getLabel().charAt(0))) {
-			newVerbModified = newVerbModified.toLowerCase();
-		}
+		newVerb = postHandle(newVerb, node, false);
 		
-		node.getChild(0).setLabel(newVerbModified);
+		node.getChild(0).setLabel(newVerb);
 	}
 	
     protected void handleAdjective(Tree<String> node) {
-		//...
+		String label = node.getLabel();
+		if (!label.startsWith("J")) {
+			return;
+		}
+		
+		AdjPhraseSpec p = nlgFactory.createAdjectivePhrase();
+		String newAdjective = "";
+		p.setAdjective(getWord(ADJECTIVE));
+		
+		if (label.equals("JJR")) {
+			p.setFeature(Feature.IS_COMPARATIVE, true);
+		}
+		else if (label.equals("JJS")) {
+			p.setFeature(Feature.IS_SUPERLATIVE, true);
+		}
+		
+		newAdjective = realiser.realiseSentence(p);
+		newAdjective = postHandle(newAdjective, node, false);
+		
+		node.getChild(0).setLabel(newAdjective);
 	}
 	
     protected void handleNoun(Tree<String> node) {
-		//...
+    	String label = node.getLabel();
+		if (!label.startsWith("NN")) {
+			return;
+		}
+		
+		NPPhraseSpec p = nlgFactory.createNounPhrase();
+		String newNoun = "";
+		p.setNoun(getWord(NOUN));
+		boolean isProper = (label.equals("NNP") || label.equals("NNPS"));
+		
+		if (label.equals("NN") || label.equals("NNP")) {
+			p.setFeature(Feature.NUMBER, NumberAgreement.SINGULAR);
+		}
+		else if (label.equals("NNS") || label.equals("NNPS")) {
+			p.setFeature(Feature.NUMBER, NumberAgreement.PLURAL);
+		}
+		
+		newNoun = realiser.realiseSentence(p);
+		newNoun = postHandle(newNoun, node, isProper);
+		
+		node.getChild(0).setLabel(newNoun);
 	}
 	
     protected void handleAdverb(Tree<String> node) {
-		//...
+    	String label = node.getLabel();
+		if (!label.startsWith("RB")) {
+			return;
+		}
+		
+		AdvPhraseSpec p = nlgFactory.createAdverbPhrase();
+		String newAdverb = "";
+		p.setAdverb(getWord(ADVERB));
+		
+		if (label.equals("RBR")) {
+			p.setFeature(Feature.IS_COMPARATIVE, true);
+		}
+		else if (label.equals("RBS")) {
+			p.setFeature(Feature.IS_SUPERLATIVE, true);
+		}
+		
+		newAdverb = realiser.realiseSentence(p);
+		newAdverb = postHandle(newAdverb, node, false);
+		
+		node.getChild(0).setLabel(newAdverb);
 	}
 	
     protected void handlePreposition(Tree<String> node) {
-		//...
+    	String label = node.getLabel();
+		if (!label.startsWith("IN")) {
+			return;
+		}
+		
+		String newPreposition = getWord(PREPOSITION);
+		
+		node.getChild(0).setLabel(newPreposition);
 	}
 
     protected void handleAllowPunctuation(Tree<String> node, Consumer<Tree<String>> action){
