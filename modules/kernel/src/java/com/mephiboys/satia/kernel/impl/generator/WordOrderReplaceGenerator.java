@@ -13,16 +13,24 @@ public class WordOrderReplaceGenerator extends AbstractParsingAnswerGenerator {
     ThreadLocal<Integer> currentPos = new ThreadLocal<>();
 
     @Override
-    protected List<String> handleTree(List<Tree<String>> tree, Map<String, Object> params){
+    protected List<String> handleTree(List<Tree<String>> tree, Map<String, Object> params)  throws IllegalStateException {
         List<String> answersList = new ArrayList<>();
         for (int i = 0; i < ANSWER_COUNT; ++i) {
-            currentPos.set(0);
-            passTree(tree, params, this::handleTreeNode);
-            StringBuilder builder = new StringBuilder();
-            tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
-                    node -> {if (node.isLeaf()) builder.append(node.getLabel()).append(" ");}
-            ));
-            answersList.add(builder.toString());
+            String handledSentence = null;
+            do {
+            	currentPos.set(0);
+            	wordsReplaced.set(new Integer(0));
+            	passTree(tree, params, this::handleTreeNode);
+            	if (wordsReplaced.get().intValue() == 0) {
+            		throw new IllegalStateException("Illegal generation parameters");
+            	}
+            	StringBuilder builder = new StringBuilder();
+                tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
+                        node -> {if (node.isLeaf()) builder.append(node.getLabel()).append(" ");}
+                ));
+                handledSentence = builder.toString();
+            } while (answersList.contains(handledSentence));
+            answersList.add(handledSentence);
         }
         return answersList;
     }

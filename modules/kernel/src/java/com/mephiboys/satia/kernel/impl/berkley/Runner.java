@@ -3,8 +3,8 @@ package com.mephiboys.satia.kernel.impl.berkley;
 
 import com.mephiboys.satia.kernel.api.AnswerGenerator;
 import com.mephiboys.satia.kernel.impl.entitiy.*;
-//import com.mephiboys.satia.kernel.impl.generator.WordOrderReplaceGenerator;
-import com.mephiboys.satia.kernel.impl.generator.PartOfSpeechReplacer;
+import com.mephiboys.satia.kernel.impl.generator.WordOrderReplaceGenerator;
+import com.mephiboys.satia.kernel.impl.generator.PartOfSpeechReplaceGenerator;
 import edu.berkeley.nlp.syntax.Tree;
 
 import java.util.Arrays;
@@ -35,7 +35,7 @@ public class Runner {
 
         FieldValue val = new FieldValue();
         val.setField(pos);
-        val.setValue("5");
+        val.setValue("6");
 
         AnswerGenerator generator = new WordOrderReplaceGenerator();
         List<String> generated = generator.generate(p1.getValue(), p2.getValue(), task, Arrays.asList(val));
@@ -49,9 +49,11 @@ public class Runner {
         pSpchVal.setField(pSpch);
         pSpchVal.setValue("vb");
         
-        AnswerGenerator generator = new PartOfSpeechReplacer();
-        List<String> generated = generator.generate(p1.getValue(), p2.getValue(), task, Arrays.asList(pSpchVal));
-        System.out.println(generated);
+        AnswerGenerator generator = new PartOfSpeechReplaceGenerator();
+        for (int i = 0; i < 10; i++) {
+        	List<String> generated = generator.generate(p1.getValue(), p2.getValue(), task, Arrays.asList(pSpchVal));
+            System.out.println(generated);
+        }
     }
 
     public static void passTree(List<Tree<String>> tree, Consumer<Tree<String>> action){

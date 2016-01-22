@@ -21,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.io.File;
 
 @Singleton
 @TransactionManagement(TransactionManagementType.CONTAINER)

@@ -48,9 +48,11 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     }
 	
 //	protected final KernelService ks = KernelHelper.getKernelService();
-    protected Lexicon lexicon = Lexicon.getDefaultLexicon();
-    protected NLGFactory nlgFactory = new NLGFactory(lexicon);
-    protected Realiser realiser = new Realiser(lexicon);
+    protected static Lexicon lexicon = Lexicon.getDefaultLexicon();
+    protected static NLGFactory nlgFactory = new NLGFactory(lexicon);
+    protected static Realiser realiser = new Realiser(lexicon);
+    protected static Random random = new Random();
+    protected ThreadLocal<Integer> wordsReplaced = new ThreadLocal<>();
 
 
     {
@@ -66,7 +68,11 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
                         : task.getTranslation().getPhrase2().getLang().getLang(),
                 translation
         );
-        return handleTree(tree, params);
+        try {
+        	return handleTree(tree, params);
+        } catch (Exception e) {
+        	return new ArrayList<String>();
+        }
     }
 
     protected void passTree(List<Tree<String>> tree, Map<String, Object> params,
@@ -77,15 +83,23 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
         });
     }
 
-    protected List<String> handleTree(List<Tree<String>> tree, Map<String, Object> params){
+    protected List<String> handleTree(List<Tree<String>> tree, Map<String, Object> params) throws IllegalStateException {
         List<String> answersList = new ArrayList<>();
         for (int i = 0; i < ANSWER_COUNT; ++i) {
-            passTree(tree, params, this::handleTreeNode);
-            StringBuilder builder = new StringBuilder();
-            tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
-                    node -> {if (node.isLeaf()) builder.append(node.getLabel()).append(" ");}
-            ));
-            answersList.add(builder.toString());
+            String handledSentence = null;
+            do {
+            	wordsReplaced.set(new Integer(0));
+            	passTree(tree, params, this::handleTreeNode);
+            	if (wordsReplaced.get().intValue() == 0) {
+            		throw new IllegalStateException("Illegal generation parameters");
+            	}
+            	StringBuilder builder = new StringBuilder();
+                tree.iterator().forEachRemaining(t -> t.iterator().forEachRemaining(
+                        node -> {if (node.isLeaf()) builder.append(node.getLabel()).append(" ");}
+                ));
+                handledSentence = builder.toString();
+            } while (answersList.contains(handledSentence));
+            answersList.add(handledSentence);
         }
         return answersList;
     }
@@ -93,7 +107,6 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
     abstract protected void handleTreeNode(Tree<String> node, Map<String, Object> params);
     
     protected String getWord(String partOfSpeech) {
-    	Random random = new Random();
 		if (partOfSpeech.equals(VERB)) {
 			return VERBS[random.nextInt(VERBS.length)];
 		} else if (partOfSpeech.equals(ADJECTIVE)) {
@@ -160,6 +173,8 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		newVerb = postHandle(newVerb, node, false);
 		
 		node.getChild(0).setLabel(newVerb);
+		
+		wordsReplaced.set(new Integer(wordsReplaced.get().intValue() + 1));
 	}
 	
     protected void handleAdjective(Tree<String> node) {
@@ -183,6 +198,8 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		newAdjective = postHandle(newAdjective, node, false);
 		
 		node.getChild(0).setLabel(newAdjective);
+		
+		wordsReplaced.set(new Integer(wordsReplaced.get().intValue() + 1));
 	}
 	
     protected void handleNoun(Tree<String> node) {
@@ -207,6 +224,8 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		newNoun = postHandle(newNoun, node, isProper);
 		
 		node.getChild(0).setLabel(newNoun);
+		
+		wordsReplaced.set(new Integer(wordsReplaced.get().intValue() + 1));
 	}
 	
     protected void handleAdverb(Tree<String> node) {
@@ -230,6 +249,8 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		newAdverb = postHandle(newAdverb, node, false);
 		
 		node.getChild(0).setLabel(newAdverb);
+		
+		wordsReplaced.set(new Integer(wordsReplaced.get().intValue() + 1));
 	}
 	
     protected void handlePreposition(Tree<String> node) {
@@ -241,6 +262,8 @@ abstract public class AbstractParsingAnswerGenerator extends AbstractAnswerGener
 		String newPreposition = getWord(PREPOSITION);
 		
 		node.getChild(0).setLabel(newPreposition);
+		
+		wordsReplaced.set(new Integer(wordsReplaced.get().intValue() + 1));
 	}
 
     protected void handleAllowPunctuation(Tree<String> node, Consumer<Tree<String>> action){

@@ -5,7 +5,7 @@ import edu.berkeley.nlp.syntax.Tree;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class PartOfSpeechReplacer extends AbstractParsingAnswerGenerator {
+public class PartOfSpeechReplaceGenerator extends AbstractParsingAnswerGenerator {
 	
 	@Override
 	protected void handleTreeNode(Tree<String> node, Map<String, Object> params) {
